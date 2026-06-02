@@ -1,4 +1,4 @@
-# ensiconnect
+# EnsiConnect
 
 A new Flutter project.
 
