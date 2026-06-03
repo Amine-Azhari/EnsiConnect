@@ -4,8 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth.dart';
 import 'menu_principal.dart';
 import 'splash_screen.dart';
-import 'database_maker.dart';
-import 'session.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
@@ -14,6 +15,11 @@ void main() async {
   // Indispensable pour s'assurer que Flutter est prêt avant de lire le stockage
   WidgetsFlutterBinding.ensureInitialized();
 
+  // initialisation de la BDD
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();
 
