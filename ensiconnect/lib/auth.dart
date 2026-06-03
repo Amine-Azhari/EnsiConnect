@@ -39,13 +39,13 @@ class _AuthState extends State<Auth> {
   String? _uhaEmailValidator(String? value) {
     final email = value?.trim().toLowerCase() ?? '';
 
-    // L'adresse mail doit appartenir au domaine universitaire UHA.
+    // Format attendu: prenom.nom@uha.fr.
     if (email.isEmpty) {
       return 'Adresse mail obligatoire';
     }
 
-    if (!email.endsWith('@uha.fr')) {
-      return "Utilisez une adresse mail de l'UHA (@uha.fr)";
+    if (!RegExp(r'^[a-z]+[a-z-]*\.[a-z]+[a-z-]*@uha\.fr$').hasMatch(email)) {
+      return 'Format attendu : prenom.nom@uha.fr';
     }
 
     return null;
@@ -54,25 +54,8 @@ class _AuthState extends State<Auth> {
   String? _passwordValidator(String? value) {
     final password = value ?? '';
 
-    // Regles minimales: 6 caracteres, une lettre, un chiffre et un special.
     if (password.isEmpty) {
       return 'Mot de passe obligatoire';
-    }
-
-    if (password.length < 6) {
-      return 'Minimum 6 caractères';
-    }
-
-    if (!RegExp('[A-Za-z]').hasMatch(password)) {
-      return 'Ajoutez au moins une lettre';
-    }
-
-    if (!RegExp('[0-9]').hasMatch(password)) {
-      return 'Ajoutez au moins un chiffre';
-    }
-
-    if (!RegExp(r'[^A-Za-z0-9]').hasMatch(password)) {
-      return 'Ajoutez au moins un caractère spécial';
     }
 
     return null;
@@ -80,8 +63,12 @@ class _AuthState extends State<Auth> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? Colors.black : const Color(0xFFF7F9FC);
+    final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FC),
+      backgroundColor: backgroundColor,
       body: Container(
         width: double.infinity,
         constraints: const BoxConstraints(minHeight: double.infinity),
@@ -93,23 +80,30 @@ class _AuthState extends State<Auth> {
                 minHeight: MediaQuery.of(context).size.height - 64,
               ),
               child: Center(
-                child: Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(maxWidth: 390),
-                  padding: const EdgeInsets.fromLTRB(26, 30, 26, 26),
-                  // Carte centrale qui contient soit la connexion, soit l'inscription.
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 28,
-                        offset: const Offset(0, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(maxWidth: 390),
+                      padding: const EdgeInsets.fromLTRB(26, 30, 26, 26),
+                      // Carte centrale qui contient soit la connexion, soit l'inscription.
+                      decoration: BoxDecoration(
+                        color: cardColor,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(
+                              alpha: isDark ? 0 : 0.08,
+                            ),
+                            blurRadius: 28,
+                            offset: const Offset(0, 16),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: _isSignUp ? _buildSignUpForm() : _buildLoginForm(),
+                      child: _isSignUp ? _buildSignUpForm() : _buildLoginForm(),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -152,7 +146,9 @@ class _AuthState extends State<Auth> {
                 _hidePassword
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
-                color: Colors.black45,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white60
+                    : Colors.black45,
                 size: 20,
               ),
             ),
@@ -203,7 +199,7 @@ class _AuthState extends State<Auth> {
         children: [
           const _AuthTitle(
             title: 'Inscription',
-            subtitle: 'Créez votre compte EnsiConnect.',
+            subtitle: 'Creez votre compte EnsiConnect.',
           ),
           const SizedBox(height: 24),
           const _FieldLabel('Nom'),
@@ -213,11 +209,11 @@ class _AuthState extends State<Auth> {
             validator: (value) => _requiredValidator(value, 'Nom'),
           ),
           const SizedBox(height: 14),
-          const _FieldLabel('Prénom'),
+          const _FieldLabel('Prenom'),
           const SizedBox(height: 7),
           _AuthInput(
-            hintText: 'Entrez votre prénom',
-            validator: (value) => _requiredValidator(value, 'Prénom'),
+            hintText: 'Entrez votre prenom',
+            validator: (value) => _requiredValidator(value, 'Prenom'),
           ),
           const SizedBox(height: 14),
           const _FieldLabel('Adresse mail'),
@@ -231,7 +227,7 @@ class _AuthState extends State<Auth> {
           const _FieldLabel('Mot de passe'),
           const SizedBox(height: 7),
           _AuthInput(
-            hintText: 'Minimum 6 caractères',
+            hintText: 'Entrez votre mot de passe',
             obscureText: _hidePassword,
             validator: _passwordValidator,
             suffixIcon: IconButton(
@@ -240,25 +236,27 @@ class _AuthState extends State<Auth> {
                 _hidePassword
                     ? Icons.visibility_off_outlined
                     : Icons.visibility_outlined,
-                color: Colors.black45,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white60
+                    : Colors.black45,
                 size: 20,
               ),
             ),
           ),
           const SizedBox(height: 14),
-          const _FieldLabel('Filière'),
+          const _FieldLabel('Filiere'),
           const SizedBox(height: 7),
           _AuthDropdown(
-            hintText: 'Choisissez votre filière',
+            hintText: 'Choisissez votre filiere',
             value: _selectedFiliere,
             items: _filieres,
             onChanged: (value) => setState(() => _selectedFiliere = value),
           ),
           const SizedBox(height: 14),
-          const _FieldLabel('Année'),
+          const _FieldLabel('Annee'),
           const SizedBox(height: 7),
           _AuthDropdown(
-            hintText: 'Choisissez votre année',
+            hintText: 'Choisissez votre annee',
             value: _selectedAnnee,
             items: _annees,
             onChanged: (value) => setState(() => _selectedAnnee = value),
@@ -270,7 +268,7 @@ class _AuthState extends State<Auth> {
           ),
           const SizedBox(height: 24),
           _AuthSwitch(
-            text: 'Déjà un compte ?',
+            text: 'Deja un compte ?',
             action: 'Connectez-vous',
             onPressed: () => setState(() => _isSignUp = false),
           ),
@@ -291,13 +289,17 @@ class _AuthTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryTextColor = isDark ? Colors.white : Colors.black87;
+    final secondaryTextColor = isDark ? Colors.white60 : Colors.black45;
+
     return Column(
       children: [
         Center(
           child: Text(
             title,
-            style: const TextStyle(
-              color: Colors.black87,
+            style: TextStyle(
+              color: primaryTextColor,
               fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
@@ -307,7 +309,7 @@ class _AuthTitle extends StatelessWidget {
         Center(
           child: Text(
             subtitle,
-            style: const TextStyle(color: Colors.black45, fontSize: 13),
+            style: TextStyle(color: secondaryTextColor, fontSize: 13),
           ),
         ),
       ],
@@ -322,10 +324,12 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Text(
       text,
-      style: const TextStyle(
-        color: Colors.black87,
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black87,
         fontSize: 12,
         fontWeight: FontWeight.w700,
       ),
@@ -350,25 +354,35 @@ class _AuthInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     // Champ reutilisable pour garder le meme style sur tout l'ecran.
     return TextFormField(
       keyboardType: keyboardType,
       obscureText: obscureText,
       validator: validator,
-      style: const TextStyle(color: Colors.black87, fontSize: 14),
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black87,
+        fontSize: 14,
+      ),
       cursorColor: EnsiConnectApp.ensisaBlue,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
+        hintStyle: TextStyle(
+          color: isDark ? Colors.white38 : Colors.black38,
+          fontSize: 13,
+        ),
         errorStyle: const TextStyle(fontSize: 11),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: isDark ? Colors.black : Colors.white,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(7),
-          borderSide: const BorderSide(color: Color(0xFFE5E8EF)),
+          borderSide: BorderSide(
+            color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE5E8EF),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(7),
@@ -403,6 +417,8 @@ class _AuthDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     // Menu deroulant reutilise pour la filiere et l'annee.
     return DropdownButtonFormField<String>(
       initialValue: value,
@@ -411,20 +427,26 @@ class _AuthDropdown extends StatelessWidget {
           .toList(),
       onChanged: onChanged,
       validator: (value) => value == null ? 'Champ obligatoire' : null,
-      style: const TextStyle(color: Colors.black87, fontSize: 14),
-      dropdownColor: Colors.white,
-      iconEnabledColor: Colors.black54,
+      style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87, fontSize: 14),
+      dropdownColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      iconEnabledColor: isDark ? Colors.white70 : Colors.black54,
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.black38, fontSize: 13),
+        hintStyle: TextStyle(
+          color: isDark ? Colors.white38 : Colors.black38,
+          fontSize: 13,
+        ),
         errorStyle: const TextStyle(fontSize: 11),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: isDark ? Colors.black : Colors.white,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(7),
-          borderSide: const BorderSide(color: Color(0xFFE5E8EF)),
+          borderSide: BorderSide(
+            color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE5E8EF),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(7),
@@ -488,12 +510,17 @@ class _AuthSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           text,
-          style: const TextStyle(color: Colors.black45, fontSize: 12),
+          style: TextStyle(
+            color: isDark ? Colors.white60 : Colors.black45,
+            fontSize: 12,
+          ),
         ),
         TextButton(
           onPressed: onPressed,
