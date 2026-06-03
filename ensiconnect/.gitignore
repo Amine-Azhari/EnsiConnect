@@ -45,3 +45,8 @@ app.*.map.json
 /android/app/release
 
 .fakedevtools_options.yaml
+
+# Firebase config
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+firebase.json
