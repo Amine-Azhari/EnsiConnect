@@ -145,7 +145,13 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
           final req = globalRequests[index];
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                width: 1,
+              ),
+            ),
             elevation: isDark ? 0 : 2,
             color: Theme.of(context).cardColor,
             child: Padding(
