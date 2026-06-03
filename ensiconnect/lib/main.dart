@@ -73,9 +73,8 @@ class EnsiConnectApp extends StatelessWidget {
 
           themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
 
-          initialRoute: '/',
+          initialRoute: '/auth',
           routes: {
-            '/': (context) => const SplashScreen(),
             '/auth': (context) => const Auth(),
             '/home': (context) => const MainNavigationScreen(),
             '/post_session': (context) => const PostSessionPage(),
