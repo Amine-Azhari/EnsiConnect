@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'setting_page.dart'; // Importation de la page de paramètres
 import 'main.dart'; // Pour accéder aux couleurs de l'app
 import 'models/user.dart';
+import 'demande_aide_page.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -31,18 +32,20 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         height: 54,
         child: FloatingActionButton(
           onPressed: () {},
-          backgroundColor: EnsiConnectApp.ensisaBlue,
+          backgroundColor: isDark ? Colors.lightBlueAccent : EnsiConnectApp.ensisaBlue,
           elevation: 4,
           shape: const CircleBorder(),
-          child: const Icon(Icons.add, color: Colors.white, size: 26),
+          child: Icon(Icons.add, color: isDark ? Colors.black87 : Colors.white, size: 26),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 6.0,
+        elevation: isDark ? 16 : 8,
+        shadowColor: isDark ? Colors.black : Colors.black45,
         clipBehavior: Clip.antiAlias,
-        color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+        color: isDark ? Colors.grey.shade900 : Colors.white,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0),
           child: Row(
@@ -65,8 +68,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     final color = isSelected 
-        ? EnsiConnectApp.ensisaBlue 
-        : (isDark ? Colors.grey.shade400 : Colors.grey.shade500);
+        ? (isDark ? Colors.lightBlueAccent : EnsiConnectApp.ensisaBlue) 
+        : (isDark ? Colors.grey.shade300 : Colors.grey.shade500);
 
     return InkWell(
       onTap: () => setState(() => _currentIndex = index),
@@ -99,22 +102,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  
-  final User currentUser = const User(
-    id: '1',
-    firstName: 'Ayoubbb',
-    lastName: 'Darka',
-    email: 'ayoub.darkaoui@uha.fr',
-    promotion: '1A',
-    filiere: 'Informatique',
-    role: 'Étudiant',
-  );
-
-  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
+    final User currentUser = const User(
+      id: '1',
+      firstName: 'Ayoubbb',
+      lastName: 'Darka',
+      email: 'ayoub.darkaoui@uha.fr',
+      promotion: '1A',
+      filiere: 'Informatique',
+      role: 'Étudiant',
+      profilePictureUrl: 'assets/images/pdp.png',
+    );
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     // Gris renforcé en mode jour pour corriger le problème de visibilité
@@ -135,10 +137,17 @@ class _HomePageState extends State<HomePage> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Text(
-                      '${currentUser.firstName[0]}${currentUser.lastName[0]}',
-                      style: const TextStyle(fontSize: 24, color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold),
-                    ),
+                    backgroundImage: currentUser.profilePictureUrl != null
+                        ? (currentUser.profilePictureUrl!.startsWith('http')
+                            ? NetworkImage(currentUser.profilePictureUrl!) as ImageProvider
+                            : AssetImage(currentUser.profilePictureUrl!))
+                        : null,
+                    child: currentUser.profilePictureUrl == null
+                        ? Text(
+                            '${currentUser.firstName[0]}${currentUser.lastName[0]}',
+                            style: const TextStyle(fontSize: 24, color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 10),
                   Text(
@@ -194,8 +203,9 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: isDark ? Colors.grey.shade800 : Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
+                      border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
                       boxShadow: isDark ? [] : [
                         BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
                       ],
@@ -227,7 +237,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
               ),
               const SizedBox(height: 16),
-              const QuickActionsGrid(),
+              QuickActionsGrid(),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -238,7 +248,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   TextButton(
                     onPressed: () {},
-                    child: const Text("Voir tout", style: TextStyle(color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold)),
+                    child: const Text("Voir tout", style: TextStyle(color: Color(0xFF2196F3), fontWeight: FontWeight.bold)),
                   ),
                 ],
               ),
@@ -248,7 +258,7 @@ class _HomePageState extends State<HomePage> {
                 subtitle: "Besoin d'explication sur les classes abstraites et interfaces.",
                 time: "Il y a 20 min",
                 iconData: Icons.code_rounded,
-                iconColor: Colors.blue,
+                iconColor: Color(0xFF2196F3),
               ),
               const SizedBox(height: 12),
               const RecentDemandCard(
@@ -328,8 +338,9 @@ class CustomSearchBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark ? Colors.grey.shade900 : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
         boxShadow: isDark ? [] : [
           BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
@@ -352,13 +363,20 @@ class QuickActionsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        ActionItem(icon: Icons.school_outlined, label: "Demander\nune aide", color: Colors.indigo),
-        ActionItem(icon: Icons.people_alt_outlined, label: "Trouver\nun tuteur", color: Colors.blue),
-        ActionItem(icon: Icons.calendar_today_rounded, label: "Mes\nsessions", color: Colors.redAccent),
-        ActionItem(icon: Icons.bookmark_border_rounded, label: "Mes\nréservations", color: Colors.teal),
+        ActionItem(
+          icon: Icons.school_outlined, 
+          label: "Demander\nune aide", 
+          color: const Color(0xFF7E57C2),
+          onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const DemandeAidePage()));
+          },
+        ),
+        const ActionItem(icon: Icons.people_alt_outlined, label: "Trouver\nun tuteur", color: Color(0xFF42A5F5)),
+        const ActionItem(icon: Icons.calendar_today_rounded, label: "Mes\nsessions", color: Color(0xFFEF5350)),
+        const ActionItem(icon: Icons.bookmark_border_rounded, label: "Mes\nréservations", color: Color(0xFF66BB6A)),
       ],
     );
   }
@@ -368,39 +386,44 @@ class ActionItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final VoidCallback? onTap;
 
-  const ActionItem({super.key, required this.icon, required this.label, required this.color});
+  const ActionItem({super.key, required this.icon, required this.label, required this.color, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Column(
-      children: [
-        Container(
-          width: 65,
-          height: 65,
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: isDark ? [] : [
-              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
-            ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 65,
+            height: 65,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(16),
+              border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
+              boxShadow: isDark ? [] : [
+                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 28),
           ),
-          child: Icon(icon, color: color, size: 28),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 11, 
-            fontWeight: FontWeight.w500, 
-            color: isDark ? Colors.grey.shade300 : Colors.black87, 
-            height: 1.2
+          const SizedBox(height: 8),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11, 
+              fontWeight: FontWeight.w500, 
+              color: isDark ? Colors.grey.shade300 : Colors.black87, 
+              height: 1.2
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -434,6 +457,7 @@ class RecentDemandCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
+        border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
         boxShadow: isDark ? [] : [
           BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
@@ -444,8 +468,9 @@ class RecentDemandCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: isDark ? Colors.grey.shade800 : iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
+              border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
             ),
             child: Icon(iconData, color: iconColor, size: 24),
           ),
