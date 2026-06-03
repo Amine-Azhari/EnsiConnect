@@ -183,7 +183,10 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
-              onTap: () => Navigator.pop(context),
+              onTap: () {
+                // Redirige vers la page d'authentification et vide la pile de navigation
+                Navigator.pushNamedAndRemoveUntil(context, '/auth', (route) => false);
+              },
             ),
           ],
         ),
