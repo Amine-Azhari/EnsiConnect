@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'menu_principal.dart';
 import 'splash_screen.dart';
-import 'database_maker.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
@@ -13,13 +15,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // initialisation de la BDD
-  try {
-    print("Initialisation de SQLite et injection des données de test...");
-    await DatabaseHelper.instance.database;
-    print("Base de données SQLite lancée");
-  } catch (e) {
-    print("Erreur lors de l'initialisation de la BDD : $e");
-  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();
