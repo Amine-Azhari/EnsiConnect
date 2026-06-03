@@ -8,6 +8,7 @@ import 'chat.dart';
 import 'demande_aide_page.dart';
 import 'user_search.dart';
 import 'chat.dart';
+import 'models/user.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -107,6 +108,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  
+  final User currentUser = const User(
+    id: '1',
+    firstName: 'Ayoubbb',
+    lastName: 'Darka',
+    email: 'ayoub.darkaoui@uha.fr',
+    promotion: '1A',
+    filiere: 'Informatique',
+    role: 'Étudiant',
+  );
+
+  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
