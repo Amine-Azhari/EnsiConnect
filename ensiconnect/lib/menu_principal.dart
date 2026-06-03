@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'setting_page.dart'; // Importation de la page de paramètres
 import 'main.dart'; // Pour accéder aux couleurs de l'app
+import 'models/user.dart';
 import 'user_search.dart';
 import 'chat.dart';
 
@@ -100,7 +101,18 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // La clé est maintenant une propriété de l'état du widget, ce qui est une meilleure pratique.
+  
+  final User currentUser = const User(
+    id: '1',
+    firstName: 'Ayoubbb',
+    lastName: 'Darka',
+    email: 'ayoub.darkaoui@uha.fr',
+    promotion: '1A',
+    filiere: 'Informatique',
+    role: 'Étudiant',
+  );
+
+  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -116,11 +128,30 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: EnsiConnectApp.ensisaBlue),
-              child: Text(
-                'EnsiConnect',
-                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+            DrawerHeader(
+              decoration: const BoxDecoration(color: EnsiConnectApp.ensisaBlue),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.white,
+                    child: Text(
+                      '${currentUser.firstName[0]}${currentUser.lastName[0]}',
+                      style: const TextStyle(fontSize: 24, color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    currentUser.fullName,
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    currentUser.email,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
               ),
             ),
             ListTile(
@@ -180,7 +211,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 20),
               Text(
-                "Bonjour, Ayoub 👋",
+                "Bonjour, ${currentUser.firstName} 👋",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
               ),
               const SizedBox(height: 4),
