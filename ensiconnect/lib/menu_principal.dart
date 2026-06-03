@@ -104,22 +104,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  
-  final User currentUser = const User(
-    id: '1',
-    firstName: 'Ayoubbb',
-    lastName: 'Darka',
-    email: 'ayoub.darkaoui@uha.fr',
-    promotion: '1A',
-    filiere: 'Informatique',
-    role: 'Étudiant',
-  );
-
-  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
+    final User currentUser = const User(
+      id: '1',
+      firstName: 'Ayoubbb',
+      lastName: 'Darka',
+      email: 'ayoub.darkaoui@uha.fr',
+      promotion: '1A',
+      filiere: 'Informatique',
+      role: 'Étudiant',
+      profilePictureUrl: null,
+    );
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     // Gris renforcé en mode jour pour corriger le problème de visibilité
@@ -140,10 +139,17 @@ class _HomePageState extends State<HomePage> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Text(
-                      '${currentUser.firstName[0]}${currentUser.lastName[0]}',
-                      style: const TextStyle(fontSize: 24, color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold),
-                    ),
+                    backgroundImage: currentUser.profilePictureUrl != null
+                        ? (currentUser.profilePictureUrl!.startsWith('http')
+                            ? NetworkImage(currentUser.profilePictureUrl!) as ImageProvider
+                            : AssetImage(currentUser.profilePictureUrl!))
+                        : null,
+                    child: currentUser.profilePictureUrl == null
+                        ? Text(
+                            '${currentUser.firstName[0]}${currentUser.lastName[0]}',
+                            style: const TextStyle(fontSize: 24, color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 10),
                   Text(
