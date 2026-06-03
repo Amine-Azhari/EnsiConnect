@@ -14,14 +14,8 @@ class _AuthState extends State<Auth> {
   final _loginFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
 
-  // Options affichees dans les menus deroulants de l'inscription.
-  final _filieres = const ['CPB1', 'CPB2', 'IR', 'ASE', 'GI', 'Textile'];
-  final _annees = const ['CPB1', 'CPB2', '1A', '2A', '3A'];
-
   bool _isSignUp = false;
   bool _hidePassword = true;
-  String? _selectedFiliere;
-  String? _selectedAnnee;
 
   // On autorise l'acces au menu principal uniquement si le formulaire est valide.
   void _submit(GlobalKey<FormState> formKey) {
@@ -203,18 +197,24 @@ class _AuthState extends State<Auth> {
             subtitle: 'Creez votre compte EnsiConnect.',
           ),
           const SizedBox(height: 24),
-          const _FieldLabel('Nom'),
-          const SizedBox(height: 7),
-          _AuthInput(
-            hintText: 'Entrez votre nom',
-            validator: (value) => _requiredValidator(value, 'Nom'),
-          ),
-          const SizedBox(height: 14),
-          const _FieldLabel('Prenom'),
-          const SizedBox(height: 7),
-          _AuthInput(
-            hintText: 'Entrez votre prenom',
-            validator: (value) => _requiredValidator(value, 'Prenom'),
+          Row(
+            children: [
+              Expanded(
+                child: _CompactAuthField(
+                  label: 'Nom',
+                  hintText: 'Nom',
+                  validator: (value) => _requiredValidator(value, 'Nom'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _CompactAuthField(
+                  label: 'Prenom',
+                  hintText: 'Prenom',
+                  validator: (value) => _requiredValidator(value, 'Prenom'),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           const _FieldLabel('Adresse mail'),
@@ -243,24 +243,6 @@ class _AuthState extends State<Auth> {
                 size: 20,
               ),
             ),
-          ),
-          const SizedBox(height: 14),
-          const _FieldLabel('Filiere'),
-          const SizedBox(height: 7),
-          _AuthDropdown(
-            hintText: 'Choisissez votre filiere',
-            value: _selectedFiliere,
-            items: _filieres,
-            onChanged: (value) => setState(() => _selectedFiliere = value),
-          ),
-          const SizedBox(height: 14),
-          const _FieldLabel('Annee'),
-          const SizedBox(height: 7),
-          _AuthDropdown(
-            hintText: 'Choisissez votre annee',
-            value: _selectedAnnee,
-            items: _annees,
-            onChanged: (value) => setState(() => _selectedAnnee = value),
           ),
           const SizedBox(height: 24),
           _PrimaryButton(
@@ -403,66 +385,26 @@ class _AuthInput extends StatelessWidget {
   }
 }
 
-class _AuthDropdown extends StatelessWidget {
-  const _AuthDropdown({
+class _CompactAuthField extends StatelessWidget {
+  const _CompactAuthField({
+    required this.label,
     required this.hintText,
-    required this.value,
-    required this.items,
-    required this.onChanged,
+    required this.validator,
   });
 
+  final String label;
   final String hintText;
-  final String? value;
-  final List<String> items;
-  final ValueChanged<String?> onChanged;
+  final String? Function(String?) validator;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Menu deroulant reutilise pour la filiere et l'annee.
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      items: items
-          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-          .toList(),
-      onChanged: onChanged,
-      validator: (value) => value == null ? 'Champ obligatoire' : null,
-      style: TextStyle(
-          color: isDark ? Colors.white : Colors.black87, fontSize: 14),
-      dropdownColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-      iconEnabledColor: isDark ? Colors.white70 : Colors.black54,
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          color: isDark ? Colors.white38 : Colors.black38,
-          fontSize: 13,
-        ),
-        errorStyle: const TextStyle(fontSize: 11),
-        filled: true,
-        fillColor: isDark ? Colors.black : Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
-          borderSide: BorderSide(
-            color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE5E8EF),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
-          borderSide:
-              const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.4),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
-          borderSide: const BorderSide(color: Colors.redAccent),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
-          borderSide: const BorderSide(color: Colors.redAccent, width: 1.4),
-        ),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _FieldLabel(label),
+        const SizedBox(height: 7),
+        _AuthInput(hintText: hintText, validator: validator),
+      ],
     );
   }
 }
