@@ -6,6 +6,7 @@ import 'models/user.dart';
 import 'user_search.dart';
 import 'chat.dart';
 import 'demande_aide_page.dart';
+import 'user_search.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
