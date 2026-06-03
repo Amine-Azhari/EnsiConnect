@@ -212,7 +212,7 @@ class _HomePageState extends State<HomePage> {
                       borderRadius: BorderRadius.circular(12),
                       border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
                       boxShadow: isDark ? [] : [
-                        BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
                       ],
                     ),
                     child: IconButton(
@@ -306,7 +306,7 @@ class WelcomeBanner extends StatelessWidget {
             child: Icon(
               Icons.school_rounded,
               size: 130,
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
             ),
           ),
           const Padding(
@@ -347,7 +347,7 @@ class CustomSearchBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: TextField(
@@ -464,7 +464,7 @@ class RecentDemandCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -495,7 +495,7 @@ class RecentDemandCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: EnsiConnectApp.ensisaLightBlue.withOpacity(isDark ? 0.2 : 1.0),
+              color: EnsiConnectApp.ensisaLightBlue.withValues(alpha: isDark ? 0.2 : 1.0),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(

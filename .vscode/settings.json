@@ -1,0 +1,6 @@
+{
+  "files.exclude": {
+    "**/windows/flutter/**": true
+  },
+  "C_Cpp.errorSquiggles": "disabled"
+}
