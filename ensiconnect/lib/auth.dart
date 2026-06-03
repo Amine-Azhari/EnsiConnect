@@ -13,6 +13,7 @@ class _AuthState extends State<Auth> {
   final _loginFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
 
+  // Valeurs proposees dans les menus deroulants de l'inscription.
   final _filieres = const ['CPB1', 'CPB2', 'IR', 'ASE', 'GI', 'Textile'];
   final _annees = const ['CPB1', 'CPB2', '1A', '2A', '3A'];
 
@@ -21,6 +22,7 @@ class _AuthState extends State<Auth> {
   String? _selectedFiliere;
   String? _selectedAnnee;
 
+  // Si le formulaire est valide, on entre dans l'application.
   void _submit(GlobalKey<FormState> formKey) {
     if (formKey.currentState?.validate() ?? false) {
       Navigator.of(context).pushReplacementNamed('/home');
@@ -37,6 +39,7 @@ class _AuthState extends State<Auth> {
   String? _uhaEmailValidator(String? value) {
     final email = value?.trim().toLowerCase() ?? '';
 
+    // Seules les adresses universitaires UHA sont acceptees.
     if (email.isEmpty) {
       return 'Adresse mail obligatoire';
     }
@@ -51,6 +54,7 @@ class _AuthState extends State<Auth> {
   String? _passwordValidator(String? value) {
     final password = value ?? '';
 
+    // Regles minimales demandees pour la connexion et l'inscription.
     if (password.isEmpty) {
       return 'Mot de passe obligatoire';
     }
@@ -93,6 +97,7 @@ class _AuthState extends State<Auth> {
                   width: double.infinity,
                   constraints: const BoxConstraints(maxWidth: 390),
                   padding: const EdgeInsets.fromLTRB(26, 30, 26, 26),
+                  // Carte centrale inspiree de la maquette fournie.
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -115,6 +120,7 @@ class _AuthState extends State<Auth> {
   }
 
   Widget _buildLoginForm() {
+    // Formulaire de connexion: mail UHA + mot de passe valide.
     return Form(
       key: _loginFormKey,
       child: Column(
@@ -188,6 +194,7 @@ class _AuthState extends State<Auth> {
   }
 
   Widget _buildSignUpForm() {
+    // Formulaire d'inscription: infos et menus obligatoires.
     return Form(
       key: _signUpFormKey,
       child: Column(
@@ -343,6 +350,7 @@ class _AuthInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // TextFormField reutilise pour appliquer le meme style partout.
     return TextFormField(
       keyboardType: keyboardType,
       obscureText: obscureText,
@@ -395,6 +403,7 @@ class _AuthDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Dropdown avec validation obligatoire pour filiere et annee.
     return DropdownButtonFormField<String>(
       initialValue: value,
       items: items
