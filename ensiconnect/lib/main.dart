@@ -66,6 +66,7 @@ class EnsiConnectApp extends StatelessWidget {
           initialRoute: '/',
           routes: {
             '/': (context) => const SplashScreen(),
+            '/auth': (context) => const Auth(),
             '/home': (context) => const MainNavigationScreen(),
             '/post_session': (context) => const PostSessionPage(),
             '/chat': (context) => const ChatPage(),
