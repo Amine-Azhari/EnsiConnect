@@ -428,7 +428,7 @@ class ActionItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
               boxShadow: isDark ? [] : [
-                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
               ],
             ),
             child: Icon(icon, color: Colors.white, size: 28),
