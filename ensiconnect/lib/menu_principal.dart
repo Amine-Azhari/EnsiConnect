@@ -166,7 +166,7 @@ class _HomePageState extends State<HomePage> {
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: isDark ? [] : [
-                        BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
                       ],
                     ),
                     child: IconButton(
@@ -260,7 +260,7 @@ class WelcomeBanner extends StatelessWidget {
             child: Icon(
               Icons.school_rounded,
               size: 130,
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
             ),
           ),
           const Padding(
@@ -300,7 +300,7 @@ class CustomSearchBar extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: TextField(
@@ -353,7 +353,7 @@ class ActionItem extends StatelessWidget {
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
             boxShadow: isDark ? [] : [
-              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
             ],
           ),
           child: Icon(icon, color: color, size: 28),
@@ -404,7 +404,7 @@ class RecentDemandCard extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -413,7 +413,7 @@ class RecentDemandCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(iconData, color: iconColor, size: 24),
@@ -434,7 +434,7 @@ class RecentDemandCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: EnsiConnectApp.ensisaLightBlue.withOpacity(isDark ? 0.2 : 1.0),
+              color: EnsiConnectApp.ensisaLightBlue.withValues(alpha: isDark ? 0.2 : 1.0),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(

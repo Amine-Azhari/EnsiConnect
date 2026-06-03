@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "name": "Flutter",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "C:/flutter/bin/cache/**",
+        "C:/flutter/bin/cache/artifacts/engine/**"
+      ],
+      "defines": [
+        "_DEBUG",
+        "UNICODE",
+        "_UNICODE"
+      ],
+      "windowsSdkVersion": "10.0.26100.0",
+      "compilerPath": "cl.exe",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "windows-msvc-x64",
+      "browse": {
+        "path": [
+          "${workspaceFolder}",
+          "C:/flutter"
+        ]
+      }
+    }
+  ],
+  "version": 4
+}
