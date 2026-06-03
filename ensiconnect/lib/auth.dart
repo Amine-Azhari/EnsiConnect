@@ -10,9 +10,11 @@ class Auth extends StatefulWidget {
 }
 
 class _AuthState extends State<Auth> {
+  // Deux formulaires separes pour valider la connexion et l'inscription.
   final _loginFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
 
+  // Options affichees dans les menus deroulants de l'inscription.
   final _filieres = const ['CPB1', 'CPB2', 'IR', 'ASE', 'GI', 'Textile'];
   final _annees = const ['CPB1', 'CPB2', '1A', '2A', '3A'];
 
@@ -21,6 +23,7 @@ class _AuthState extends State<Auth> {
   String? _selectedFiliere;
   String? _selectedAnnee;
 
+  // On autorise l'acces au menu principal uniquement si le formulaire est valide.
   void _submit(GlobalKey<FormState> formKey) {
     if (formKey.currentState?.validate() ?? false) {
       Navigator.of(context).pushReplacementNamed('/home');
@@ -37,6 +40,7 @@ class _AuthState extends State<Auth> {
   String? _uhaEmailValidator(String? value) {
     final email = value?.trim().toLowerCase() ?? '';
 
+    // L'adresse mail doit appartenir au domaine universitaire UHA.
     if (email.isEmpty) {
       return 'Adresse mail obligatoire';
     }
@@ -51,6 +55,7 @@ class _AuthState extends State<Auth> {
   String? _passwordValidator(String? value) {
     final password = value ?? '';
 
+    // Regles minimales: 6 caracteres, une lettre, un chiffre et un special.
     if (password.isEmpty) {
       return 'Mot de passe obligatoire';
     }
@@ -93,6 +98,7 @@ class _AuthState extends State<Auth> {
                   width: double.infinity,
                   constraints: const BoxConstraints(maxWidth: 390),
                   padding: const EdgeInsets.fromLTRB(26, 30, 26, 26),
+                  // Carte centrale qui contient soit la connexion, soit l'inscription.
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
@@ -115,6 +121,7 @@ class _AuthState extends State<Auth> {
   }
 
   Widget _buildLoginForm() {
+    // Formulaire de connexion avec validation email UHA + mot de passe.
     return Form(
       key: _loginFormKey,
       child: Column(
@@ -188,6 +195,7 @@ class _AuthState extends State<Auth> {
   }
 
   Widget _buildSignUpForm() {
+    // Formulaire d'inscription complet avec menus obligatoires.
     return Form(
       key: _signUpFormKey,
       child: Column(
@@ -343,6 +351,7 @@ class _AuthInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Champ reutilisable pour garder le meme style sur tout l'ecran.
     return TextFormField(
       keyboardType: keyboardType,
       obscureText: obscureText,
@@ -395,6 +404,7 @@ class _AuthDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Menu deroulant reutilise pour la filiere et l'annee.
     return DropdownButtonFormField<String>(
       initialValue: value,
       items: items
