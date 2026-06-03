@@ -1,3 +1,4 @@
+import 'package:ensiconnect/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'menu_principal.dart';
@@ -64,6 +65,7 @@ class EnsiConnectApp extends StatelessWidget {
           routes: {
             '/': (context) => const SplashScreen(),
             '/home': (context) => const MainNavigationScreen(),
+            '/chat': (context) => const ChatPage(),
           },
         );
       },

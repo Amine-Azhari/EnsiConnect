@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'setting_page.dart'; // Importation de la page de paramètres
 import 'main.dart'; // Pour accéder aux couleurs de l'app
+import 'chat.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -15,7 +16,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _pages = [
     const HomePage(),
     const Center(child: Text("Explorer (Tuteurs)")),
-    const Center(child: Text("Messages / Chat")),
+    const ChatPage(),
     const Center(child: Text("Mon Profil")),
   ];
 
