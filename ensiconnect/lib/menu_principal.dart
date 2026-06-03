@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'setting_page.dart'; // Importation de la page de paramètres
 import 'main.dart'; // Pour accéder aux couleurs de l'app
+import 'profil.dart';
 import 'models/user.dart';
 import 'user_search.dart';
 import 'chat.dart';
@@ -20,7 +21,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
     const HomePage(),
     const SearchPage(),
     const ChatPage(),
-    const Center(child: Text("Mon Profil")),
+    const ProfilPage(),
   ];
 
   @override

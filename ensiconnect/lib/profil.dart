@@ -2,28 +2,49 @@ import 'package:flutter/material.dart';
 import 'main.dart'; // pour EnsiConnectApp
 import 'setting_page.dart'; // pour SettingPage
 
-
-void main() {
-  runApp(const MonApp());
-}
-
-class MonApp extends StatelessWidget {
-  const MonApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ProfilPage(),
-    );
-  }
-}
-
-class ProfilPage extends StatelessWidget {
+class ProfilPage extends StatefulWidget {
   const ProfilPage({super.key});
 
   @override
+  State<ProfilPage> createState() => _ProfilPageState();
+}
+
+class _ProfilPageState extends State<ProfilPage>
+    with AutomaticKeepAliveClientMixin {
+
+  final List<String> skills = [];
+  final TextEditingController _descriptionController = TextEditingController();
+
+  final List<String> options = [
+    "Java",
+    "Mathématiques",
+    "Anglais",
+    "Prog fonc",
+  ];
+
+  String? selectedSkill;
+
+  void _addSkill() {
+    if (selectedSkill != null && !skills.contains(selectedSkill)) {
+      setState(() {
+        skills.add(selectedSkill!);
+      });
+    }
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Scaffold(
       drawer: Drawer(
         child: ListView(
@@ -43,38 +64,41 @@ class ProfilPage extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SettingPage()),
+                  MaterialPageRoute(
+                    builder: (context) => const SettingPage(),
+                  ),
                 );
               },
             ),
           ],
         ),
       ),
-    appBar: AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      title: const Text("Mon Profil"), // 👈 fixe au lieu de _getTitle()
 
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text("Mon Profil"),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            child: IconButton(
+              icon: const Icon(Icons.notifications_none_rounded),
+              onPressed: () {},
+            ),
+          ),
+        ],
       ),
 
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications_none),
-          onPressed: () {},
-        ),
-      ],
-    ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Center(
@@ -89,10 +113,7 @@ class ProfilPage extends StatelessWidget {
             const Center(
               child: Text(
                 'Ayoub le GOAT',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
 
@@ -107,93 +128,89 @@ class ProfilPage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // 👇 DESCRIPTION
             const Text(
               'Description',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: _descriptionController,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Écris une description...',
               ),
             ),
 
-            const SizedBox(height: 8),
+            const SizedBox(height: 20),
 
-            const Padding(
-              padding: EdgeInsets.only(right: 40),
-              child: TextField(
-                maxLines: 3,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Écris une description...',
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 25),
-
-            // 👇 SECTION JAVA
             const Text(
-              'Java',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              'Ajouter une compétence',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(5, (index) {
-                return ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(45, 35),
-                    padding: EdgeInsets.zero,
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: selectedSkill,
+                    items: options.map((String skill) {
+                      return DropdownMenuItem<String>(
+                        value: skill,
+                        child: Text(skill),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedSkill = value;
+                      });
+                    },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: "Choisir une compétence",
+                    ),
                   ),
-                  child: Text('${index + 1}'),
-                );
-              }),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: _addSkill,
+                  child: const Text("+"),
+                ),
+              ],
             ),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 20),
 
-            // 👇 ACTIONS
             const Text(
-              'Actions',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              'Mes compétences',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Profil'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Messages'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Amis'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Paramètres'),
-                ),
-                ElevatedButton(
-                  onPressed: () {},
-                  child: const Text('Déconnexion'),
-                ),
-              ],
+            Expanded(
+              child: ListView.builder(
+                itemCount: skills.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    child: ListTile(
+                      title: Text(skills[index]),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          setState(() {
+                            skills.removeAt(index);
+                          });
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),
