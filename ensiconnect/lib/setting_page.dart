@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'menu_principal.dart'; // Accès au notifier global isDarkModeNotifier
+import 'main.dart'; // Accès au notifier global isDarkModeNotifier
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingPage extends StatefulWidget {
@@ -34,7 +34,7 @@ class _SettingPageState extends State<SettingPage> {
               builder: (context, isDarkMode, child) {
                 return SwitchListTile(
                   title: const Text('Mode Sombre'),
-                  subtitle: const Text('Réduit la fatigue oculaire la nuit'),
+                  subtitle: const Text("Change le thème de l'application."),
                   secondary: Icon(
                     isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
                     color: isDarkMode ? Colors.amber : Colors.blue,

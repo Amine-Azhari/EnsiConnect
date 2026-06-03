@@ -1,70 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'splash_screen.dart'; // Importation de ton écran de chargement
 import 'setting_page.dart'; // Importation de la page de paramètres
-
-// Variable globale pour écouter les changements de mode (Clair / Sombre)
-final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
-
-void main() async {
-  // S'assure que Flutter est prêt avant de lire le stockage
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Ouvre le stockage local et récupère le choix sauvegardé
-  final prefs = await SharedPreferences.getInstance();
-  final isDarkSaved = prefs.getBool('isDarkMode') ?? false;
-  isDarkModeNotifier.value = isDarkSaved;
-
-  runApp(const EnsiConnectApp());
-}
-
-class EnsiConnectApp extends StatelessWidget {
-  const EnsiConnectApp({super.key});
-
-  static const Color ensisaBlue = Color(0xFF0055A5); 
-  static const Color ensisaLightBlue = Color(0xFFE6F0FA); 
-  static const Color backgroundColor = Color(0xFFF8F9FA); 
-  static const Color accentOrange = Color(0xFFFF9800); 
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<bool>(
-      valueListenable: isDarkModeNotifier,
-      builder: (context, isDarkMode, child) {
-        return MaterialApp(
-          title: 'EnsiConnect',
-          debugShowCheckedModeBanner: false,
-          
-          // ── THÈME CLAIR ──
-          theme: ThemeData(
-            scaffoldBackgroundColor: backgroundColor,
-            primaryColor: ensisaBlue,
-            fontFamily: 'Roboto',
-            brightness: Brightness.light,
-            cardColor: Colors.white,
-          ),
-          
-          // ── THÈME SOMBRE ──
-          darkTheme: ThemeData(
-            scaffoldBackgroundColor: const Color(0xFF121212),
-            primaryColor: ensisaBlue,
-            fontFamily: 'Roboto',
-            brightness: Brightness.dark,
-            cardColor: const Color(0xFF1E1E1E),
-          ),
-          
-          themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-
-          initialRoute: '/',
-          routes: {
-            '/': (context) => const SplashScreen(),
-            '/home': (context) => const MainNavigationScreen(),
-          },
-        );
-      },
-    );
-  }
-}
+import 'main.dart'; // Pour accéder aux couleurs de l'app
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -154,10 +90,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   }
 }
 
-final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // La clé est maintenant une propriété de l'état du widget, ce qui est une meilleure pratique.
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +166,7 @@ class HomePage extends StatelessWidget {
                       color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: isDark ? [] : [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                        BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
                       ],
                     ),
                     child: IconButton(
@@ -318,7 +260,7 @@ class WelcomeBanner extends StatelessWidget {
             child: Icon(
               Icons.school_rounded,
               size: 130,
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withOpacity(0.15),
             ),
           ),
           const Padding(
@@ -358,7 +300,7 @@ class CustomSearchBar extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: TextField(
@@ -411,7 +353,7 @@ class ActionItem extends StatelessWidget {
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
             boxShadow: isDark ? [] : [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
+              BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
             ],
           ),
           child: Icon(icon, color: color, size: 28),
@@ -462,7 +404,7 @@ class RecentDemandCard extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -471,7 +413,7 @@ class RecentDemandCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
+              color: iconColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(iconData, color: iconColor, size: 24),
@@ -492,12 +434,12 @@ class RecentDemandCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: EnsiConnectApp.ensisaLightBlue.withValues(alpha: isDark ? 0.2 : 1.0),
+              color: EnsiConnectApp.ensisaLightBlue.withOpacity(isDark ? 0.2 : 1.0),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Text(
               "Nouveau",
-              style: TextStyle(color: EnsiConnectApp.ensisaBlue, fontSize: 11, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ),
         ],
