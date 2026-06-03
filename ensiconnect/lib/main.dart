@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'auth.dart';
 import 'menu_principal.dart';
+import 'splash_screen.dart';
 import 'splash_screen.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
 
+
 void main() async {
   // Indispensable pour s'assurer que Flutter est prêt avant de lire le stockage
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();
-
+  
   // On lit la valeur sauvegardée (si elle n'existe pas encore, on met true  par défaut)
   final isDarkSaved = prefs.getBool('isDarkMode') ?? true;
-
+  
   // On applique la valeur sauvegardée à notre Notifier
   isDarkModeNotifier.value = isDarkSaved;
 
@@ -26,10 +27,10 @@ void main() async {
 class EnsiConnectApp extends StatelessWidget {
   const EnsiConnectApp({super.key});
 
-  static const Color ensisaBlue = Color(0xFF0055A5);
-  static const Color ensisaLightBlue = Color(0xFFE6F0FA);
-  static const Color backgroundColor = Color(0xFFF8F9FA);
-  static const Color accentOrange = Color(0xFFFF9800);
+  static const Color ensisaBlue = Color(0xFF0055A5); 
+  static const Color ensisaLightBlue = Color(0xFFE6F0FA); 
+  static const Color backgroundColor = Color(0xFFF8F9FA); 
+  static const Color accentOrange = Color(0xFFFF9800); 
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,7 @@ class EnsiConnectApp extends StatelessWidget {
         return MaterialApp(
           title: 'EnsiConnect',
           debugShowCheckedModeBanner: false,
-
+          
           // ── THÈME CLAIR ──
           theme: ThemeData(
             scaffoldBackgroundColor: backgroundColor,
@@ -48,7 +49,7 @@ class EnsiConnectApp extends StatelessWidget {
             brightness: Brightness.light,
             cardColor: Colors.white,
           ),
-
+          
           // ── THÈME SOMBRE ──
           darkTheme: ThemeData(
             scaffoldBackgroundColor: const Color(0xFF121212),
@@ -57,9 +58,10 @@ class EnsiConnectApp extends StatelessWidget {
             brightness: Brightness.dark,
             cardColor: const Color(0xFF1E1E1E),
           ),
-
+          
           themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
 
+          initialRoute: '/',
           initialRoute: '/',
           routes: {
             '/': (context) => const SplashScreen(),
