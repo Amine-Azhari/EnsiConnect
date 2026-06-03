@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
       promotion: '1A',
       filiere: 'Informatique',
       role: 'Étudiant',
-      profilePictureUrl: null,
+      profilePictureUrl: 'assets/images/pdp.png',
     );
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
