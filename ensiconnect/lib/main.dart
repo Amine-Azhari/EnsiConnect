@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'menu_principal.dart';
 import 'splash_screen.dart';
+import 'database_maker.dart';
+import 'session.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
@@ -64,6 +66,7 @@ class EnsiConnectApp extends StatelessWidget {
           routes: {
             '/': (context) => const SplashScreen(),
             '/home': (context) => const MainNavigationScreen(),
+            '/post_session': (context) => const PostSessionPage(),
           },
         );
       },
