@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth.dart';
 import 'menu_principal.dart';
 import 'splash_screen.dart';
+import 'session.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'data_insert.dart';
@@ -78,6 +79,7 @@ class EnsiConnectApp extends StatelessWidget {
             '/': (context) => const SplashScreen(),
             '/auth': (context) => const Auth(),
             '/home': (context) => const MainNavigationScreen(),
+            '/post_session': (context) => const PostSessionPage(),
             '/chat': (context) => const ChatPage(),
           },
         );
