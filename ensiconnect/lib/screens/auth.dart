@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../service/auth_service.dart';
 import '../main.dart';
 
 class Auth extends StatefulWidget {
