@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart'; // pour EnsiConnectApp
 import 'setting_page.dart'; // pour SettingPage
 
@@ -27,43 +26,16 @@ class _ProfilPageState extends State<ProfilPage> {
   String? selectedSkill;
   bool isEditing = false;
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  // ======================
+  // DONNÉES (DB SIMULÉE)
+  // ======================
+  String fullName = "Nom depuis DB";
+  String uhaAddress = "Adresse UHA depuis DB";
+  bool isConnected = true;
+  String memberSince = "2025";
 
-  @override
-  void initState() {
-    super.initState();
-    _loadProfile();
-  }
-
-  Future<void> _saveProfile() async {
-    await _firestore.collection("users").doc("userId123").set({
-      "filiere": _filiereController.text,
-      "annee": _anneeController.text,
-      "description": _descriptionController.text,
-      "skills": skills,
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Profil sauvegardé")),
-    );
-  }
-
-  Future<void> _loadProfile() async {
-    final doc =
-        await _firestore.collection("users").doc("userId123").get();
-
-    if (doc.exists) {
-      final data = doc.data()!;
-
-      setState(() {
-        _filiereController.text = data["filiere"] ?? "";
-        _anneeController.text = data["annee"] ?? "";
-        _descriptionController.text = data["description"] ?? "";
-        skills.clear();
-        skills.addAll(List<String>.from(data["skills"] ?? []));
-      });
-    }
-  }
+  int sessions = 12;
+  double averageNote = 4.2;
 
   void _addSkill() {
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
@@ -86,6 +58,109 @@ class _ProfilPageState extends State<ProfilPage> {
     _anneeController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Widget _infoCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade900,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Informations personnelles",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text("Nom: $fullName", style: const TextStyle(color: Colors.white)),
+          Text("Adresse UHA: $uhaAddress",
+              style: const TextStyle(color: Colors.white)),
+          Row(
+            children: [
+              const Text("Statut: ", style: TextStyle(color: Colors.white)),
+              Icon(
+                Icons.circle,
+                size: 10,
+                color: isConnected ? Colors.green : Colors.red,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                isConnected ? "Connecté" : "Déconnecté",
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+          Text("Membre depuis: $memberSince",
+              style: const TextStyle(color: Colors.white)),
+        ],
+      ),
+    );
+  }
+
+  Widget _statsCard() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade800,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  "$sessions",
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  "Sessions",
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade800,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  averageNote.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                const Text(
+                  "Note moyenne /5",
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -142,178 +217,153 @@ class _ProfilPageState extends State<ProfilPage> {
       ),
 
       body: SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Center(
-                  child: CircleAvatar(
-                    radius: 50,
-                    backgroundImage: NetworkImage('https://picsum.photos/200'),
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Center(
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage('https://picsum.photos/200'),
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-                const Center(
+              const Center(
+                child: Text(
+                  'Ayoub le GOAT',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              const Center(
+                child: Text(
+                  'Goat Flutter',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Center(
+                child: ElevatedButton(
+                  onPressed: _toggleEdit,
                   child: Text(
-                    'Ayoub le GOAT',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    isEditing
+                        ? "Terminer modification"
+                        : "Modifier votre profil",
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 10),
+              const SizedBox(height: 15),
 
-                const Center(
-                  child: Text(
-                    'Goat Flutter',
-                    style: TextStyle(color: Colors.grey),
-                  ),
+              _infoCard(),
+              const SizedBox(height: 15),
+              _statsCard(),
+
+              const SizedBox(height: 25),
+
+              const Text(
+                'Filière',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              TextField(
+                controller: _filiereController,
+                enabled: isEditing,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _toggleEdit();
-                      _saveProfile();
-                    },
-                    child: Text(
-                      isEditing
-                          ? "Terminer modification"
-                          : "Modifier votre profil",
-                    ),
-                  ),
+              const Text(
+                'Année',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              TextField(
+                controller: _anneeController,
+                enabled: isEditing,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                 ),
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
-                const Text(
-                  'Filière',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              const Text(
+                'Description',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              TextField(
+                controller: _descriptionController,
+                enabled: isEditing,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _filiereController,
-                  enabled: isEditing,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+              ),
 
-                const SizedBox(height: 15),
+              const SizedBox(height: 20),
 
-                const Text(
-                  'Année',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _anneeController,
-                  enabled: isEditing,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+              const Text(
+                'Ajouter une compétence',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
 
-                const SizedBox(height: 15),
-
-                const Text(
-                  'Description',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _descriptionController,
-                  enabled: isEditing,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                const Text(
-                  'Ajouter une compétence',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: selectedSkill,
-                        isExpanded: true,
-                        items: options.map((skill) {
-                          return DropdownMenuItem(
-                            value: skill,
-                            child: Text(skill),
-                          );
-                        }).toList(),
-                        onChanged: isEditing
-                            ? (value) {
-                                setState(() {
-                                  selectedSkill = value;
-                                });
-                              }
-                            : null,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(),
-                          hintText: "Choisir une compétence",
-                        ),
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<String>(
+                      value: selectedSkill,
+                      items: options
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: isEditing
+                          ? (value) {
+                              setState(() {
+                                selectedSkill = value;
+                              });
+                            }
+                          : null,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: isEditing ? _addSkill : null,
-                      child: const Text("+"),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: isEditing ? _addSkill : null,
+                    child: const Text("+"),
+                  ),
+                ],
+              ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
-                const Text(
-                  'Mes compétences',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-
-                const SizedBox(height: 10),
-
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: skills.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      child: ListTile(
-                        title: Text(skills[index]),
-                        trailing: isEditing
-                            ? IconButton(
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  setState(() {
-                                    skills.removeAt(index);
-                                  });
-                                },
-                              )
+              Wrap(
+                children: skills
+                    .map(
+                      (s) => Chip(
+                        label: Text(s),
+                        onDeleted: isEditing
+                            ? () => setState(() => skills.remove(s))
                             : null,
                       ),
-                    );
-                  },
-                ),
-              ],
-            ),
+                    )
+                    .toList(),
+              ),
+            ],
           ),
         ),
       ),
