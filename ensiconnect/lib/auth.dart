@@ -239,9 +239,6 @@ class _AuthState extends State<Auth> {
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white60
                     : Colors.black45,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white60
-                    : Colors.black45,
                 size: 20,
               ),
             ),

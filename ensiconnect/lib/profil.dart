@@ -43,8 +43,6 @@ class _ProfilPageState extends State<ProfilPage>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     return Scaffold(
       drawer: Drawer(
         child: ListView(
