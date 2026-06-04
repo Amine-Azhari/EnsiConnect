@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "853815335756",
+    "project_id": "ensiconnect",
+    "storage_bucket": "ensiconnect.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:853815335756:android:a4a61a79b1a5d1f478cde9",
+        "android_client_info": {
+          "package_name": "com.example.ensiconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCweMOLcXtcYxFCA2pxmfQJ0ff--qG9jJo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
