@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'auth.dart';
-import 'menu_principal.dart';
-import 'splash_screen.dart';
+import 'screens/auth.dart';
+import 'screens/menu_principal.dart';
+import 'screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'data_insert.dart';
+import 'service/firebase_options.dart';
+import 'service/data_insert.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
