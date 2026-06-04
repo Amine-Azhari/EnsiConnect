@@ -216,17 +216,17 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: isDark ? Colors.grey.shade900 : subjectColor.withOpacity(0.04),
+                                color: isDark ? Colors.grey.shade900 : subjectColor.withValues(alpha: 0.04),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isDark ? Colors.black.withOpacity(0.3) : subjectColor.withOpacity(0.08),
+                                    color: isDark ? Colors.black.withValues(alpha: 0.3) : subjectColor.withValues(alpha: 0.08),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: isDark ? Colors.grey.shade800 : subjectColor.withOpacity(0.3),
+                                  color: isDark ? Colors.grey.shade800 : subjectColor.withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
@@ -270,7 +270,7 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                                                       Container(
                                                         width: 2,
                                                         height: 16,
-                                                        color: subjectColor.withOpacity(0.5),
+                                                        color: subjectColor.withValues(alpha: 0.5),
                                                       ),
                                                       const SizedBox(height: 4),
                                                       Text(
