@@ -24,22 +24,30 @@ class _SearchPageState extends State<SearchPage> {
     "Autre",
   ];
 
-  //temporaire
-  final List<Map<String, String>> tuteurs = [
+  final List<Map<String, dynamic>> tuteurs = [
     {
       "nom": "Amine",
-      "matiere": "Mathématiques",
+      "matieres": ["Mathématiques", "SGBD"],
     },
     {
       "nom": "Ayoub",
-      "matiere": "Programmation",
+      "matieres": ["Programmation"],
     },
     {
       "nom": "Alexis",
-      "matiere": "Réseaux",
+      "matieres": ["Réseaux"],
     },
   ];
 
+  //temporaire
+  List<Map<String, dynamic>> get tuteursFiltres {
+    if (filtreSelectionne == "Toutes") return tuteurs;
+
+    return tuteurs.where((t) {
+      final matieres = t["matieres"] as List<String>;
+      return matieres.contains(filtreSelectionne);
+    }).toList();
+  }
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -125,7 +133,7 @@ class _SearchPageState extends State<SearchPage> {
 
             Expanded(
               child: ListView.builder(
-                itemCount: tuteurs.length,
+                itemCount: tuteursFiltres.length,
                 itemBuilder: (context, index) {
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 6),
@@ -133,11 +141,25 @@ class _SearchPageState extends State<SearchPage> {
                       leading: const CircleAvatar(
                         child: Icon(Icons.person),
                       ),
-                      title: Text(tuteurs[index]["nom"]!),
-                      subtitle: Text(tuteurs[index]["matiere"]!),
+                      title: Text(tuteursFiltres[index]["nom"]),
+                      subtitle: Wrap(
+                        spacing: 6,
+                        children: (tuteursFiltres[index]["matieres"] as List)
+                            .map(
+                              (matiere) => Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(matiere),
+                              )
+                            )
+                            .toList(),
+                      ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () {
-                        print("Tuteur sélectionné : ${tuteurs[index]["nom"]}");
+                        print("Tuteur sélectionné : ${tuteursFiltres[index]["nom"]}");
                       },
                     ),
                   );
