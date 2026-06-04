@@ -91,6 +91,36 @@ class _ChatPageState extends State<ChatPage> {
               ),
               const SizedBox(height: 20),
               Text(
+<<<<<<< HEAD
+                "Bonjour, Ayoub 👋",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Que veux-tu apprendre aujourd'hui ?",
+                style: TextStyle(fontSize: 14, color: subtitleColor),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "Actions rapides",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Demandes récentes",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: const Text("Voir tout", style: TextStyle(color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30), 
+=======
                 "Vos messages",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
               ),
@@ -121,12 +151,16 @@ class _ChatPageState extends State<ChatPage> {
                   );
                 },
               )
+>>>>>>> origin/main
             ],
           ),
         ),
       ),
     );
   }
+<<<<<<< HEAD
+}
+=======
 }
 
 class Conversation extends StatelessWidget {
@@ -208,3 +242,4 @@ final List<ConversationModel> conversations = [
   ConversationModel(name: "wsgdhrh", lastMessage: "J'ai faim"),
   ConversationModel(name: "La personne à côté de moi", lastMessage: ":) 👍"),
 ];
+>>>>>>> origin/main
