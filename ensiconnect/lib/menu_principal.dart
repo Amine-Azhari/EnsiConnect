@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final User currentUser = const User(
+    const User currentUser = User(
       id: '1',
       firstName: 'Ayoubbb',
       lastName: 'Darka',
@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
               ),
               const SizedBox(height: 16),
-              QuickActionsGrid(),
+              const QuickActionsGrid(),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -410,7 +410,7 @@ class ActionItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
               boxShadow: isDark ? [] : [
-                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
+                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
               ],
             ),
             child: Icon(icon, color: Colors.white, size: 28),
@@ -472,7 +472,7 @@ class RecentDemandCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade800 : iconColor.withOpacity(0.1),
+              color: isDark ? Colors.grey.shade800 : iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
               border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
             ),

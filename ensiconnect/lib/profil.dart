@@ -25,12 +25,21 @@ class _ProfilPageState extends State<ProfilPage> {
 
   String? selectedSkill;
 
+  bool isEditing = false;
+
   void _addSkill() {
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
       setState(() {
         skills.add(selectedSkill!);
+        selectedSkill = null;
       });
     }
+  }
+
+  void _toggleEdit() {
+    setState(() {
+      isEditing = !isEditing;
+    });
   }
 
   @override
@@ -94,150 +103,177 @@ class _ProfilPageState extends State<ProfilPage> {
         ],
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Center(
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage('https://picsum.photos/200'),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Center(
-              child: Text(
-                'Ayoub le GOAT',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            const Center(
-              child: Text(
-                'Goat Flutter',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            const Text(
-              'Filière',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _filiereController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Ex: Informatique, Génie logiciel...',
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            const Text(
-              'Année',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _anneeController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Ex: 1, 2, 3...',
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            const Text(
-              'Description',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Écris une description...',
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              'Ajouter une compétence',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-
-            Row(
+      body: SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: selectedSkill,
-                    items: options.map((String skill) {
-                      return DropdownMenuItem<String>(
-                        value: skill,
-                        child: Text(skill),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedSkill = value;
-                      });
-                    },
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Choisir une compétence",
+                const Center(
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundImage: NetworkImage('https://picsum.photos/200'),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                const Center(
+                  child: Text(
+                    'Ayoub le GOAT',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                const Center(
+                  child: Text(
+                    'Goat Flutter',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _toggleEdit,
+                    child: Text(
+                      isEditing
+                          ? "Terminer modification"
+                          : "Modifier votre profil",
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _addSkill,
-                  child: const Text("+"),
+
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Filière',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _filiereController,
+                  enabled: isEditing,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                const Text(
+                  'Année',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _anneeController,
+                  enabled: isEditing,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 15),
+
+                const Text(
+                  'Description',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _descriptionController,
+                  enabled: isEditing,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Ajouter une compétence',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 10),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: selectedSkill,
+                        isExpanded: true,
+                        items: options.map((skill) {
+                          return DropdownMenuItem(
+                            value: skill,
+                            child: Text(skill),
+                          );
+                        }).toList(),
+                        onChanged: isEditing
+                            ? (value) {
+                                setState(() {
+                                  selectedSkill = value;
+                                });
+                              }
+                            : null,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(),
+                          hintText: "Choisir une compétence",
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: isEditing ? _addSkill : null,
+                      child: const Text("+"),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20),
+
+                const Text(
+                  'Mes compétences',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 10),
+
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: skills.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(skills[index]),
+                        trailing: isEditing
+                            ? IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () {
+                                  setState(() {
+                                    skills.removeAt(index);
+                                  });
+                                },
+                              )
+                            : null,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              'Mes compétences',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-
-            Expanded(
-              child: ListView.builder(
-                itemCount: skills.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    child: ListTile(
-                      title: Text(skills[index]),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          setState(() {
-                            skills.removeAt(index);
-                          });
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
