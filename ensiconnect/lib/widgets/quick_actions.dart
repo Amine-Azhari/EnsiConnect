@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../screens/demande_aide_page.dart';
 
 class QuickActionsGrid extends StatelessWidget {
   const QuickActionsGrid({super.key});
@@ -14,11 +13,19 @@ class QuickActionsGrid extends StatelessWidget {
           label: "Demander\nune aide", 
           color: const Color(0xFF7E57C2),
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const DemandeAidePage()));
+            Navigator.pushNamed(context, '/demande_aide');
           },
         ),
         const ActionItem(icon: Icons.people_alt_outlined, label: "Trouver\nun tuteur", color: Color(0xFF42A5F5)),
-        const ActionItem(icon: Icons.calendar_today_rounded, label: "Mes\nsessions", color: Color(0xFFEF5350)),
+        ActionItem(
+          icon: Icons.calendar_today_rounded, 
+          label: "Sessions \nprévues", 
+          color: const Color(0xFFEF5350),
+          onTap: () {
+            Navigator.pushNamed(context, '/mes_sessions');
+          },
+        ),
+
         const ActionItem(icon: Icons.bookmark_border_rounded, label: "Mes\nréservations", color: Color(0xFF66BB6A)),
       ],
     );

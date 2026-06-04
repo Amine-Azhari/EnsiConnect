@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'setting_page.dart'; // Importation de la page de paramètres
 import '../main.dart'; // Pour accéder aux couleurs de l'app
 import '../models/user.dart';
 import 'profil.dart';
