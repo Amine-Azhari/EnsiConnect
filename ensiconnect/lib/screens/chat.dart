@@ -24,7 +24,42 @@ class _ChatPageState extends State<ChatPage> {
 
     return Scaffold(
       key: _scaffoldKey, 
-      drawer: const CustomDrawer(),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: EnsiConnectApp.ensisaBlue),
+              child: Text(
+                'EnsiConnect',
+                style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Paramètres'),
+              onTap: () {
+                Navigator.pop(context); // Ferme le Drawer
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SettingPage()), 
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.help_outline),
+              title: const Text('Aide & Support'),
+              onTap: () => Navigator.pop(context),
+            ),
+            Divider(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -40,7 +75,19 @@ class _ChatPageState extends State<ChatPage> {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
-                  const CustomNotificationButton(),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: isDark ? [] : [
+                        BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
+                    ),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: Icon(Icons.notifications_none_rounded, color: textColor),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 20),
@@ -100,50 +147,59 @@ class Conversation extends StatelessWidget {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
       ),
-      body: Column(
-        children: [
-          // Cet Expanded prend tout l'espace vide disponible et repousse la barre de texte en bas.
-          // C'est ici que tu mettras ta ListView avec les vrais messages plus tard !
-          Expanded(
-            child: Container(),
-          ),
-          Container(
-            margin: const EdgeInsets.all(15.0),
+      body:Container(
+      ) ,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Container(
             height: 61,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.black87 : Colors.white,
-                borderRadius: BorderRadius.circular(35.0),
-                border: Border.all(
-                  color: Colors.grey,
-                  width: 1.5,
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                      icon: const Icon(Icons.face, color: EnsiConnectApp.ensisaBlue), onPressed: () {}),
-                  const Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                          hintText: "Votre message",
-                          hintStyle: TextStyle(color: EnsiConnectApp.ensisaBlue),
-                          border: InputBorder.none),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.photo_camera, color: Colors.blueAccent),
-                    onPressed: () {},
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.attach_file, color: EnsiConnectApp.ensisaBlue),
-                    onPressed: () {},
-                  )
-                ],
+            decoration: BoxDecoration(
+              color: Theme.of(context).brightness == Brightness.dark ? Colors.black87 : Colors.white,
+              borderRadius: BorderRadius.circular(35.0),
+              border: Border.all(
+                color: Colors.grey,
+                width: 2.0,
               ),
             ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.face,
+                    color: EnsiConnectApp.ensisaBlue,
+                  ),
+                  onPressed: () {},
+                ),
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: "Votre message",
+                      hintStyle: TextStyle(
+                        color: EnsiConnectApp.ensisaBlue,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.attach_file,
+                    color: EnsiConnectApp.ensisaBlue,
+                  ),
+                  onPressed: () {},
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.send,
+                    color: EnsiConnectApp.ensisaBlue,
+                  ),
+                  onPressed: () {},
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -156,6 +212,15 @@ class ConversationModel {
   ConversationModel({
     required this.name,
     required this.lastMessage,
+  });
+}
+
+class Message {
+  final String content;
+  
+
+  Message({
+    required this.content,
   });
 }
 
