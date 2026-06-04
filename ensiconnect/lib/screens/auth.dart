@@ -483,4 +483,4 @@ class _AuthSwitch extends StatelessWidget {
       ],
     );
   }
-}
+} 
