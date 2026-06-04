@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'main.dart'; // pour EnsiConnectApp
 import 'setting_page.dart'; // pour SettingPage
 
@@ -24,8 +25,45 @@ class _ProfilPageState extends State<ProfilPage> {
   ];
 
   String? selectedSkill;
-
   bool isEditing = false;
+
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _saveProfile() async {
+    await _firestore.collection("users").doc("userId123").set({
+      "filiere": _filiereController.text,
+      "annee": _anneeController.text,
+      "description": _descriptionController.text,
+      "skills": skills,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Profil sauvegardé")),
+    );
+  }
+
+  Future<void> _loadProfile() async {
+    final doc =
+        await _firestore.collection("users").doc("userId123").get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+
+      setState(() {
+        _filiereController.text = data["filiere"] ?? "";
+        _anneeController.text = data["annee"] ?? "";
+        _descriptionController.text = data["description"] ?? "";
+        skills.clear();
+        skills.addAll(List<String>.from(data["skills"] ?? []));
+      });
+    }
+  }
 
   void _addSkill() {
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
@@ -142,7 +180,10 @@ class _ProfilPageState extends State<ProfilPage> {
 
                 Center(
                   child: ElevatedButton(
-                    onPressed: _toggleEdit,
+                    onPressed: () {
+                      _toggleEdit();
+                      _saveProfile();
+                    },
                     child: Text(
                       isEditing
                           ? "Terminer modification"
