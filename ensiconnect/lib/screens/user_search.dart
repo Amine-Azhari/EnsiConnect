@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 // Importation de la page de paramètres
 import '../main.dart'; // Pour accéder aux couleurs de l'app
 import '../widgets/custom_drawer.dart';
+import '../widgets/custom_header.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -19,7 +20,7 @@ class _SearchPageState extends State<SearchPage> {
   final List<String> filtres = [
     "Toutes",
     "Programmation",
-    "Maths",
+    "Mathématiques",
     "Réseaux",
     "Autre",
   ];
@@ -60,20 +61,25 @@ class _SearchPageState extends State<SearchPage> {
       key: _scaffoldKey,
       //Drawer
       drawer: const CustomDrawer(),
-      //Titre
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(
-          "Trouver un tuteur",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomHeader(
+                onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: Text(
+                  "Trouver un tuteur",
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
+                ),
+              ),
+              const SizedBox(height: 20),
 
-            // Barre de recherche
+              // Barre de recherche
             Container(
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
@@ -168,6 +174,7 @@ class _SearchPageState extends State<SearchPage> {
             )
           ],
         ),
+      ),
       ),
     );
   }
