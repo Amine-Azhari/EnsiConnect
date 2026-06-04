@@ -26,9 +26,6 @@ class _ProfilPageState extends State<ProfilPage> {
   String? selectedSkill;
   bool isEditing = false;
 
-  // ======================
-  // DONNÉES (DB SIMULÉE)
-  // ======================
   String fullName = "Nom depuis DB";
   String uhaAddress = "Adresse UHA depuis DB";
   bool isConnected = true;
@@ -60,57 +57,50 @@ class _ProfilPageState extends State<ProfilPage> {
     super.dispose();
   }
 
-  Widget _infoCard() {
+  Widget _infoCard(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade900,
+        color: isDark ? const Color(0xFF0D1B2A) : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(16),
+        border: isDark ? Border.all(color: Colors.white10) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             "Informations personnelles",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          Text("Nom: $fullName", style: const TextStyle(color: Colors.white)),
-          Text("Adresse UHA: $uhaAddress",
-              style: const TextStyle(color: Colors.white)),
+          Text("Nom: $fullName"),
+          Text("Adresse UHA: $uhaAddress"),
           Row(
             children: [
-              const Text("Statut: ", style: TextStyle(color: Colors.white)),
+              const Text("Statut: "),
               Icon(
                 Icons.circle,
                 size: 10,
                 color: isConnected ? Colors.green : Colors.red,
               ),
               const SizedBox(width: 5),
-              Text(
-                isConnected ? "Connecté" : "Déconnecté",
-                style: const TextStyle(color: Colors.white),
-              ),
+              Text(isConnected ? "Connecté" : "Déconnecté"),
             ],
           ),
-          Text("Membre depuis: $memberSince",
-              style: const TextStyle(color: Colors.white)),
+          Text("Membre depuis: $memberSince"),
         ],
       ),
     );
   }
 
-  Widget _statsCard() {
+  Widget _statsCard(bool isDark) {
     return Row(
       children: [
         Expanded(
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue.shade800,
+              color: isDark ? const Color(0xFF14213D) : Colors.blue.shade100,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -120,14 +110,10 @@ class _ProfilPageState extends State<ProfilPage> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Text(
-                  "Sessions",
-                  style: TextStyle(color: Colors.white70),
-                ),
+                const Text("Sessions"),
               ],
             ),
           ),
@@ -137,7 +123,7 @@ class _ProfilPageState extends State<ProfilPage> {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.blue.shade800,
+              color: isDark ? const Color(0xFF14213D) : Colors.blue.shade100,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -147,14 +133,10 @@ class _ProfilPageState extends State<ProfilPage> {
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Text(
-                  "Note moyenne /5",
-                  style: TextStyle(color: Colors.white70),
-                ),
+                const Text("Note moyenne /5"),
               ],
             ),
           ),
@@ -165,7 +147,14 @@ class _ProfilPageState extends State<ProfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final bgColor = isDark ? const Color(0xFF0A0F1C) : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
+
     return Scaffold(
+      backgroundColor: bgColor,
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -231,19 +220,23 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 20),
 
-              const Center(
+              Center(
                 child: Text(
                   'Ayoub le GOAT',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
               ),
 
               const SizedBox(height: 10),
 
-              const Center(
+              Center(
                 child: Text(
                   'Goat Flutter',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(color: subtitleColor),
                 ),
               ),
 
@@ -262,88 +255,52 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 15),
 
-              _infoCard(),
+              _infoCard(isDark),
               const SizedBox(height: 15),
-              _statsCard(),
+              _statsCard(isDark),
 
               const SizedBox(height: 25),
 
-              const Text(
-                'Filière',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              TextField(
-                controller: _filiereController,
-                enabled: isEditing,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-              ),
+              const Text("Filière"),
+              TextField(controller: _filiereController),
 
               const SizedBox(height: 10),
 
-              const Text(
-                'Année',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              TextField(
-                controller: _anneeController,
-                enabled: isEditing,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-              ),
+              const Text("Année"),
+              TextField(controller: _anneeController),
 
               const SizedBox(height: 10),
 
-              const Text(
-                'Description',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
+              const Text("Description"),
               TextField(
                 controller: _descriptionController,
-                enabled: isEditing,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
               ),
 
               const SizedBox(height: 20),
 
-              const Text(
-                'Ajouter une compétence',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-
+              const Text("Compétences"),
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: selectedSkill,
                       items: options
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(e),
-                            ),
-                          )
+                          .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e),
+                              ))
                           .toList(),
-                      onChanged: isEditing
-                          ? (value) {
-                              setState(() {
-                                selectedSkill = value;
-                              });
-                            }
-                          : null,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedSkill = value;
+                        });
+                      },
                     ),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: isEditing ? _addSkill : null,
+                    onPressed: _addSkill,
                     child: const Text("+"),
                   ),
                 ],
@@ -353,14 +310,14 @@ class _ProfilPageState extends State<ProfilPage> {
 
               Wrap(
                 children: skills
-                    .map(
-                      (s) => Chip(
-                        label: Text(s),
-                        onDeleted: isEditing
-                            ? () => setState(() => skills.remove(s))
-                            : null,
-                      ),
-                    )
+                    .map((s) => Chip(
+                          label: Text(s),
+                          onDeleted: () {
+                            setState(() {
+                              skills.remove(s);
+                            });
+                          },
+                        ))
                     .toList(),
               ),
             ],
