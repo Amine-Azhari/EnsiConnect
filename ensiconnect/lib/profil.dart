@@ -9,10 +9,11 @@ class ProfilPage extends StatefulWidget {
   State<ProfilPage> createState() => _ProfilPageState();
 }
 
-class _ProfilPageState extends State<ProfilPage>
-    with AutomaticKeepAliveClientMixin {
-
+class _ProfilPageState extends State<ProfilPage> {
   final List<String> skills = [];
+
+  final TextEditingController _filiereController = TextEditingController();
+  final TextEditingController _anneeController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   final List<String> options = [
@@ -33,10 +34,9 @@ class _ProfilPageState extends State<ProfilPage>
   }
 
   @override
-  bool get wantKeepAlive => true;
-
-  @override
   void dispose() {
+    _filiereController.dispose();
+    _anneeController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -127,12 +127,41 @@ class _ProfilPageState extends State<ProfilPage>
             const SizedBox(height: 30),
 
             const Text(
+              'Filière',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _filiereController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Ex: Informatique, Génie logiciel...',
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            const Text(
+              'Année',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _anneeController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Ex: 1, 2, 3...',
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            const Text(
               'Description',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
-            const SizedBox(height: 10),
-
+            const SizedBox(height: 8),
             TextField(
               controller: _descriptionController,
               maxLines: 3,
@@ -148,7 +177,6 @@ class _ProfilPageState extends State<ProfilPage>
               'Ajouter une compétence',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 10),
 
             Row(
@@ -187,7 +215,6 @@ class _ProfilPageState extends State<ProfilPage>
               'Mes compétences',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 10),
 
             Expanded(

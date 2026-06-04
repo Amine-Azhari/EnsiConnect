@@ -91,6 +91,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
               const SizedBox(height: 20),
               Text(
+<<<<<<< HEAD
                 "Bonjour, Ayoub 👋",
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
               ),
@@ -119,10 +120,126 @@ class _ChatPageState extends State<ChatPage> {
                 ],
               ),
               const SizedBox(height: 30), 
+=======
+                "Vos messages",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
+              ),
+              const SizedBox(height: 10),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: conversations.length,
+                itemBuilder: (context, index) {
+                  final convo = conversations[index];
+
+                  return ListTile(
+                    leading: CircleAvatar(
+                      child: Text(convo.name[0]),
+                    ),
+                    title: Text(convo.name),
+                    subtitle: Text(convo.lastMessage),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Conversation(
+                            userName: convo.name,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              )
+>>>>>>> origin/main
             ],
           ),
         ),
       ),
     );
   }
+<<<<<<< HEAD
 }
+=======
+}
+
+class Conversation extends StatelessWidget {
+  final String userName;
+
+  const Conversation({
+    super.key,
+    required this.userName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(userName),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+      ),
+      body:Container(
+        margin: EdgeInsets.all(15.0),
+        height: 61,
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark ? Colors.black87 : Colors.white,
+                  borderRadius: BorderRadius.circular(35.0),
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 2.0,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                        icon: Icon(Icons.face , color: EnsiConnectApp.ensisaBlue,), onPressed: () {}),
+                    Expanded(
+                      child: TextField(
+                        decoration: InputDecoration(
+                            hintText: "Votre message",
+                            hintStyle: TextStyle( color: EnsiConnectApp.ensisaBlue),
+                            border: InputBorder.none),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.photo_camera ,  color: Colors.blueAccent),
+                      onPressed: () {},
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.attach_file ,  color: EnsiConnectApp.ensisaBlue),
+                      onPressed: () {},
+                    )
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(width: 15),
+          ],
+        ),
+      ) ,
+    );
+  }
+}
+
+class ConversationModel {
+  final String name;
+  final String lastMessage;
+
+  ConversationModel({
+    required this.name,
+    required this.lastMessage,
+  });
+}
+
+final List<ConversationModel> conversations = [
+  ConversationModel(name: "Moi", lastMessage: "Salut"),
+  ConversationModel(name: "wsgdhrh", lastMessage: "J'ai faim"),
+  ConversationModel(name: "La personne à côté de moi", lastMessage: ":) 👍"),
+];
+>>>>>>> origin/main

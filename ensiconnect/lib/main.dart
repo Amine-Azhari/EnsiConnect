@@ -4,10 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth.dart';
 import 'menu_principal.dart';
 import 'splash_screen.dart';
+<<<<<<< HEAD
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'data_insert.dart';
 import 'session.dart';
+=======
+import 'session.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'data_insert.dart';
+>>>>>>> origin/main
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);

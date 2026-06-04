@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'setting_page.dart'; // Importation de la page de paramètres
 import 'main.dart'; // Pour accéder aux couleurs de l'app
+import 'chat.dart';
 import 'profil.dart';
 import 'models/user.dart';
-import 'user_search.dart';
-import 'chat.dart';
 import 'demande_aide_page.dart';
 import 'user_search.dart';
+import 'chat.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -106,18 +106,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  
-  final User currentUser = const User(
-    id: '1',
-    firstName: 'Ayoubbb',
-    lastName: 'Darka',
-    email: 'ayoub.darkaoui@uha.fr',
-    promotion: '1A',
-    filiere: 'Informatique',
-    role: 'Étudiant',
-  );
-
-  
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -425,7 +413,7 @@ class ActionItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
               boxShadow: isDark ? [] : [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
+                BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 4)),
               ],
             ),
             child: Icon(icon, color: Colors.white, size: 28),
