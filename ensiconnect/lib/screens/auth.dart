@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../service/auth_service.dart';
 import '../main.dart';
 
 class Auth extends StatefulWidget {
@@ -13,13 +14,106 @@ class _AuthState extends State<Auth> {
   final _loginFormKey = GlobalKey<FormState>();
   final _signUpFormKey = GlobalKey<FormState>();
 
+  // Service qui isole les appels Firestore de l'interface graphique.
+  final _authServices = AuthServices();
+
+  // Controllers utilises pour lire les valeurs saisies au moment du submit.
+  final _loginEmailController = TextEditingController();
+  final _loginPasswordController = TextEditingController();
+  final _signUpNomController = TextEditingController();
+  final _signUpPrenomController = TextEditingController();
+  final _signUpEmailController = TextEditingController();
+  final _signUpPasswordController = TextEditingController();
+
   bool _isSignUp = false;
   bool _hidePassword = true;
 
-  // On autorise l'acces au menu principal uniquement si le formulaire est valide.
-  void _submit(GlobalKey<FormState> formKey) {
-    if (formKey.currentState?.validate() ?? false) {
+  // Evite les doubles clics pendant une requete Firebase.
+  bool _isLoading = false;
+  String? _authErrorMessage;
+
+  @override
+  void dispose() {
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
+    _signUpNomController.dispose();
+    _signUpPrenomController.dispose();
+    _signUpEmailController.dispose();
+    _signUpPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!(_loginFormKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _authErrorMessage = null;
+    });
+
+    try {
+      // Verification du compte dans la collection Etudiant.
+      final isValid = await _authServices.login(
+        email: _loginEmailController.text,
+        password: _loginPasswordController.text,
+      );
+
+      if (!mounted) return;
+
+      if (isValid) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        setState(() {
+          _authErrorMessage = 'Adresse mail ou mot de passe incorrect.';
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _authErrorMessage = 'Erreur de connexion. Réessayez plus tard.';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _register() async {
+    if (!(_signUpFormKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _authErrorMessage = null;
+    });
+
+    try {
+      // Creation du compte dans la collection Etudiant.
+      await _authServices.register(
+        nom: _signUpNomController.text,
+        prenom: _signUpPrenomController.text,
+        email: _signUpEmailController.text,
+        password: _signUpPasswordController.text,
+      );
+
+      if (!mounted) return;
+
       Navigator.of(context).pushReplacementNamed('/home');
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _authErrorMessage = 'Erreur inscription : $e';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -123,6 +217,7 @@ class _AuthState extends State<Auth> {
           const _FieldLabel('Adresse mail'),
           const SizedBox(height: 7),
           _AuthInput(
+            controller: _loginEmailController,
             hintText: 'Entrez votre adresse mail UHA',
             keyboardType: TextInputType.emailAddress,
             validator: _uhaEmailValidator,
@@ -131,6 +226,7 @@ class _AuthState extends State<Auth> {
           const _FieldLabel('Mot de passe'),
           const SizedBox(height: 7),
           _AuthInput(
+            controller: _loginPasswordController,
             hintText: 'Entrez votre mot de passe',
             obscureText: _hidePassword,
             validator: _passwordValidator,
@@ -169,14 +265,18 @@ class _AuthState extends State<Auth> {
           ),
           const SizedBox(height: 22),
           _PrimaryButton(
-            label: 'Se connecter',
-            onPressed: () => _submit(_loginFormKey),
+            label: _isLoading ? 'Connexion...' : 'Se connecter',
+            onPressed: _isLoading ? null : _login,
           ),
+          _InlineAuthError(message: _authErrorMessage),
           const SizedBox(height: 26),
           _AuthSwitch(
             text: 'Pas de compte ?',
             action: 'Inscrivez-vous',
-            onPressed: () => setState(() => _isSignUp = true),
+            onPressed: () => setState(() {
+              _isSignUp = true;
+              _authErrorMessage = null;
+            }),
           ),
         ],
       ),
@@ -193,7 +293,7 @@ class _AuthState extends State<Auth> {
         children: [
           const _AuthTitle(
             title: 'Inscription',
-            subtitle: 'Creez votre compte EnsiConnect.',
+            subtitle: 'Créez votre compte EnsiConnect.',
           ),
           const SizedBox(height: 24),
           Row(
@@ -202,15 +302,17 @@ class _AuthState extends State<Auth> {
                 child: _CompactAuthField(
                   label: 'Nom',
                   hintText: 'Nom',
+                  controller: _signUpNomController,
                   validator: (value) => _requiredValidator(value, 'Nom'),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _CompactAuthField(
-                  label: 'Prenom',
-                  hintText: 'Prenom',
-                  validator: (value) => _requiredValidator(value, 'Prenom'),
+                  label: 'Prénom',
+                  hintText: 'Prénom',
+                  controller: _signUpPrenomController,
+                  validator: (value) => _requiredValidator(value, 'Prénom'),
                 ),
               ),
             ],
@@ -219,6 +321,7 @@ class _AuthState extends State<Auth> {
           const _FieldLabel('Adresse mail'),
           const SizedBox(height: 7),
           _AuthInput(
+            controller: _signUpEmailController,
             hintText: 'Entrez votre adresse mail UHA',
             keyboardType: TextInputType.emailAddress,
             validator: _uhaEmailValidator,
@@ -227,6 +330,7 @@ class _AuthState extends State<Auth> {
           const _FieldLabel('Mot de passe'),
           const SizedBox(height: 7),
           _AuthInput(
+            controller: _signUpPasswordController,
             hintText: 'Entrez votre mot de passe',
             obscureText: _hidePassword,
             validator: _passwordValidator,
@@ -245,14 +349,18 @@ class _AuthState extends State<Auth> {
           ),
           const SizedBox(height: 24),
           _PrimaryButton(
-            label: "S'inscrire",
-            onPressed: () => _submit(_signUpFormKey),
+            label: _isLoading ? 'Inscription...' : "S'inscrire",
+            onPressed: _isLoading ? null : _register,
           ),
+          _InlineAuthError(message: _authErrorMessage),
           const SizedBox(height: 24),
           _AuthSwitch(
-            text: 'Deja un compte ?',
+            text: 'Déjà un compte ?',
             action: 'Connectez-vous',
-            onPressed: () => setState(() => _isSignUp = false),
+            onPressed: () => setState(() {
+              _isSignUp = false;
+              _authErrorMessage = null;
+            }),
           ),
         ],
       ),
@@ -322,6 +430,7 @@ class _FieldLabel extends StatelessWidget {
 class _AuthInput extends StatelessWidget {
   const _AuthInput({
     required this.hintText,
+    this.controller,
     this.keyboardType,
     this.obscureText = false,
     this.suffixIcon,
@@ -329,6 +438,7 @@ class _AuthInput extends StatelessWidget {
   });
 
   final String hintText;
+  final TextEditingController? controller;
   final TextInputType? keyboardType;
   final bool obscureText;
   final Widget? suffixIcon;
@@ -340,6 +450,7 @@ class _AuthInput extends StatelessWidget {
 
     // Champ reutilisable pour garder le meme style sur tout l'ecran.
     return TextFormField(
+      controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
       validator: validator,
@@ -388,11 +499,13 @@ class _CompactAuthField extends StatelessWidget {
   const _CompactAuthField({
     required this.label,
     required this.hintText,
+    required this.controller,
     required this.validator,
   });
 
   final String label;
   final String hintText;
+  final TextEditingController controller;
   final String? Function(String?) validator;
 
   @override
@@ -402,7 +515,11 @@ class _CompactAuthField extends StatelessWidget {
       children: [
         _FieldLabel(label),
         const SizedBox(height: 7),
-        _AuthInput(hintText: hintText, validator: validator),
+        _AuthInput(
+          controller: controller,
+          hintText: hintText,
+          validator: validator,
+        ),
       ],
     );
   }
@@ -415,7 +532,7 @@ class _PrimaryButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -433,6 +550,34 @@ class _PrimaryButton extends StatelessWidget {
         child: Text(
           label,
           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineAuthError extends StatelessWidget {
+  const _InlineAuthError({required this.message});
+
+  final String? message;
+
+  @override
+  Widget build(BuildContext context) {
+    if (message == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Center(
+        child: Text(
+          message!,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: Colors.redAccent,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
