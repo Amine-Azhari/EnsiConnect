@@ -1,13 +1,13 @@
-import 'package:ensiconnect/chat.dart';
+import 'package:ensiconnect/screens/demande_aide_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'auth.dart';
-import 'menu_principal.dart';
-import 'splash_screen.dart';
-import 'session.dart';
+import 'screens/auth.dart';
+import 'screens/menu_principal.dart';
+import 'screens/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-import 'data_insert.dart';
+import 'service/firebase_options.dart';
+import 'service/data_insert.dart';
+import 'screens/mes_sessions_page.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
@@ -79,8 +79,8 @@ class EnsiConnectApp extends StatelessWidget {
             '/': (context) => const SplashScreen(),
             '/auth': (context) => const Auth(),
             '/home': (context) => const MainNavigationScreen(),
-            '/post_session': (context) => const PostSessionPage(),
-            '/chat': (context) => const ChatPage(),
+            '/mes_sessions': (context) => const MesSessionsPage(),
+            '/demande_aide': (context) => const DemandeAidePage(),
           },
         );
       },
