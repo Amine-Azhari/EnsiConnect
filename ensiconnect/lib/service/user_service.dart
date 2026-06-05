@@ -35,7 +35,7 @@ class UserServices {
       promotion: data['Promotion'] ?? '1A',
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
-      profilePictureUrl: data['ProfilePictureUrl'],
+      // profilePictureUrl: data['ProfilePictureUrl'],
       description: data['description'] ?? '',
       skills: List<String>.from(data['skills'] ?? []),
       sessions: (data['sessions'] ?? 0),
