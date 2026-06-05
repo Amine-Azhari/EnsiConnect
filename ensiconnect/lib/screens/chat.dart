@@ -394,6 +394,7 @@ class _ConversationPageState extends State<ConversationPage> {
                 ),
                 Expanded(
                   child: TextField(
+                    controller: _controller,
                     decoration: InputDecoration(
                       hintText: "Votre message",
                       hintStyle: TextStyle(
@@ -415,7 +416,11 @@ class _ConversationPageState extends State<ConversationPage> {
                     Icons.send,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    final text = _controller.text.trim();
+
+                    if(text.isEmpty) return;
+
                     _controller.clear();},// Envoi du message
                 ),
               ],
@@ -427,14 +432,14 @@ class _ConversationPageState extends State<ConversationPage> {
   }
 
   void _scrollToBottom() {
-  if (_scrollController.hasClients) {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 10),
-      curve: Curves.easeOut,
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 10),
+        curve: Curves.easeOut,
+      );
+    }
   }
-}
 }
 
 String formatTimeAgo(DateTime? date) {
