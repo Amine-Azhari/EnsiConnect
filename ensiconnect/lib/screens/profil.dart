@@ -49,16 +49,28 @@ class _ProfilPageState extends State<ProfilPage> {
 
     if (!mounted) return;
 
+    if (user == null) {
+      setState(() {
+        fullName = "Utilisateur inconnu";
+        email = "";
+        filiere = "";
+        promotion = "";
+        skills = [];
+        _descriptionController.text = "";
+      });
+      return;
+    }
+
     setState(() {
-      fullName = user?.fullName ?? "Utilisateur inconnu";
-      email = user?.email ?? "";
+      fullName = user.fullName;
+      email = user.email;
 
-      // ✅ depuis user.dart (model)
-      filiere = user?.filiere ?? "";
-      promotion = user?.promotion ?? "";
+      filiere = user.filiere;
+      promotion = user.promotion;
 
-      skills = (user as dynamic)?.skills ?? [];
-      _descriptionController.text = (user as dynamic)?.description ?? "";
+      // nécessite les champs dans user.dart
+      skills = user.skills;
+      _descriptionController.text = user.description;
     });
   }
 

@@ -49,6 +49,10 @@ class AuthServices {
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
       profilePictureUrl: data['ProfilePictureUrl'],
+
+      // ✅ AJOUTS IMPORTANTS (profil dynamique)
+      description: data['description'] ?? '',
+      skills: List<String>.from(data['skills'] ?? []),
     );
   }
 
@@ -102,5 +106,21 @@ class AuthServices {
     
     // Sauvegarde la session apres une inscription reussie.
     await _saveSession(normalizedEmail);
+  }
+    // Mise à jour du profil utilisateur
+  Future<void> updateUserProfile({
+    required String userId,
+    required String description,
+    required List<String> skills,
+    required String filiere,
+    required String promotion,
+  }) async {
+    await _etudiants.doc(userId).set({
+      'description': description,
+      'skills': skills,
+      'Filiere': filiere,
+      'Promotion': promotion,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 }
