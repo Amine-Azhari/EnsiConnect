@@ -335,7 +335,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [ensisaBlue, ensisaBlue.withOpacity(0.75)],
+          colors: [ensisaBlue, ensisaBlue.withValues(alpha: 0.75)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -346,7 +346,7 @@ class _PostSessionPageState extends State<PostSessionPage>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.groups_rounded, color: Colors.white, size: 28),
@@ -391,7 +391,7 @@ class _PostSessionPageState extends State<PostSessionPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -461,7 +461,7 @@ class _PostSessionPageState extends State<PostSessionPage>
           borderSide: const BorderSide(color: Colors.red),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         contentPadding:
             const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
@@ -472,7 +472,7 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   Widget _buildDropdown(bool isDark) {
     return DropdownButtonFormField<String>(
-      value: _data.matiere,
+      initialValue: _data.matiere,
       hint: const Text('Matière concernée', style: TextStyle(fontSize: 13)),
       style: TextStyle(
           fontSize: 14, color: isDark ? Colors.white : Colors.black87),
@@ -492,7 +492,7 @@ class _PostSessionPageState extends State<PostSessionPage>
           borderSide: const BorderSide(color: ensisaBlue, width: 1.8),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         contentPadding:
             const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
@@ -521,8 +521,8 @@ class _PostSessionPageState extends State<PostSessionPage>
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
         decoration: BoxDecoration(
           color: hasValue
-              ? ensisaBlue.withOpacity(0.08)
-              : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50),
+              ? ensisaBlue.withValues(alpha: 0.08)
+              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: hasValue ? ensisaBlue : (isDark ? Colors.white24 : Colors.grey.shade300),
@@ -626,10 +626,10 @@ class _PostSessionPageState extends State<PostSessionPage>
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.green.shade300.withOpacity(0.5)),
+        border: Border.all(color: Colors.green.shade300.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -684,7 +684,7 @@ class _PostSessionPageState extends State<PostSessionPage>
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14)),
             elevation: 4,
-            shadowColor: ensisaBlue.withOpacity(0.4),
+            shadowColor: ensisaBlue.withValues(alpha: 0.4),
           ),
           child: _submitting
               ? const SizedBox(
@@ -760,7 +760,7 @@ class _PlacesCounter extends StatelessWidget {
         width: 34,
         height: 34,
         decoration: BoxDecoration(
-          color: ensisaBlue.withOpacity(0.1),
+          color: ensisaBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: ensisaBlue, size: 18),
