@@ -28,9 +28,6 @@ class _ProfilPageState extends State<ProfilPage> {
   String fullName = "";
   String email = "";
 
-  bool isConnected = true;
-  String memberSince = "2025";
-
   int sessions = 12;
   double averageNote = 4.2;
 
@@ -45,35 +42,23 @@ class _ProfilPageState extends State<ProfilPage> {
 
     if (!mounted) return;
 
-    if (user == null) {
-      setState(() {
-        fullName = "Utilisateur inconnu";
-        email = "";
-      });
-      return;
-    }
-
     setState(() {
-      fullName = user.fullName;
-      email = user.email;
-      skills = user.skills;
-      _descriptionController.text = user.description;
-    });
-  }
+      fullName = user?.fullName ?? "Utilisateur inconnu";
+      email = user?.email ?? "";
 
-  Future<void> _saveProfile() async {
-    final user = await _auth.getCurrentUser();
-    if (user == null) return;
-
-    await _auth.updateUser(user.id, {
-      'description': _descriptionController.text,
-      'skills': skills,
+      // ⚠️ fallback si ton modèle n’a pas encore ces champs
+      skills = (user as dynamic).skills ?? [];
+      _descriptionController.text = (user as dynamic).description ?? "";
     });
   }
 
   void _toggleEdit() async {
     if (isEditing) {
-      await _saveProfile();
+      // ⚠️ ICI on ne force aucune base de données
+      // tu peux brancher Firebase plus tard
+      debugPrint("SAVE:");
+      debugPrint(_descriptionController.text);
+      debugPrint(skills.toString());
     }
 
     if (!mounted) return;
@@ -98,11 +83,11 @@ class _ProfilPageState extends State<ProfilPage> {
     super.dispose();
   }
 
-  Widget _infoCard(bool isDark) {
+  Widget _infoCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0D1B2A) : Colors.blue.shade50,
+        color: Colors.blue.shade50,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -115,18 +100,6 @@ class _ProfilPageState extends State<ProfilPage> {
           const SizedBox(height: 8),
           Text("Nom: $fullName"),
           Text("Email: $email"),
-          Row(
-            children: [
-              Icon(
-                Icons.circle,
-                size: 10,
-                color: isConnected ? Colors.green : Colors.red,
-              ),
-              const SizedBox(width: 5),
-              Text(isConnected ? "Connecté" : "Déconnecté"),
-            ],
-          ),
-          Text("Membre depuis: $memberSince"),
         ],
       ),
     );
@@ -157,12 +130,8 @@ class _ProfilPageState extends State<ProfilPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0F1C) : Colors.white,
-
-      // ❌ APPBAR SUPPRIMÉ
+      backgroundColor: Colors.white,
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -189,14 +158,12 @@ class _ProfilPageState extends State<ProfilPage> {
 
             ElevatedButton(
               onPressed: _toggleEdit,
-              child: Text(
-                isEditing ? "Sauvegarder" : "Modifier le profil",
-              ),
+              child: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
             ),
 
             const SizedBox(height: 20),
 
-            _infoCard(isDark),
+            _infoCard(),
 
             const SizedBox(height: 20),
 
@@ -256,25 +223,25 @@ class _ProfilPageState extends State<ProfilPage> {
 
             Wrap(
               spacing: 8,
-              children: skills
-                  .map(
-                    (s) => Chip(
-                      label: Text(s),
-                      onDeleted: isEditing
-                          ? () => setState(() => skills.remove(s))
-                          : null,
-                    ),
-                  )
-                  .toList(),
+              children: skills.isEmpty
+                  ? [const Text("Aucune compétence")]
+                  : skills
+                      .map(
+                        (s) => Chip(
+                          label: Text(s),
+                          onDeleted: isEditing
+                              ? () => setState(() => skills.remove(s))
+                              : null,
+                        ),
+                      )
+                      .toList(),
             ),
 
             const SizedBox(height: 20),
 
             Row(
               children: [
-                Expanded(
-                  child: _statCard("Sessions", "$sessions"),
-                ),
+                Expanded(child: _statCard("Sessions", "$sessions")),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _statCard(
