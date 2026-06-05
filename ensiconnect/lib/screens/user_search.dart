@@ -186,7 +186,7 @@ class _SearchPageState extends State<SearchPage> {
                         title: Text(tuteursFiltres[index]["nom"]),
                         subtitle: Wrap(
                           spacing: 6,
-                          children: (tuteursFiltres[index]["matieres"] as List)
+                          children: (tuteursFiltres[index]["matieres"] as List<String>)
                               .map(
                                 (matiere) => Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
