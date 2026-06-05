@@ -42,4 +42,21 @@ class UserServices {
       averageNote: (data['averageNote'] ?? 0.0),
     );
   }
+
+  // Mise à jour du profil utilisateur
+  Future<void> updateUserProfile({
+    required String userId,
+    required String description,
+    required List<String> skills,
+    required String filiere,
+    required String promotion,
+  }) async {
+    await _etudiants.doc(userId).set({
+      'description': description,
+      'skills': skills,
+      'Filiere': filiere,
+      'Promotion': promotion,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
 }
