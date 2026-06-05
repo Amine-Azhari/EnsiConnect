@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/session.dart';
+import 'sessions_details.dart';
 import '../main.dart'; // Pour accéder aux couleurs de l'application
 
 class MesSessionsPage extends StatefulWidget {
@@ -69,13 +70,14 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
             // Suppose la date est au format 'YYYY-MM-DD' (comme inséré dans data_insert.dart)
             final DateTime parsedDate = DateTime.parse(session.date);
             final normalized = _normalizeDate(parsedDate);
-            
+
             if (newSessionsByDate[normalized] == null) {
               newSessionsByDate[normalized] = [];
             }
             newSessionsByDate[normalized]!.add(session);
           } catch (e) {
-            debugPrint("Erreur de parsing de date pour la session ${doc.id}: $e");
+            debugPrint(
+                "Erreur de parsing de date pour la session ${doc.id}: $e");
           }
         }
       }
@@ -114,7 +116,8 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Sessions prévues", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("Sessions prévues",
+            style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         elevation: 0,
       ),
@@ -172,7 +175,8 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                         shape: BoxShape.circle,
                       ),
                       todayTextStyle: TextStyle(
-                        color: isDark ? Colors.white : EnsiConnectApp.ensisaBlue,
+                        color:
+                            isDark ? Colors.white : EnsiConnectApp.ensisaBlue,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -183,17 +187,18 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Titre de la liste
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      _selectedSessions.isNotEmpty 
+                      _selectedSessions.isNotEmpty
                           ? "Sessions du ${_selectedDay!.day.toString().padLeft(2, '0')}/${_selectedDay!.month.toString().padLeft(2, '0')}/${_selectedDay!.year}"
                           : "Aucune session prévue ce jour",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -206,12 +211,18 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.event_busy_rounded, size: 64, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+                              Icon(Icons.event_busy_rounded,
+                                  size: 64,
+                                  color: isDark
+                                      ? Colors.grey.shade600
+                                      : Colors.grey.shade400),
                               const SizedBox(height: 16),
                               Text(
                                 "Repose-toi bien !",
                                 style: TextStyle(
-                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                                  color: isDark
+                                      ? Colors.grey.shade400
+                                      : Colors.grey.shade600,
                                   fontSize: 16,
                                 ),
                               ),
@@ -220,39 +231,59 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                         )
                       : ListView.builder(
                           itemCount: _selectedSessions.length,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           itemBuilder: (context, index) {
                             final session = _selectedSessions[index];
-                            final matiereNom = _matieresCache[session.matiereId] ?? 'Matière inconnue';
-                            final salleNom = _sallesCache[session.salleId] ?? 'Salle inconnue';
-                            final organisateurNom = _etudiantsCache[session.organisateurId] ?? 'Organisateur inconnu';
-                            final subjectColor = _getSubjectColor(matiereNom, isDark);
+                            final matiereNom =
+                                _matieresCache[session.matiereId] ??
+                                    'Matière inconnue';
+                            final salleNom = _sallesCache[session.salleId] ??
+                                'Salle inconnue';
+                            final organisateurNom =
+                                _etudiantsCache[session.organisateurId] ??
+                                    'Organisateur inconnu';
+                            final subjectColor =
+                                _getSubjectColor(matiereNom, isDark);
 
                             return Container(
                               margin: const EdgeInsets.only(bottom: 16),
                               decoration: BoxDecoration(
-                                color: isDark ? Colors.grey.shade900 : subjectColor.withValues(alpha: 0.04),
+                                color: isDark
+                                    ? Colors.grey.shade900
+                                    : subjectColor.withValues(alpha: 0.04),
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: isDark ? Colors.black.withValues(alpha: 0.3) : subjectColor.withValues(alpha: 0.08),
+                                    color: isDark
+                                        ? Colors.black.withValues(alpha: 0.3)
+                                        : subjectColor.withValues(alpha: 0.08),
                                     blurRadius: 10,
                                     offset: const Offset(0, 4),
                                   ),
                                 ],
                                 border: Border.all(
-                                  color: isDark ? Colors.grey.shade800 : subjectColor.withValues(alpha: 0.3),
+                                  color: isDark
+                                      ? Colors.grey.shade800
+                                      : subjectColor.withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
                                 onTap: () {
-                                  // TODO: Naviguer vers les détails de la session
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          SessionsDetailsPage(session: session),
+                                    ),
+                                  );
                                 },
                                 child: IntrinsicHeight(
                                   child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
                                     children: [
                                       // Barre de couleur sur la gauche
                                       Container(
@@ -269,70 +300,134 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                                         child: Padding(
                                           padding: const EdgeInsets.all(16),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Row(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
                                                 children: [
                                                   Column(
-                                                    mainAxisSize: MainAxisSize.min,
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
                                                     children: [
                                                       Text(
                                                         session.heureDebut,
-                                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: subjectColor),
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 16,
+                                                            color:
+                                                                subjectColor),
                                                       ),
                                                       const SizedBox(height: 4),
                                                       Container(
                                                         width: 2,
                                                         height: 16,
-                                                        color: subjectColor.withValues(alpha: 0.5),
+                                                        color: subjectColor
+                                                            .withValues(
+                                                                alpha: 0.5),
                                                       ),
                                                       const SizedBox(height: 4),
                                                       Text(
                                                         session.heureFin,
-                                                        style: TextStyle(fontSize: 14, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+                                                        style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: isDark
+                                                                ? Colors.grey
+                                                                    .shade400
+                                                                : Colors.grey
+                                                                    .shade600),
                                                       ),
                                                     ],
                                                   ),
                                                   const SizedBox(width: 16),
                                                   Expanded(
                                                     child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
                                                       children: [
                                                         Text(
                                                           matiereNom,
-                                                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                                          style: const TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
                                                         ),
-                                                        const SizedBox(height: 6),
+                                                        const SizedBox(
+                                                            height: 6),
                                                         Row(
                                                           children: [
-                                                            Icon(Icons.person_outline_rounded, size: 16, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
-                                                            const SizedBox(width: 6),
+                                                            Icon(
+                                                                Icons
+                                                                    .person_outline_rounded,
+                                                                size: 16,
+                                                                color: isDark
+                                                                    ? Colors
+                                                                        .grey
+                                                                        .shade400
+                                                                    : Colors
+                                                                        .grey
+                                                                        .shade600),
+                                                            const SizedBox(
+                                                                width: 6),
                                                             Expanded(
                                                               child: Text(
                                                                 "Organisé par $organisateurNom",
-                                                                style: TextStyle(
-                                                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: isDark
+                                                                      ? Colors
+                                                                          .grey
+                                                                          .shade400
+                                                                      : Colors
+                                                                          .grey
+                                                                          .shade600,
                                                                   fontSize: 14,
                                                                 ),
-                                                                overflow: TextOverflow.ellipsis,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
                                                               ),
                                                             ),
                                                           ],
                                                         ),
-                                                        const SizedBox(height: 4),
+                                                        const SizedBox(
+                                                            height: 4),
                                                         Row(
                                                           children: [
-                                                            Icon(Icons.location_on_outlined, size: 16, color: isDark ? Colors.grey.shade400 : Colors.grey.shade600),
-                                                            const SizedBox(width: 6),
+                                                            Icon(
+                                                                Icons
+                                                                    .location_on_outlined,
+                                                                size: 16,
+                                                                color: isDark
+                                                                    ? Colors
+                                                                        .grey
+                                                                        .shade400
+                                                                    : Colors
+                                                                        .grey
+                                                                        .shade600),
+                                                            const SizedBox(
+                                                                width: 6),
                                                             Expanded(
                                                               child: Text(
                                                                 salleNom,
-                                                                style: TextStyle(
-                                                                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                                                                style:
+                                                                    TextStyle(
+                                                                  color: isDark
+                                                                      ? Colors
+                                                                          .grey
+                                                                          .shade400
+                                                                      : Colors
+                                                                          .grey
+                                                                          .shade600,
                                                                   fontSize: 14,
                                                                 ),
-                                                                overflow: TextOverflow.ellipsis,
+                                                                overflow:
+                                                                    TextOverflow
+                                                                        .ellipsis,
                                                               ),
                                                             ),
                                                           ],
@@ -340,7 +435,14 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                                                       ],
                                                     ),
                                                   ),
-                                                  Icon(Icons.arrow_forward_ios_rounded, size: 16, color: isDark ? Colors.grey.shade600 : Colors.grey.shade400),
+                                                  Icon(
+                                                      Icons
+                                                          .arrow_forward_ios_rounded,
+                                                      size: 16,
+                                                      color: isDark
+                                                          ? Colors.grey.shade600
+                                                          : Colors
+                                                              .grey.shade400),
                                                 ],
                                               ),
                                             ],
@@ -363,7 +465,8 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
         },
         backgroundColor: EnsiConnectApp.ensisaBlue,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text("Ajouter une session", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text("Ajouter une session",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
     );
   }
