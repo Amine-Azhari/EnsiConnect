@@ -18,7 +18,12 @@ class _ProfilPageState extends State<ProfilPage> {
 
   final TextEditingController _descriptionController = TextEditingController();
 
-  final List<String> options = ["Java", "Mathématiques", "Anglais", "Prog fonc"];
+  final List<String> options = [
+    "Java",
+    "Mathématiques",
+    "Anglais",
+    "Prog fonc",
+  ];
 
   List<String> skills = [];
   String? selectedSkill;
@@ -32,8 +37,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
   String filiere = "";
   String promotion = "";
-
-  String profilePictureUrl = "";
 
   int sessions = 0;
   double averageNote = 0.0;
@@ -50,9 +53,7 @@ class _ProfilPageState extends State<ProfilPage> {
   Future<void> _loadUser() async {
     final user = await _auth.getCurrentUser();
 
-    if (!mounted) return;
-
-    if (user == null) return;
+    if (!mounted || user == null) return;
 
     setState(() {
       currentUserId = user.id;
@@ -68,8 +69,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
       sessions = user.sessions;
       averageNote = user.averageNote;
-
-      profilePictureUrl = user.profilePictureUrl;
     });
   }
 
@@ -104,10 +103,33 @@ class _ProfilPageState extends State<ProfilPage> {
     }
   }
 
+  void _openTestProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ProfilPage(
+          userId: "romain_fontaine", // 👈 profil test
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  String getInitials(String name) {
+    if (name.trim().isEmpty) return "?";
+
+    final parts = name.trim().split(" ");
+
+    if (parts.length == 1) {
+      return parts[0][0].toUpperCase();
+    }
+
+    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
   Widget _infoCard(bool isDark) {
@@ -183,7 +205,6 @@ class _ProfilPageState extends State<ProfilPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               CustomHeader(
                 onMenuPressed: () =>
                     _scaffoldKey.currentState?.openDrawer(),
@@ -194,9 +215,15 @@ class _ProfilPageState extends State<ProfilPage> {
               Center(
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: profilePictureUrl.isNotEmpty
-                      ? NetworkImage(profilePictureUrl)
-                      : const NetworkImage('https://picsum.photos/200'),
+                  backgroundColor: Colors.blue,
+                  child: Text(
+                    getInitials(fullName),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
 
@@ -241,11 +268,82 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 20),
 
+              const Text(
+                "Compétences",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+
               Row(
                 children: [
                   Expanded(
-                    child: _statCard("Sessions", "$sessions", isDark),
+                    child: DropdownButton<String>(
+                      value: selectedSkill,
+                      hint: const Text("Choisir"),
+                      isExpanded: true,
+                      items: options
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: isOwnProfile && isEditing
+                          ? (v) => setState(() => selectedSkill = v)
+                          : null,
+                    ),
                   ),
+                  IconButton(
+                    onPressed: isOwnProfile && isEditing ? _addSkill : null,
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+
+              Wrap(
+                spacing: 8,
+                children: skills.isEmpty
+                    ? [const Text("Aucune compétence")]
+                    : skills
+                        .map(
+                          (s) => Chip(
+                            label: Text(s),
+                            onDeleted: isOwnProfile && isEditing
+                                ? () => setState(() => skills.remove(s))
+                                : null,
+                          ),
+                        )
+                        .toList(),
+              ),
+
+              const SizedBox(height: 30),
+
+              // 👇 PROFIL TEST EN BAS
+              const Divider(),
+              const SizedBox(height: 10),
+
+              const Text(
+                "Profil de test",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 10),
+
+              ListTile(
+                leading: const CircleAvatar(
+                  child: Text("RF"),
+                ),
+                title: const Text("Romain Fontaine"),
+                subtitle: const Text("Voir le profil de test"),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: _openTestProfile,
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(child: _statCard("Sessions", "$sessions", isDark)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _statCard(
