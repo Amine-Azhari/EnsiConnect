@@ -8,6 +8,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'service/firebase_options.dart';
 import 'service/data_insert.dart';
 import 'screens/mes_sessions_page.dart';
+import 'screens/mes_sessions_page_2.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
@@ -24,7 +25,7 @@ void main() async {
   // On crée une instance du service et on lance l'insertion
   final service = FirebaseDataService();
   await service.initialiserDonneesDeTest();
-  
+
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();
 
@@ -80,6 +81,7 @@ class EnsiConnectApp extends StatelessWidget {
             '/auth': (context) => const Auth(),
             '/home': (context) => const MainNavigationScreen(),
             '/mes_sessions': (context) => const MesSessionsPage(),
+            '/mes_sessions_page_2': (context) => const MesSessionsPage2(),
             '/demande_aide': (context) => const DemandeAidePage(),
           },
         );
