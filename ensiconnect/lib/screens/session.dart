@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
@@ -90,7 +92,7 @@ class _PostSessionPageState extends State<PostSessionPage>
     super.dispose();
   }
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  // ── Helpers ─────────────────────────────────────────────────────────────
 
   String _formatDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
@@ -141,7 +143,67 @@ class _PostSessionPageState extends State<PostSessionPage>
     setState(() => _submitting = true);
 
     // TODO : appel Firebase ici
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      final db = FirebaseFirestore.instance;
+      final user = FirebaseAuth.instance.currentUser;
+    
+      // 1. Récupère ou crée la salle
+      final salleSnap = await db
+          .collection('Salle')
+          .where('Nom', isEqualTo: _data.lieu)
+          .limit(1)
+          .get();
+      String salleId;
+      if (salleSnap.docs.isNotEmpty) {
+        salleId = salleSnap.docs.first.id;
+      } else {
+        final ref = await db.collection('Salle').add({'Nom': _data.lieu});
+        salleId = ref.id;
+      }
+
+      // 2. Récupère ou crée la matière
+      final matiereName = _data.matiere ?? _data.titre;
+      final matiereSnap = await db
+          .collection('Matiere')
+          .where('Nom', isEqualTo: matiereName)
+          .limit(1)
+          .get();
+      String matiereId;
+      if (matiereSnap.docs.isNotEmpty) {
+        matiereId = matiereSnap.docs.first.id;
+      } else {
+        final ref = await db.collection('Matiere').add({'Nom': matiereName});
+        matiereId = ref.id;
+      }
+
+      // 3. Formate date et heure
+      final date = _data.date!;
+      final heure = _data.heure!;
+      final dateStr =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final heureStr =
+          '${heure.hour.toString().padLeft(2, '0')}:${heure.minute.toString().padLeft(2, '0')}';
+
+      // 4. Insère la session
+      await db.collection('Session').add({
+        'Titre': _data.titre,
+        'MatiereID': matiereId,
+        'SalleID': salleId,
+        'OrganisateurID': user?.uid ?? 'inconnu',
+        'Date': dateStr,
+        'Heure_Debut': heureStr,
+        'Heure_Fin': null,
+        'NbPlaces': _data.nbPlaces,
+        'Tags': _data.tags,
+        'Public': true,
+      });
+
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      _showError('Erreur lors de la création : $e');
+      return;
+    }
 
     if (!mounted) return;
     setState(() => _submitting = false);
