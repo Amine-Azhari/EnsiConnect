@@ -14,6 +14,7 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/custom_header.dart';
 import 'user_search.dart';
+import 'sessions_details.dart';
 
 import '../service/auth_service.dart';
 
@@ -76,6 +77,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+
   Future<List<Map<String, dynamic>>> _fetchUpcomingSessions() async {
     final db = FirebaseFirestore.instance;
     final now = DateTime.now();
@@ -123,9 +125,10 @@ class _HomePageState extends State<HomePage> {
 
             upcoming.add({
               'title': title,
-              'subtitle': session.description.isNotEmpty ? session.description : session.sujet,
+              'subtitle': session.description.isNotEmpty ? session.description : title,
               'time': timeString,
               'dateTime': sessionDateTime,
+              'session': session,
             });
           }
         } catch (e) {
@@ -247,12 +250,24 @@ class _HomePageState extends State<HomePage> {
                           var sessionData = entry.value;
                           return Padding(
                             padding: EdgeInsets.only(bottom: idx < sessions.length - 1 ? 12.0 : 0),
-                            child: RecentDemandCard(
-                              title: sessionData['title'],
-                              subtitle: sessionData['subtitle'],
-                              time: sessionData['time'],
-                              iconData: Icons.event_note_rounded,
-                              iconColor: idx == 0 ? const Color(0xFF2196F3) : EnsiConnectApp.accentOrange,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SessionsDetailsPage(
+                                      session: sessionData['session'] as Session,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: RecentDemandCard(
+                                title: sessionData['title'],
+                                subtitle: sessionData['subtitle'],
+                                time: sessionData['time'],
+                                iconData: Icons.event_note_rounded,
+                                iconColor: idx == 0 ? const Color(0xFF2196F3) : EnsiConnectApp.accentOrange,
+                              ),
                             ),
                           );
                         }).toList(),
