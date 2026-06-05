@@ -41,7 +41,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         width: 54,
         height: 54,
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushNamed(context, '/post_session');
+          },
           backgroundColor: isDark ? Colors.lightBlueAccent : EnsiConnectApp.ensisaBlue,
           elevation: 4,
           shape: const CircleBorder(),
