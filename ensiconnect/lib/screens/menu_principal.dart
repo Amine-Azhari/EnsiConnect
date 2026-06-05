@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/session.dart';
+import 'package:ensiconnect/screens/mes_sessions_page.dart';
 import 'package:flutter/material.dart';
 import '../main.dart'; // Pour accéder aux couleurs de l'app
 import '../models/user.dart';
@@ -41,7 +44,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         width: 54,
         height: 54,
         child: FloatingActionButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.pushNamed(context, '/post_session');
+          },
           backgroundColor: isDark ? Colors.lightBlueAccent : EnsiConnectApp.ensisaBlue,
           elevation: 4,
           shape: const CircleBorder(),
@@ -70,6 +75,68 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  Future<List<Map<String, dynamic>>> _fetchUpcomingSessions() async {
+    final db = FirebaseFirestore.instance;
+    final now = DateTime.now();
+    
+    final sessionSnap = await db.collection('Session').get();
+    
+    List<Map<String, dynamic>> upcoming = [];
+    
+    final matieresSnap = await db.collection('Matiere').get();
+    final Map<String, String> matieresCache = {};
+    for (var doc in matieresSnap.docs) {
+      matieresCache[doc.id] = doc.data()['Nom'] ?? 'Matière inconnue';
+    }
+
+    for (var doc in sessionSnap.docs) {
+      final session = Session.fromMap(doc.data(), doc.id);
+      if (session.date.isNotEmpty) {
+        try {
+          final parsedDate = DateTime.parse(session.date);
+          
+          DateTime sessionDateTime = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+          if (session.heureDebut.isNotEmpty) {
+            final parts = session.heureDebut.split(':');
+            if (parts.length >= 2) {
+              final hour = int.tryParse(parts[0]) ?? 0;
+              final minute = int.tryParse(parts[1]) ?? 0;
+              sessionDateTime = DateTime(parsedDate.year, parsedDate.month, parsedDate.day, hour, minute);
+            }
+          }
+
+          if (sessionDateTime.isAfter(now)) {
+            final matiereNom = matieresCache[session.matiereId] ?? 'Matière inconnue';
+            final title = matiereNom != 'Matière inconnue' ? matiereNom : (session.sujet.isNotEmpty ? session.sujet : 'Session');
+            
+            // Generate a simple relative time or just use the date and time
+            final difference = sessionDateTime.difference(now);
+            String timeString;
+            if (difference.inDays == 0) {
+              timeString = "Aujourd'hui à ${session.heureDebut}";
+            } else if (difference.inDays == 1) {
+              timeString = "Demain à ${session.heureDebut}";
+            } else {
+              timeString = "Le ${session.date} à ${session.heureDebut}";
+            }
+
+            upcoming.add({
+              'title': title,
+              'subtitle': session.description.isNotEmpty ? session.description : session.sujet,
+              'time': timeString,
+              'dateTime': sessionDateTime,
+            });
+          }
+        } catch (e) {
+          // Ignore
+        }
+      }
+    }
+    
+    upcoming.sort((a, b) => (a['dateTime'] as DateTime).compareTo(b['dateTime'] as DateTime));
+    return upcoming.take(2).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +201,7 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Demandes récentes",
+                        "Sessions à venir",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -142,7 +209,12 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const MesSessionsPage()),
+                          );
+                        },
                         child: const Text(
                           "Voir tout",
                           style: TextStyle(
@@ -154,22 +226,38 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 10),
-                  const RecentDemandCard(
-                    title: "Java - POO",
-                    subtitle:
-                        "Besoin d'explication sur les classes abstraites et interfaces.",
-                    time: "Il y a 20 min",
-                    iconData: Icons.code_rounded,
-                    iconColor: Color(0xFF2196F3),
-                  ),
-                  const SizedBox(height: 12),
-                  const RecentDemandCard(
-                    title: "Réseaux - Routage",
-                    subtitle:
-                        "Compréhension du routage dynamique (RIP, OSPF).",
-                    time: "Il y a 1 h",
-                    iconData: Icons.hub_rounded,
-                    iconColor: EnsiConnectApp.accentOrange,
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: _fetchUpcomingSessions(),
+                    builder: (context, sessionSnapshot) {
+                      if (sessionSnapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      
+                      if (sessionSnapshot.hasError || !sessionSnapshot.hasData || sessionSnapshot.data!.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20.0),
+                          child: Text("Aucune session à venir pour le moment.", style: TextStyle(color: Colors.grey)),
+                        );
+                      }
+
+                      final sessions = sessionSnapshot.data!;
+                      return Column(
+                        children: sessions.asMap().entries.map((entry) {
+                          int idx = entry.key;
+                          var sessionData = entry.value;
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: idx < sessions.length - 1 ? 12.0 : 0),
+                            child: RecentDemandCard(
+                              title: sessionData['title'],
+                              subtitle: sessionData['subtitle'],
+                              time: sessionData['time'],
+                              iconData: Icons.event_note_rounded,
+                              iconColor: idx == 0 ? const Color(0xFF2196F3) : EnsiConnectApp.accentOrange,
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
                   ),
                   const SizedBox(height: 30),
                 ],

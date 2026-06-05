@@ -16,10 +16,13 @@ class QuickActionsGrid extends StatelessWidget {
             Navigator.pushNamed(context, '/demande_aide');
           },
         ),
-        const ActionItem(
+        ActionItem(
           icon: Icons.people_alt_outlined,
           label: "Trouver\nun tuteur",
-          color: Color(0xFF42A5F5),
+          color: const Color(0xFF42A5F5),
+          onTap: () {
+            Navigator.pushNamed(context, '/user_search');
+          },
         ),
         ActionItem(
           icon: Icons.calendar_today_rounded,
