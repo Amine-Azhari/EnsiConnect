@@ -36,6 +36,8 @@ class UserServices {
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
       profilePictureUrl: data['ProfilePictureUrl'],
+      description: data['description'] ?? '',
+      skills: List<String>.from(data['skills'] ?? [])
     );
   }
 }
