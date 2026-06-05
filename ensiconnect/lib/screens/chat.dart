@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'setting_page.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
-
+import '../models/message.dart';
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -85,7 +85,7 @@ class Conversation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      
+
       appBar: AppBar(
         title: Text(userName),
         elevation: 0,
@@ -159,15 +159,6 @@ class ConversationModel {
   ConversationModel({
     required this.name,
     required this.lastMessage,
-  });
-}
-
-class Message {
-  final String content;
-  
-
-  Message({
-    required this.content,
   });
 }
 
