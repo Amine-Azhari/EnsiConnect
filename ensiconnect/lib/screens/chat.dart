@@ -159,6 +159,66 @@ final List<Conversation> conversations = [
         content: ":) 👍",
         createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
       ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
     ],
   ),
 
@@ -227,6 +287,16 @@ class ConversationPage extends StatefulWidget {
 
 class _ConversationPageState extends State<ConversationPage> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+  }
     
   @override
   Widget build(BuildContext context) {
@@ -247,6 +317,7 @@ class _ConversationPageState extends State<ConversationPage> {
       ),
 
       body:ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(10),
         itemCount: widget.conversation.messages.length,
         itemBuilder: (context, index) {
@@ -354,6 +425,16 @@ class _ConversationPageState extends State<ConversationPage> {
       ),
     );
   }
+
+  void _scrollToBottom() {
+  if (_scrollController.hasClients) {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 10),
+      curve: Curves.easeOut,
+    );
+  }
+}
 }
 
 String formatTimeAgo(DateTime? date) {
