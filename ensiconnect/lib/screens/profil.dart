@@ -77,7 +77,7 @@ class _ProfilPageState extends State<ProfilPage> {
     if (!isOwnProfile) return;
 
     if (isEditing) {
-      await _auth.updateUserProfile(
+      await _user.updateUserProfile(
         userId: currentUserId,
         description: _descriptionController.text,
         skills: skills,
