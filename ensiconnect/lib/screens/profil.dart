@@ -4,7 +4,7 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
 class ProfilPage extends StatefulWidget {
-  final String? userId; // 👈 profil consulté (optionnel)
+  final String? userId;
 
   const ProfilPage({super.key, this.userId});
 
@@ -18,12 +18,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
   final TextEditingController _descriptionController = TextEditingController();
 
-  final List<String> options = [
-    "Java",
-    "Mathématiques",
-    "Anglais",
-    "Prog fonc",
-  ];
+  final List<String> options = ["Java", "Mathématiques", "Anglais", "Prog fonc"];
 
   List<String> skills = [];
   String? selectedSkill;
@@ -38,7 +33,8 @@ class _ProfilPageState extends State<ProfilPage> {
   String filiere = "";
   String promotion = "";
 
-  // ✅ NOUVEAU : depuis Firestore
+  String profilePictureUrl = "";
+
   int sessions = 0;
   double averageNote = 0.0;
 
@@ -56,13 +52,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
     if (!mounted) return;
 
-    if (user == null) {
-      setState(() {
-        fullName = "Utilisateur inconnu";
-        email = "";
-      });
-      return;
-    }
+    if (user == null) return;
 
     setState(() {
       currentUserId = user.id;
@@ -76,9 +66,10 @@ class _ProfilPageState extends State<ProfilPage> {
       skills = user.skills;
       _descriptionController.text = user.description;
 
-      // ✅ AJOUT ICI
       sessions = user.sessions;
       averageNote = user.averageNote;
+
+      profilePictureUrl = user.profilePictureUrl;
     });
   }
 
@@ -136,13 +127,9 @@ class _ProfilPageState extends State<ProfilPage> {
           children: [
             const Text(
               "Informations personnelles",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-
             Text("Nom: $fullName"),
             Text("Email: $email"),
             Text("Filière: $filiere"),
@@ -204,10 +191,12 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 10),
 
-              const Center(
+              Center(
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage('https://picsum.photos/200'),
+                  backgroundImage: profilePictureUrl.isNotEmpty
+                      ? NetworkImage(profilePictureUrl)
+                      : const NetworkImage('https://picsum.photos/200'),
                 ),
               ),
 
@@ -241,11 +230,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 20),
 
-              const Text(
-                "Description",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-
               TextField(
                 controller: _descriptionController,
                 enabled: isEditing && isOwnProfile,
@@ -253,56 +237,6 @@ class _ProfilPageState extends State<ProfilPage> {
                 decoration: const InputDecoration(
                   hintText: "Décris-toi...",
                 ),
-              ),
-
-              const SizedBox(height: 20),
-
-              const Text(
-                "Compétences",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButton<String>(
-                      value: selectedSkill,
-                      hint: const Text("Choisir"),
-                      isExpanded: true,
-                      items: options
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(e),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: isEditing && isOwnProfile
-                          ? (v) => setState(() => selectedSkill = v)
-                          : null,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: isEditing && isOwnProfile ? _addSkill : null,
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              ),
-
-              Wrap(
-                spacing: 8,
-                children: skills.isEmpty
-                    ? [const Text("Aucune compétence")]
-                    : skills
-                        .map(
-                          (s) => Chip(
-                            label: Text(s),
-                            onDeleted: isEditing && isOwnProfile
-                                ? () => setState(() => skills.remove(s))
-                                : null,
-                          ),
-                        )
-                        .toList(),
               ),
 
               const SizedBox(height: 20),

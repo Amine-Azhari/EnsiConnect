@@ -6,11 +6,11 @@ class User {
   final String promotion;
   final String filiere;
   final String role;
-  final String? profilePictureUrl;
   final int sessions;
   final double averageNote;
   final String description;
   final List<String> skills;
+  final String profilePictureUrl;
 
   const User({
     required this.id,
@@ -20,11 +20,11 @@ class User {
     this.promotion = '1A',
     this.filiere = 'Informatique',
     this.role = 'Étudiant',
-    this.profilePictureUrl,
     this.description = '',
     this.skills = const [],
     this.sessions = 0,
     this.averageNote = 0.0,
+    this.profilePictureUrl = '',
   });
 
   String get fullName => '$firstName $lastName';

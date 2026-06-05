@@ -48,13 +48,16 @@ class AuthServices {
       promotion: data['Promotion'] ?? '1A',
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
-      profilePictureUrl: data['ProfilePictureUrl'],
 
-      // ✅ NOUVEAUX CHAMPS
+      profilePictureUrl: data['ProfilePictureUrl'] ?? '',
+
+      // NOUVEAUX CHAMPS PROFIL
       description: data['description'] ?? '',
       skills: List<String>.from(data['skills'] ?? []),
-      sessions: data['sessions'] ?? 0,
-      averageNote: (data['averageNote'] ?? 0).toDouble(),
+
+      //  si pas encore en DB → valeurs par défaut safe
+      sessions: (data['sessions'] ?? 0),
+      averageNote: (data['averageNote'] ?? 0.0),
     );
   }
 
