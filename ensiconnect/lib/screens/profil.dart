@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../main.dart'; // pour EnsiConnectApp
-import 'setting_page.dart'; // pour SettingPage
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_notification_button.dart';
+import '../widgets/custom_header.dart';
 
 
 class ProfilPage extends StatefulWidget {
@@ -13,6 +13,7 @@ class ProfilPage extends StatefulWidget {
 }
 
 class _ProfilPageState extends State<ProfilPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final List<String> skills = [];
 
   final TextEditingController _filiereController = TextEditingController();
@@ -152,68 +153,26 @@ class _ProfilPageState extends State<ProfilPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final bgColor = isDark ? const Color(0xFF0A0F1C) : Colors.white;
+    // final bgColor = isDark ? const Color(0xFF0A0F1C) : Colors.white;
     final textColor = isDark ? Colors.white : Colors.black87;
     final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
 
     return Scaffold(
-      backgroundColor: bgColor,
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: EnsiConnectApp.ensisaBlue),
-              child: Text(
-                'EnsiConnect',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Paramètres'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingPage(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text("Mon Profil"),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              icon: const Icon(Icons.notifications_none_rounded),
-              onPressed: () {},
-            ),
-          ),
-        ],
-      ),
-
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
+      key: _scaffoldKey, 
+      // backgroundColor: bgColor,
+      drawer: const CustomDrawer(),
+      // appBar: AppBar(),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Column(
+          // padding: const EdgeInsets.all(20),
+          // child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              CustomHeader(
+                onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
               const Center(
                 child: CircleAvatar(
                   radius: 50,
@@ -225,7 +184,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               Center(
                 child: Text(
-                  'Ayoub le GOAT',
+                  'Ayoub',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -238,7 +197,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               Center(
                 child: Text(
-                  'Goat Flutter',
+                  'Flutter',
                   style: TextStyle(color: subtitleColor),
                 ),
               ),
