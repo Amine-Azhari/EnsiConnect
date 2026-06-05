@@ -4,6 +4,7 @@ import 'setting_page.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import '../models/message.dart';
+import '../models/conversation.dart';
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -46,18 +47,20 @@ class _ChatPageState extends State<ChatPage> {
                 itemBuilder: (context, index) {
                   final convo = conversations[index];
 
+
+
                   return ListTile(
                     leading: CircleAvatar(
-                      child: Text(convo.name[0]),
+                      child: Text(convo.participants[0][0].toUpperCase()),
                     ),
-                    title: Text(convo.name),
+                    title: Text(convo.participants[0]),
                     subtitle: Text(convo.lastMessage),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => Conversation(
-                            userName: convo.name,
+                            conversation:convo,
                           ),
                         ),
                       );
@@ -73,13 +76,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 }
 
-class Conversation extends StatelessWidget {
-  final String userName;
-
-  const Conversation({
-    super.key,
-    required this.userName,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -152,18 +148,81 @@ class Conversation extends StatelessWidget {
   }
 }
 
-class ConversationModel {
-  final String name;
-  final String lastMessage;
+final List<Conversation> conversations = [
+  Conversation(
+    id: "c1",
+    participants: ["user1", "user2"],
+    lastMessage: "Salut, ça va",
+    lastMessageAt: DateTime.now().subtract(const Duration(minutes: 2)),
+    createdAt: DateTime.now().subtract(const Duration(days: 1)),
+    messages: [
+      Message(
+        senderId: "user2",
+        content: "Salut !",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Salut, ça va",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 2)),
+      ),
+    ],
+  ),
 
-  ConversationModel({
-    required this.name,
-    required this.lastMessage,
-  });
-}
+  Conversation(
+    id: "c2",
+    participants: ["user1", "user3"],
+    lastMessage: "J'ai faim",
+    lastMessageAt: DateTime.now().subtract(const Duration(hours: 1)),
+    createdAt: DateTime.now().subtract(const Duration(days: 2)),
+    messages: [
+      Message(
+        senderId: "user3",
+        content: "Tu fais quoi ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Rien de spécial",
+        createdAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
+      ),
+      Message(
+        senderId: "user3",
+        content: "J'ai faim",
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+    ],
+  ),
 
-final List<ConversationModel> conversations = [
-  ConversationModel(name: "Moi", lastMessage: "Salut"),
-  ConversationModel(name: "wsgdhrh", lastMessage: "J'ai faim"),
-  ConversationModel(name: "La personne à côté de moi", lastMessage: ":) 👍"),
+  Conversation(
+    id: "c3",
+    participants: ["user1", "user4"],
+    lastMessage: ":) 👍",
+    lastMessageAt: DateTime.now().subtract(const Duration(minutes: 30)),
+    createdAt: DateTime.now().subtract(const Duration(days: 5)),
+    messages: [
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+    ],
+  ),
 ];
+
+String getOtherUser(List<String> participants, String currentUserId) {
+  return participants.firstWhere(
+    (p) => p != currentUserId,
+    orElse: () => participants.first,
+  );
+}
