@@ -4,6 +4,7 @@ import 'setting_page.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
+
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
 
@@ -83,6 +84,8 @@ class Conversation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+      
       appBar: AppBar(
         title: Text(userName),
         elevation: 0,
@@ -90,7 +93,7 @@ class Conversation extends StatelessWidget {
         foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
       ),
       body:Container(
-      ) ,
+      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(15.0),
@@ -115,6 +118,7 @@ class Conversation extends StatelessWidget {
                 ),
                 Expanded(
                   child: TextField(
+                    // onChanged: ,
                     decoration: InputDecoration(
                       hintText: "Votre message",
                       hintStyle: TextStyle(
@@ -132,6 +136,7 @@ class Conversation extends StatelessWidget {
                   onPressed: () {},
                 ),
                 IconButton(
+                  // onPressed : ,
                   icon: Icon(
                     Icons.send,
                     color: EnsiConnectApp.ensisaBlue,
