@@ -15,6 +15,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   String resultat = "";
   String filtreSelectionne = "Toutes";
+  String recherche = "";
 
   //temporaire
   final List<String> filtres = [
@@ -25,6 +26,7 @@ class _SearchPageState extends State<SearchPage> {
     "Autre",
   ];
 
+  //temporaire
   final List<Map<String, dynamic>> tuteurs = [
     {
       "nom": "Amine",
@@ -36,19 +38,34 @@ class _SearchPageState extends State<SearchPage> {
     },
     {
       "nom": "Alexis",
-      "matieres": ["Réseaux"],
+      "matieres": ["Réseaux","Mathématiques"],
     },
   ];
 
-  //temporaire
+  
   List<Map<String, dynamic>> get tuteursFiltres {
-    if (filtreSelectionne == "Toutes") return tuteurs;
+    return tuteurs.where((tuteur) {
+      final nom = (tuteur["nom"] as String).toLowerCase();
+      final matieres = (tuteur["matieres"] as List<String>);
 
-    return tuteurs.where((t) {
-      final matieres = t["matieres"] as List<String>;
-      return matieres.contains(filtreSelectionne);
+      // Filtre par matière
+      final correspondFiltre = filtreSelectionne == "Toutes" ||
+          matieres.any(
+            (m) => m.toLowerCase().contains(filtreSelectionne.toLowerCase()),
+          );
+
+      // Recherche par nom ou matière
+      final correspondRecherche =
+          recherche.isEmpty ||
+          nom.contains(recherche.toLowerCase()) ||
+          matieres.any(
+            (m) => m.toLowerCase().contains(recherche.toLowerCase()),
+          );
+
+      return correspondFiltre && correspondRecherche;
     }).toList();
   }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -86,13 +103,25 @@ class _SearchPageState extends State<SearchPage> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    recherche = value;
+                  });
+                },
                 decoration: InputDecoration(
-                  hintText: "Rechercher une matière, un tuteur...",
-                  hintStyle: TextStyle(color: hintColor, fontSize: 14),
-                  prefixIcon: Icon(Icons.search_rounded, color: hintColor),
+                  hintText: "Rechercher une matière ou un tuteur...",
+                  hintStyle: TextStyle(
+                    color: hintColor,
+                    fontSize: 14,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: hintColor,
+                  ),
                   border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 15),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 15,
+                  ),
                 ),
               ),
             ),
@@ -138,39 +167,44 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 12),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: tuteursFiltres.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.person),
-                      ),
-                      title: Text(tuteursFiltres[index]["nom"]),
-                      subtitle: Wrap(
-                        spacing: 6,
-                        children: (tuteursFiltres[index]["matieres"] as List)
-                            .map(
-                              (matiere) => Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(matiere),
+              child: tuteursFiltres.isEmpty
+                ? const Center(
+                    child: Text("Aucun tuteur trouvé"),
+                  )
+                :ListView.builder(
+                  itemCount: tuteursFiltres.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.person),
+                        ),
+                        title: Text(tuteursFiltres[index]["nom"]),
+                        subtitle: Wrap(
+                          spacing: 6,
+                          children: (tuteursFiltres[index]["matieres"] as List)
+                              .map(
+                                (matiere) => Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(matiere),
+                                )
                               )
-                            )
-                            .toList(),
+                              .toList(),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          print("Tuteur sélectionné : ${tuteursFiltres[index]["nom"]}");
+                        },
                       ),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {
-                        print("Tuteur sélectionné : ${tuteursFiltres[index]["nom"]}");
-                      },
-                    ),
-                  );
-                },
-              ),
+                    );
+                  },
+                ),
+              
             )
           ],
         ),
