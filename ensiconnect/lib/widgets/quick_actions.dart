@@ -9,24 +9,34 @@ class QuickActionsGrid extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         ActionItem(
-          icon: Icons.school_outlined, 
-          label: "Demander\nune aide", 
+          icon: Icons.school_outlined,
+          label: "Demander\nune aide",
           color: const Color(0xFF7E57C2),
           onTap: () {
             Navigator.pushNamed(context, '/demande_aide');
           },
         ),
-        const ActionItem(icon: Icons.people_alt_outlined, label: "Trouver\nun tuteur", color: Color(0xFF42A5F5)),
+        const ActionItem(
+          icon: Icons.people_alt_outlined,
+          label: "Trouver\nun tuteur",
+          color: Color(0xFF42A5F5),
+        ),
         ActionItem(
-          icon: Icons.calendar_today_rounded, 
-          label: "Sessions \nprévues", 
+          icon: Icons.calendar_today_rounded,
+          label: "Sessions \nprevues",
           color: const Color(0xFFEF5350),
           onTap: () {
             Navigator.pushNamed(context, '/mes_sessions');
           },
         ),
-
-        const ActionItem(icon: Icons.bookmark_border_rounded, label: "Mes\nréservations", color: Color(0xFF66BB6A)),
+        ActionItem(
+          icon: Icons.bookmark_border_rounded,
+          label: "Mes\nreservations",
+          color: const Color(0xFF66BB6A),
+          onTap: () {
+            Navigator.pushNamed(context, '/mes_sessions_page_2');
+          },
+        ),
       ],
     );
   }
@@ -38,7 +48,13 @@ class ActionItem extends StatelessWidget {
   final Color color;
   final VoidCallback? onTap;
 
-  const ActionItem({super.key, required this.icon, required this.label, required this.color, this.onTap});
+  const ActionItem({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.color,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -54,10 +70,18 @@ class ActionItem extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(16),
-              border: isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
-              boxShadow: isDark ? [] : [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 4)),
-              ],
+              border: isDark
+                  ? Border.all(color: Colors.grey.shade700, width: 1)
+                  : null,
+              boxShadow: isDark
+                  ? []
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
             ),
             child: Icon(icon, color: Colors.white, size: 28),
           ),
@@ -66,10 +90,10 @@ class ActionItem extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 11, 
-              fontWeight: FontWeight.w500, 
-              color: isDark ? Colors.grey.shade300 : Colors.black87, 
-              height: 1.2
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.grey.shade300 : Colors.black87,
+              height: 1.2,
             ),
           ),
         ],
