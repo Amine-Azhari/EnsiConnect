@@ -5,6 +5,7 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import '../models/message.dart';
 import '../models/conversation.dart';
+import 'package:intl/intl.dart';
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -214,7 +215,20 @@ class _ConversationPageState extends State<ConversationPage> {
                  Color.fromARGB(255, 209, 209, 209),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(msg.content),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(msg.content),
+                  const SizedBox(height: 4),
+                  Text(
+                    msg.createdAt != null
+                        ? DateFormat('HH:mm').format(msg.createdAt!)
+                        : '',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -265,7 +279,8 @@ class _ConversationPageState extends State<ConversationPage> {
                     Icons.send,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
-                  onPressed: () {_controller.clear();},
+                  onPressed: () {
+                    _controller.clear();},// Envoi du message
                 ),
               ],
             ),

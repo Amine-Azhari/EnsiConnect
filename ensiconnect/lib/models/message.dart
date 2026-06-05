@@ -9,7 +9,8 @@ class Message{
     this.createdAt,
   });
 
-  static String _formatTimeAgo(DateTime? createdAt) {
+  @override
+  static String formatTimeAgo(DateTime? createdAt) {
     if (createdAt == null) {
       return 'Date inconnue';
     }
