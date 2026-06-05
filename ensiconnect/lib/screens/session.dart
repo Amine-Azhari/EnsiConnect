@@ -48,16 +48,16 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   // Tags disponibles
   final List<String> _tagsDisponibles = [
-    'Maths', 'Info', 'Physique', 'Chimie',
-    'Électronique', 'Mécanique', 'Algo', 'Réseau',
+    'Informatique', 'Automatique et système embarqués', 'Mécanique', 'Textile',
+    'Génie industriel', 
   ];
   final Set<String> _tagsSelectionnes = {};
 
   // Matières
   final List<String> _matieres = [
-    'Algorithmique', 'Bases de données', 'Physique ondulatoire',
-    'Automatique', 'Électronique analogique', 'Réseau & Télécoms',
-    'Mathématiques', 'Autre',
+    'Algorithme et systèmes de données', 'Programmation', 'Physique',
+    'Automatique', 'Électronique', 'Réseau & Télécoms',
+    'Mathématiques', 'Chimie', 'Autre',
   ];
 
   // Animation d'entrée
