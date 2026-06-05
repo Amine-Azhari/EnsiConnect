@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
-import '../main.dart';
+import '../widgets/ensiconnect_app.dart';
 import '../models/session.dart';
 import '../service/auth_service.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../main.dart'; // Pour accéder aux couleurs de l'app
+import "./ensiconnect_app.dart";
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;

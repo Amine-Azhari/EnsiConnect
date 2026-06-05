@@ -48,7 +48,16 @@ class AuthServices {
       promotion: data['Promotion'] ?? '1A',
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
-      profilePictureUrl: data['ProfilePictureUrl'],
+
+      profilePictureUrl: data['ProfilePictureUrl'] ?? '',
+
+      // NOUVEAUX CHAMPS PROFIL
+      description: data['description'] ?? '',
+      skills: List<String>.from(data['skills'] ?? []),
+
+      //  si pas encore en DB → valeurs par défaut safe
+      sessions: (data['sessions'] ?? 0),
+      averageNote: (data['averageNote'] ?? 0.0),
     );
   }
 
@@ -102,5 +111,21 @@ class AuthServices {
     
     // Sauvegarde la session apres une inscription reussie.
     await _saveSession(normalizedEmail);
+  }
+    // Mise à jour du profil utilisateur
+  Future<void> updateUserProfile({
+    required String userId,
+    required String description,
+    required List<String> skills,
+    required String filiere,
+    required String promotion,
+  }) async {
+    await _etudiants.doc(userId).set({
+      'description': description,
+      'skills': skills,
+      'Filiere': filiere,
+      'Promotion': promotion,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
   }
 }

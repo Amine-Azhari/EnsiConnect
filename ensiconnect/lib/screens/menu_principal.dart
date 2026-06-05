@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/session.dart';
 import 'package:ensiconnect/screens/mes_sessions_page.dart';
 import 'package:flutter/material.dart';
-import '../main.dart'; // Pour accéder aux couleurs de l'app
+import "../widgets/ensiconnect_app.dart";
 import '../models/user.dart';
 import 'profil.dart';
 import '../widgets/welcome_banner.dart';

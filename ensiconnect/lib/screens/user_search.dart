@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // Importation de la page de paramètres
-import '../main.dart'; // Pour accéder aux couleurs de l'app
+import "../widgets/ensiconnect_app.dart";
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
