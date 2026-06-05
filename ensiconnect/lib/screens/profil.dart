@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/auth_services.dart';
+import '../service/auth_service.dart';
 
 class ProfilPage extends StatefulWidget {
   const ProfilPage({super.key});
