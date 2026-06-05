@@ -264,45 +264,62 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   Widget _buildHeader(Color subjectColor) {
     final session = widget.session;
     final title = session.sujet.isNotEmpty ? session.sujet : _matiereNom;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shouldShowSubject =
+        _matiereNom.trim().toLowerCase() != title.trim().toLowerCase();
 
     return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 104),
-      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            subjectColor.withValues(alpha: 0.95),
-            subjectColor.withValues(alpha: 0.70),
-          ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
+        color: isDark ? const Color(0xFF121820) : Colors.white,
         borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: subjectColor.withValues(alpha: isDark ? 0.28 : 0.18),
+        ),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
       ),
-      child: Stack(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Positioned(
-            right: 10,
-            top: 4,
-            bottom: 4,
-            child: Icon(
-              Icons.account_balance_rounded,
-              size: 78,
-              color: Colors.white.withValues(alpha: 0.14),
+          Container(
+            width: 44,
+            height: 4,
+            decoration: BoxDecoration(
+              color: subjectColor,
+              borderRadius: BorderRadius.circular(99),
             ),
           ),
-          Center(
-            child: Text(
-              title,
+          const SizedBox(height: 14),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 23,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (shouldShowSubject) ...[
+            const SizedBox(height: 6),
+            Text(
+              _matiereNom,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              style: TextStyle(
+                color: subjectColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -554,7 +571,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           child: Text(
             _isUpdating
                 ? 'Chargement...'
-                : (_isRegistered ? 'Me desinscrire' : "S'inscrire"),
+                : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
