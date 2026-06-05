@@ -235,13 +235,13 @@ class _ConversationPageState extends State<ConversationPage> {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.face,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
                   onPressed: () {},
                 ),
-                Expanded(
+                const Expanded(
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: "Votre message",
@@ -253,14 +253,14 @@ class _ConversationPageState extends State<ConversationPage> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.attach_file,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
                   onPressed: () {},
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.send,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
