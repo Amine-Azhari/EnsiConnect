@@ -179,7 +179,7 @@ class _PostSessionPageState extends State<PostSessionPage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    final subtleColor = isDark ? Colors.white12 : Colors.black08;
+    final subtleColor = isDark ? Colors.white12 : Colors.black12;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
