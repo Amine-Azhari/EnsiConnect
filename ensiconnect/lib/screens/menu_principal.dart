@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/session.dart';
 import 'package:ensiconnect/screens/mes_sessions_page.dart';
 import 'package:flutter/material.dart';
-import '../main.dart'; // Pour accéder aux couleurs de l'app
+import "../widgets/ensiconnect_app.dart";
 import '../models/user.dart';
 import 'profil.dart';
 import '../widgets/welcome_banner.dart';
@@ -14,8 +14,8 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/custom_header.dart';
 import 'user_search.dart';
-
-import '../service/auth_service.dart';
+import '../service/user_service.dart';
+import 'sessions_details.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -47,7 +47,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           onPressed: () {
             Navigator.pushNamed(context, '/post_session');
           },
-          backgroundColor: isDark ? Colors.lightBlueAccent : EnsiConnectApp.ensisaBlue,
+          backgroundColor: isDark ? EnsiConnectApp.backgroundlightColor : EnsiConnectApp.ensisaBlue,
           elevation: 4,
           shape: const CircleBorder(),
           child: Icon(Icons.add, color: isDark ? Colors.black87 : Colors.white, size: 26),
@@ -75,6 +75,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
 
   Future<List<Map<String, dynamic>>> _fetchUpcomingSessions() async {
     final db = FirebaseFirestore.instance;
@@ -123,9 +124,10 @@ class _HomePageState extends State<HomePage> {
 
             upcoming.add({
               'title': title,
-              'subtitle': session.description.isNotEmpty ? session.description : session.sujet,
+              'subtitle': session.description.isNotEmpty ? session.description : title,
               'time': timeString,
               'dateTime': sessionDateTime,
+              'session': session,
             });
           }
         } catch (e) {
@@ -149,7 +151,7 @@ class _HomePageState extends State<HomePage> {
       key: _scaffoldKey, 
       drawer: const CustomDrawer(),
       body: FutureBuilder<User?>(
-        future: AuthServices().getCurrentUser(),
+        future: UserServices().getCurrentUser(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -247,12 +249,24 @@ class _HomePageState extends State<HomePage> {
                           var sessionData = entry.value;
                           return Padding(
                             padding: EdgeInsets.only(bottom: idx < sessions.length - 1 ? 12.0 : 0),
-                            child: RecentDemandCard(
-                              title: sessionData['title'],
-                              subtitle: sessionData['subtitle'],
-                              time: sessionData['time'],
-                              iconData: Icons.event_note_rounded,
-                              iconColor: idx == 0 ? const Color(0xFF2196F3) : EnsiConnectApp.accentOrange,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SessionsDetailsPage(
+                                      session: sessionData['session'] as Session,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: RecentDemandCard(
+                                title: sessionData['title'],
+                                subtitle: sessionData['subtitle'],
+                                time: sessionData['time'],
+                                iconData: Icons.event_note_rounded,
+                                iconColor: idx == 0 ? const Color(0xFF2196F3) : EnsiConnectApp.accentOrange,
+                              ),
                             ),
                           );
                         }).toList(),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../service/auth_service.dart';
-import '../main.dart';
+import '../widgets/ensiconnect_app.dart';
 
 class Auth extends StatefulWidget {
   const Auth({super.key});
@@ -152,7 +152,7 @@ class _AuthState extends State<Auth> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? Colors.black : const Color(0xFFF7F9FC);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
 
     return Scaffold(
