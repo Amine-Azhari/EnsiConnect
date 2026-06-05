@@ -8,7 +8,6 @@ class AuthServices {
 
   final FirebaseFirestore _db;
 
-  // Collection utilisee par la base de donnees pour les comptes etudiants.
   CollectionReference<Map<String, dynamic>> get _etudiants =>
       _db.collection('Etudiant');
 
