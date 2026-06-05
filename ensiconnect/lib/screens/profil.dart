@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import '../main.dart'; // pour EnsiConnectApp
-import 'setting_page.dart'; // pour SettingPage
-import '../widgets/custom_drawer.dart';
-import '../widgets/custom_notification_button.dart';
-
+import '../services/auth_services.dart';
 
 class ProfilPage extends StatefulWidget {
   const ProfilPage({super.key});
@@ -13,10 +9,8 @@ class ProfilPage extends StatefulWidget {
 }
 
 class _ProfilPageState extends State<ProfilPage> {
-  final List<String> skills = [];
+  final AuthServices _auth = AuthServices();
 
-  final TextEditingController _filiereController = TextEditingController();
-  final TextEditingController _anneeController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
   final List<String> options = [
@@ -26,16 +20,68 @@ class _ProfilPageState extends State<ProfilPage> {
     "Prog fonc",
   ];
 
+  List<String> skills = [];
   String? selectedSkill;
+
   bool isEditing = false;
 
-  String fullName = "Nom depuis DB";
-  String uhaAddress = "Adresse UHA depuis DB";
+  String fullName = "";
+  String email = "";
+
   bool isConnected = true;
   String memberSince = "2025";
 
   int sessions = 12;
   double averageNote = 4.2;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final user = await _auth.getCurrentUser();
+
+    if (!mounted) return;
+
+    if (user == null) {
+      setState(() {
+        fullName = "Utilisateur inconnu";
+        email = "";
+      });
+      return;
+    }
+
+    setState(() {
+      fullName = user.fullName;
+      email = user.email;
+      skills = user.skills;
+      _descriptionController.text = user.description;
+    });
+  }
+
+  Future<void> _saveProfile() async {
+    final user = await _auth.getCurrentUser();
+    if (user == null) return;
+
+    await _auth.updateUser(user.id, {
+      'description': _descriptionController.text,
+      'skills': skills,
+    });
+  }
+
+  void _toggleEdit() async {
+    if (isEditing) {
+      await _saveProfile();
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      isEditing = !isEditing;
+    });
+  }
 
   void _addSkill() {
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
@@ -46,16 +92,8 @@ class _ProfilPageState extends State<ProfilPage> {
     }
   }
 
-  void _toggleEdit() {
-    setState(() {
-      isEditing = !isEditing;
-    });
-  }
-
   @override
   void dispose() {
-    _filiereController.dispose();
-    _anneeController.dispose();
     _descriptionController.dispose();
     super.dispose();
   }
@@ -66,7 +104,6 @@ class _ProfilPageState extends State<ProfilPage> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF0D1B2A) : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(16),
-        border: isDark ? Border.all(color: Colors.white10) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,10 +114,9 @@ class _ProfilPageState extends State<ProfilPage> {
           ),
           const SizedBox(height: 8),
           Text("Nom: $fullName"),
-          Text("Adresse UHA: $uhaAddress"),
+          Text("Email: $email"),
           Row(
             children: [
-              const Text("Statut: "),
               Icon(
                 Icons.circle,
                 size: 10,
@@ -96,55 +132,26 @@ class _ProfilPageState extends State<ProfilPage> {
     );
   }
 
-  Widget _statsCard(bool isDark) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF14213D) : Colors.blue.shade100,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  "$sessions",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                const Text("Sessions"),
-              ],
+  Widget _statCard(String title, String value) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade100,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF14213D) : Colors.blue.shade100,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  averageNote.toStringAsFixed(1),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                const Text("Note moyenne /5"),
-              ],
-            ),
-          ),
-        ),
-      ],
+          const SizedBox(height: 5),
+          Text(title),
+        ],
+      ),
     );
   }
 
@@ -152,179 +159,132 @@ class _ProfilPageState extends State<ProfilPage> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final bgColor = isDark ? const Color(0xFF0A0F1C) : Colors.white;
-    final textColor = isDark ? Colors.white : Colors.black87;
-    final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
-
     return Scaffold(
-      backgroundColor: bgColor,
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: EnsiConnectApp.ensisaBlue),
-              child: Text(
-                'EnsiConnect',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Paramètres'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const SettingPage(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: isDark ? const Color(0xFF0A0F1C) : Colors.white,
 
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text("Mon Profil"),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        actions: [
-          Container(
-            margin: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              icon: const Icon(Icons.notifications_none_rounded),
-              onPressed: () {},
-            ),
-          ),
-        ],
-      ),
+      // ❌ APPBAR SUPPRIMÉ
 
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage('https://picsum.photos/200'),
-                ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 40),
+
+            const CircleAvatar(
+              radius: 50,
+              backgroundImage: NetworkImage("https://picsum.photos/200"),
+            ),
+
+            const SizedBox(height: 15),
+
+            Text(
+              fullName,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
+            ),
 
-              const SizedBox(height: 20),
+            const SizedBox(height: 10),
 
-              Center(
-                child: Text(
-                  'Ayoub le GOAT',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+            ElevatedButton(
+              onPressed: _toggleEdit,
+              child: Text(
+                isEditing ? "Sauvegarder" : "Modifier le profil",
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            _infoCard(isDark),
+
+            const SizedBox(height: 20),
+
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Description",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            TextField(
+              controller: _descriptionController,
+              enabled: isEditing,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                hintText: "Décris-toi...",
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Compétences",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButton<String>(
+                    value: selectedSkill,
+                    hint: const Text("Choisir"),
+                    isExpanded: true,
+                    items: options
+                        .map(
+                          (e) => DropdownMenuItem(
+                            value: e,
+                            child: Text(e),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: isEditing
+                        ? (v) => setState(() => selectedSkill = v)
+                        : null,
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Center(
-                child: Text(
-                  'Goat Flutter',
-                  style: TextStyle(color: subtitleColor),
+                IconButton(
+                  onPressed: isEditing ? _addSkill : null,
+                  icon: const Icon(Icons.add),
                 ),
-              ),
+              ],
+            ),
 
-              const SizedBox(height: 20),
-
-              Center(
-                child: ElevatedButton(
-                  onPressed: _toggleEdit,
-                  child: Text(
-                    isEditing
-                        ? "Terminer modification"
-                        : "Modifier votre profil",
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              _infoCard(isDark),
-              const SizedBox(height: 15),
-              _statsCard(isDark),
-
-              const SizedBox(height: 25),
-
-              const Text("Filière"),
-              TextField(controller: _filiereController),
-
-              const SizedBox(height: 10),
-
-              const Text("Année"),
-              TextField(controller: _anneeController),
-
-              const SizedBox(height: 10),
-
-              const Text("Description"),
-              TextField(
-                controller: _descriptionController,
-                maxLines: 3,
-              ),
-
-              const SizedBox(height: 20),
-
-              const Text("Compétences"),
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      initialValue: selectedSkill,
-                      items: options
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedSkill = value;
-                        });
-                      },
+            Wrap(
+              spacing: 8,
+              children: skills
+                  .map(
+                    (s) => Chip(
+                      label: Text(s),
+                      onDeleted: isEditing
+                          ? () => setState(() => skills.remove(s))
+                          : null,
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _addSkill,
-                    child: const Text("+"),
-                  ),
-                ],
-              ),
+                  )
+                  .toList(),
+            ),
 
-              const SizedBox(height: 10),
+            const SizedBox(height: 20),
 
-              Wrap(
-                children: skills
-                    .map((s) => Chip(
-                          label: Text(s),
-                          onDeleted: () {
-                            setState(() {
-                              skills.remove(s);
-                            });
-                          },
-                        ))
-                    .toList(),
-              ),
-            ],
-          ),
+            Row(
+              children: [
+                Expanded(
+                  child: _statCard("Sessions", "$sessions"),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _statCard(
+                    "Note moyenne",
+                    averageNote.toStringAsFixed(1),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
