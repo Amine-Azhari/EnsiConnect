@@ -7,7 +7,8 @@ class User {
   final String filiere;
   final String role;
   final String? profilePictureUrl;
-
+  final int sessions;
+  final double averageNote;
   final String description;
   final List<String> skills;
 
@@ -22,6 +23,8 @@ class User {
     this.profilePictureUrl,
     this.description = '',
     this.skills = const [],
+    this.sessions = 0,
+    this.averageNote = 0.0,
   });
 
   String get fullName => '$firstName $lastName';
