@@ -50,14 +50,19 @@ class _ChatPageState extends State<ChatPage> {
                 itemBuilder: (context, index) {
                   final convo = conversations[index];
 
-                  final otherUser = getOtherUser(convo.participants, currentUserId); 
+                  final otherUser = convo.name != null
+                    ? convo.name!
+                    : getOtherUser(convo.participants, currentUserId);
 
                   return ListTile(
                     leading: CircleAvatar(
                       child: Text(otherUser[0].toUpperCase()),
                     ),
                     title: Text(otherUser),
-                    subtitle: Text(convo.lastMessage),
+                    subtitle: Text(
+                      convo.lastMessage,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,),
                     trailing: Text(
                       formatTimeAgo(convo.lastMessageAt),
                       style: Theme.of(context).textTheme.bodySmall,
@@ -157,6 +162,47 @@ final List<Conversation> conversations = [
       ),
     ],
   ),
+
+  Conversation(
+    id: "group1",
+    name: "Projet ENSISA 🚀",
+    participants: [
+      "user1",
+      "user2",
+      "user3",
+      "user4",
+    ],
+    lastMessage: "On valide le rapport aujourd'hui wow ce message est long parce que je teste des trucs",
+    lastMessageAt: DateTime.now().subtract(const Duration(minutes: 15)),
+    createdAt: DateTime.now().subtract(const Duration(days: 3)),
+    messages: [
+      Message(
+        senderId: "user2",
+        content: "Salut l'équipe 👋",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user3",
+        content: "Vous avez avancé sur le projet ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui, j'ai fini la partie UI",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "Top 👍",
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+      Message(
+        senderId: "user2",
+        content: "On valide le rapport aujourd'hui wow ce message est long parce que je teste des trucs",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
+      ),
+    ],
+  )
 ];
 
 String getOtherUser(List<String> participants, String currentUserId) {
