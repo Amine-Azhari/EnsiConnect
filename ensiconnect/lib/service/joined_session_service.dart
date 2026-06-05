@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../models/session.dart';
 import '../models/user.dart';
-import 'auth_service.dart';
+import 'user_service.dart';
 
 class JoinedSessionDetails {
   JoinedSessionDetails({
@@ -44,18 +44,18 @@ class JoinedSessionDetails {
 class JoinedSessionService {
   JoinedSessionService({
     FirebaseFirestore? firestore,
-    AuthServices? authServices,
+    UserServices? userServices,
   })  : _db = firestore ?? FirebaseFirestore.instance,
-        _authServices = authServices ?? AuthServices(firestore: firestore);
+        _userServices = userServices ?? UserServices(firestore: firestore);
 
   final FirebaseFirestore _db;
-  final AuthServices _authServices;
+  final UserServices _userServices;
 
   CollectionReference<Map<String, dynamic>> get _joins =>
       _db.collection('RejoindreSession');
 
   Future<List<JoinedSessionDetails>> getJoinedSessionsForCurrentUser() async {
-    final User? currentUser = await _authServices.getCurrentUser();
+    final User? currentUser = await _userServices.getCurrentUser();
     if (currentUser == null) {
       return const [];
     }

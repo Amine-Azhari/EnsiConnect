@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../service/auth_service.dart';
+import '../service/user_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     // Vérifie si une session existe
-    final user = await AuthServices().getCurrentUser();
+    final user = await UserServices().getCurrentUser();
     
     if (mounted) {
       if (user != null) {
@@ -52,8 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
             Image(
               image: AssetImage('assets/images/Logo-ENSISA.png'),
-              width: 300,
-              height: 300,
+              width: 200,
+              height: 200,
             ),
           ],
         ),

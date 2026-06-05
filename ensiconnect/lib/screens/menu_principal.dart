@@ -14,9 +14,8 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_bottom_nav_bar.dart';
 import '../widgets/custom_header.dart';
 import 'user_search.dart';
+import '../service/user_service.dart';
 import 'sessions_details.dart';
-
-import '../service/auth_service.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -48,7 +47,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           onPressed: () {
             Navigator.pushNamed(context, '/post_session');
           },
-          backgroundColor: isDark ? Colors.lightBlueAccent : EnsiConnectApp.ensisaBlue,
+          backgroundColor: isDark ? EnsiConnectApp.backgroundlightColor : EnsiConnectApp.ensisaBlue,
           elevation: 4,
           shape: const CircleBorder(),
           child: Icon(Icons.add, color: isDark ? Colors.black87 : Colors.white, size: 26),
@@ -152,7 +151,7 @@ class _HomePageState extends State<HomePage> {
       key: _scaffoldKey, 
       drawer: const CustomDrawer(),
       body: FutureBuilder<User?>(
-        future: AuthServices().getCurrentUser(),
+        future: UserServices().getCurrentUser(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

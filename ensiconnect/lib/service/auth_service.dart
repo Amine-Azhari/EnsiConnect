@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user.dart';
+// import './user_service.dart';
 
 class AuthServices {
   AuthServices({FirebaseFirestore? firestore})
@@ -8,7 +8,6 @@ class AuthServices {
 
   final FirebaseFirestore _db;
 
-  // Collection utilisee par la base de donnees pour les comptes etudiants.
   CollectionReference<Map<String, dynamic>> get _etudiants =>
       _db.collection('Etudiant');
 
@@ -22,43 +21,6 @@ class AuthServices {
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_email');
-  }
-
-  // Recupere l'utilisateur actuellement connecte depuis Firestore.
-  Future<User?> getCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final email = prefs.getString('user_email');
-    if (email == null) return null;
-
-    final result = await _etudiants
-        .where('eMail', isEqualTo: email)
-        .limit(1)
-        .get();
-
-    if (result.docs.isEmpty) return null;
-
-    final doc = result.docs.first;
-    final data = doc.data();
-
-    return User(
-      id: doc.id,
-      firstName: data['Prenom'] ?? '',
-      lastName: data['Nom'] ?? '',
-      email: data['eMail'] ?? '',
-      promotion: data['Promotion'] ?? '1A',
-      filiere: data['Filiere'] ?? 'Informatique',
-      role: data['Role'] ?? 'Étudiant',
-
-      profilePictureUrl: data['ProfilePictureUrl'] ?? '',
-
-      // NOUVEAUX CHAMPS PROFIL
-      description: data['description'] ?? '',
-      skills: List<String>.from(data['skills'] ?? []),
-
-      //  si pas encore en DB → valeurs par défaut safe
-      sessions: (data['sessions'] ?? 0),
-      averageNote: (data['averageNote'] ?? 0.0),
-    );
   }
 
   // Cherche un etudiant avec le couple email / mot de passe saisi.
@@ -111,21 +73,5 @@ class AuthServices {
     
     // Sauvegarde la session apres une inscription reussie.
     await _saveSession(normalizedEmail);
-  }
-    // Mise à jour du profil utilisateur
-  Future<void> updateUserProfile({
-    required String userId,
-    required String description,
-    required List<String> skills,
-    required String filiere,
-    required String promotion,
-  }) async {
-    await _etudiants.doc(userId).set({
-      'description': description,
-      'skills': skills,
-      'Filiere': filiere,
-      'Promotion': promotion,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }, SetOptions(merge: true));
   }
 }
