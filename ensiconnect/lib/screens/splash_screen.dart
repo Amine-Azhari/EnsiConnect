@@ -52,8 +52,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
             Image(
               image: AssetImage('assets/images/Logo-ENSISA.png'),
-              width: 300,
-              height: 300,
+              width: 200,
+              height: 200,
             ),
           ],
         ),
