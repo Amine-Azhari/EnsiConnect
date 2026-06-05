@@ -38,8 +38,8 @@ class UserServices {
       profilePictureUrl: data['ProfilePictureUrl'],
       description: data['description'] ?? '',
       skills: List<String>.from(data['skills'] ?? []),
-      sessions: data['sessions'] ?? 0,
-      averageNote: (data['averageNote'] ?? 0).toDouble()
+      sessions: (data['sessions'] ?? 0),
+      averageNote: (data['averageNote'] ?? 0.0),
     );
   }
 }
