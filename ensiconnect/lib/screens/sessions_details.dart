@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../main.dart';
 import '../models/session.dart';
 import '../service/auth_service.dart';
 
@@ -23,6 +24,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String? _registrationDocId;
   String? _currentStudentId;
   String? _errorMessage;
+  List<_SessionParticipant> _participants = [];
 
   String _matiereNom = 'Matière inconnue';
   String _salleNom = 'Salle inconnue';
@@ -45,17 +47,25 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
       String? registrationDocId;
       var isRegistered = false;
+      final participants = <_SessionParticipant>[];
 
-      if (currentUser != null && session.id != null) {
-        final registration = await _db
+      if (session.id != null) {
+        final registrations = await _db
             .collection('RejoindreSession')
-            .where('EtudiantID', isEqualTo: currentUser.id)
             .where('SessionID', isEqualTo: session.id)
-            .limit(1)
             .get();
 
-        isRegistered = registration.docs.isNotEmpty;
-        registrationDocId = isRegistered ? registration.docs.first.id : null;
+        for (final registration in registrations.docs) {
+          final etudiantId = registration.data()['EtudiantID'] ?? '';
+          if (etudiantId.isEmpty) continue;
+
+          if (currentUser != null && etudiantId == currentUser.id) {
+            isRegistered = true;
+            registrationDocId = registration.id;
+          }
+
+          participants.add(await _getParticipant(etudiantId));
+        }
       }
 
       if (!mounted) return;
@@ -65,6 +75,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         _matiereNom = matiereNom;
         _salleNom = salleNom;
         _organisateurNom = organisateurNom;
+        _participants = participants;
         _isRegistered = isRegistered;
         _registrationDocId = registrationDocId;
         _isLoading = false;
@@ -103,6 +114,25 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     return fullName.isEmpty ? 'Organisateur inconnu' : fullName;
   }
 
+  Future<_SessionParticipant> _getParticipant(String id) async {
+    final doc = await _db.collection('Etudiant').doc(id).get();
+    final data = doc.data();
+
+    if (data == null) {
+      return _SessionParticipant(id: id, name: 'Etudiant inconnu');
+    }
+
+    final prenom = data['Prenom'] ?? '';
+    final nom = data['Nom'] ?? '';
+    final fullName = '$prenom $nom'.trim();
+
+    return _SessionParticipant(
+      id: id,
+      name: fullName.isEmpty ? 'Etudiant inconnu' : fullName,
+      imageUrl: data['ProfilePictureUrl'],
+    );
+  }
+
   Future<void> _toggleRegistration() async {
     final sessionId = widget.session.id;
 
@@ -130,6 +160,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         setState(() {
           _isRegistered = false;
           _registrationDocId = null;
+          _participants.removeWhere(
+            (participant) => participant.id == _currentStudentId,
+          );
         });
       } else {
         final created = await _db.collection('RejoindreSession').add({
@@ -145,6 +178,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           _isRegistered = true;
           _registrationDocId = created.id;
         });
+
+        await _loadDetails();
       }
     } catch (e) {
       if (mounted) {
@@ -188,13 +223,23 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                         children: [
                           _buildHeader(subjectColor),
                           const SizedBox(height: 22),
-                          _buildInfoGrid(
+                          _buildParticipantsSection(
                             textColor,
                             subtitleColor,
                             subjectColor,
                           ),
                           const SizedBox(height: 22),
-                          _buildDescription(textColor, subtitleColor),
+                          _buildInfoCard(
+                            textColor,
+                            subtitleColor,
+                            subjectColor,
+                          ),
+                          const SizedBox(height: 22),
+                          _buildDescription(
+                            textColor,
+                            subtitleColor,
+                            subjectColor,
+                          ),
                           if (_errorMessage != null) ...[
                             const SizedBox(height: 18),
                             Text(
@@ -209,7 +254,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                       ),
                     ),
                   ),
-                  _buildBottomButton(subjectColor),
+                  _buildBottomButton(),
                 ],
               ),
             ),
@@ -222,21 +267,40 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      constraints: const BoxConstraints(minHeight: 104),
+      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
       decoration: BoxDecoration(
-        color: subjectColor,
+        gradient: LinearGradient(
+          colors: [
+            subjectColor.withValues(alpha: 0.95),
+            subjectColor.withValues(alpha: 0.70),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
         borderRadius: BorderRadius.circular(22),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      child: Stack(
         children: [
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+          Positioned(
+            right: 10,
+            top: 4,
+            bottom: 4,
+            child: Icon(
+              Icons.account_balance_rounded,
+              size: 78,
+              color: Colors.white.withValues(alpha: 0.14),
+            ),
+          ),
+          Center(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -244,82 +308,234 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     );
   }
 
-  Widget _buildInfoGrid(
+  Widget _buildInfoCard(
     Color textColor,
     Color subtitleColor,
     Color subjectColor,
   ) {
     final session = widget.session;
 
-    return Column(
-      children: [
-        _DetailRow(
-          icon: Icons.calendar_today_rounded,
-          label: 'Date',
-          value: _formatDate(session.date),
-          textColor: textColor,
-          subtitleColor: subtitleColor,
-          subjectColor: subjectColor,
-        ),
-        _DetailRow(
-          icon: Icons.schedule_rounded,
-          label: 'Heure',
-          value: '${session.heureDebut} - ${session.heureFin}',
-          textColor: textColor,
-          subtitleColor: subtitleColor,
-          subjectColor: subjectColor,
-        ),
-        _DetailRow(
-          icon: Icons.location_on_outlined,
-          label: 'Salle',
-          value: _salleNom,
-          textColor: textColor,
-          subtitleColor: subtitleColor,
-          subjectColor: subjectColor,
-        ),
-        _DetailRow(
-          icon: Icons.person_outline_rounded,
-          label: 'Organisateur',
-          value: _organisateurNom,
-          textColor: textColor,
-          subtitleColor: subtitleColor,
-          subjectColor: subjectColor,
-        ),
-      ],
+    return _SectionCard(
+      child: Column(
+        children: [
+          _DetailRow(
+            icon: Icons.calendar_today_rounded,
+            label: 'Date',
+            value: _formatDate(session.date),
+            textColor: textColor,
+            subtitleColor: subtitleColor,
+            subjectColor: subjectColor,
+          ),
+          _DetailRow(
+            icon: Icons.schedule_rounded,
+            label: 'Heure',
+            value: '${session.heureDebut} - ${session.heureFin}',
+            textColor: textColor,
+            subtitleColor: subtitleColor,
+            subjectColor: subjectColor,
+          ),
+          _DetailRow(
+            icon: Icons.location_on_outlined,
+            label: 'Salle',
+            value: _salleNom,
+            textColor: textColor,
+            subtitleColor: subtitleColor,
+            subjectColor: subjectColor,
+          ),
+          _DetailRow(
+            icon: Icons.person_outline_rounded,
+            label: 'Organisateur',
+            value: _organisateurNom,
+            textColor: textColor,
+            subtitleColor: subtitleColor,
+            subjectColor: subjectColor,
+            isLast: true,
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildDescription(Color textColor, Color subtitleColor) {
+  Widget _buildParticipantsSection(
+    Color textColor,
+    Color subtitleColor,
+    Color subjectColor,
+  ) {
+    final maxVisibleItems = _participants.length > 6 ? 5 : 6;
+    final visibleParticipants = _participants.take(maxVisibleItems).toList();
+    final hiddenParticipantsCount =
+        _participants.length - visibleParticipants.length;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: _participants.isEmpty ? null : _showParticipantsSheet,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF121820)
+              : Colors.white,
+          border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white10
+                : Colors.black.withValues(alpha: 0.06),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.groups_rounded, color: subjectColor, size: 24),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Participants inscrits',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: subjectColor.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${_participants.length}',
+                    style: TextStyle(
+                      color: subjectColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            if (_participants.isEmpty)
+              Text(
+                'Aucun participant inscrit pour le moment.',
+                style: TextStyle(color: subtitleColor, fontSize: 14),
+              )
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    for (final participant in visibleParticipants) ...[
+                      _ParticipantAvatar(
+                        participant: participant,
+                        color: subjectColor,
+                      ),
+                      const SizedBox(width: 10),
+                    ],
+                    if (hiddenParticipantsCount > 0)
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Colors.grey.shade700,
+                        child: Text(
+                          '+$hiddenParticipantsCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showParticipantsSheet() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            itemCount: _participants.length,
+            separatorBuilder: (_, __) => const Divider(height: 18),
+            itemBuilder: (context, index) {
+              final participant = _participants[index];
+
+              return ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: _ParticipantAvatar(
+                  participant: participant,
+                  color: EnsiConnectApp.ensisaBlue,
+                ),
+                title: Text(
+                  participant.name,
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDescription(
+    Color textColor,
+    Color subtitleColor,
+    Color subjectColor,
+  ) {
     final description = widget.session.description.trim();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Description',
-          style: TextStyle(
-            color: textColor,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+    return _SectionCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Description',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          description.isEmpty
-              ? 'Aucune description pour cette session.'
-              : description,
-          style: TextStyle(
-            color: subtitleColor,
-            fontSize: 14,
-            height: 1.45,
+          const SizedBox(height: 10),
+          Container(
+            width: 68,
+            height: 4,
+            decoration: BoxDecoration(
+              color: subjectColor,
+              borderRadius: BorderRadius.circular(99),
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 24),
+          Text(
+            description.isEmpty
+                ? 'Aucune description pour cette session.'
+                : description,
+            style: TextStyle(
+              color: description.isEmpty ? subtitleColor : textColor,
+              fontSize: 15,
+              height: 1.45,
+              fontWeight:
+                  description.isEmpty ? FontWeight.w700 : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildBottomButton(Color subjectColor) {
-    final buttonColor = _isRegistered ? Colors.redAccent : subjectColor;
+  Widget _buildBottomButton() {
+    final buttonColor =
+        _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
 
     return Container(
       width: double.infinity,
@@ -371,6 +587,89 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   }
 }
 
+class _SessionParticipant {
+  const _SessionParticipant({
+    required this.id,
+    required this.name,
+    this.imageUrl,
+  });
+
+  final String id;
+  final String name;
+  final String? imageUrl;
+
+  String get initials {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return '?';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+  }
+}
+
+class _ParticipantAvatar extends StatelessWidget {
+  const _ParticipantAvatar({
+    required this.participant,
+    required this.color,
+  });
+
+  final _SessionParticipant participant;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final imageUrl = participant.imageUrl;
+
+    return CircleAvatar(
+      radius: 24,
+      backgroundColor: color.withValues(alpha: 0.18),
+      backgroundImage:
+          imageUrl == null || imageUrl.isEmpty ? null : NetworkImage(imageUrl),
+      child: imageUrl == null || imageUrl.isEmpty
+          ? Text(
+              participant.initials,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          : null,
+    );
+  }
+}
+
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF121820) : Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.08),
+        ),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
+      child: child,
+    );
+  }
+}
+
 class _DetailRow extends StatelessWidget {
   const _DetailRow({
     required this.icon,
@@ -379,6 +678,7 @@ class _DetailRow extends StatelessWidget {
     required this.textColor,
     required this.subtitleColor,
     required this.subjectColor,
+    this.isLast = false,
   });
 
   final IconData icon;
@@ -387,45 +687,55 @@ class _DetailRow extends StatelessWidget {
   final Color textColor;
   final Color subtitleColor;
   final Color subjectColor;
+  final bool isLast;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: subjectColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(12),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: subjectColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: subjectColor, size: 22),
             ),
-            child: Icon(icon, color: subjectColor, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(color: subtitleColor, fontSize: 12),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(color: subtitleColor, fontSize: 12),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 3),
+                  Text(
+                    value,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ],
+        ),
+        if (!isLast)
+          Divider(
+            height: 28,
+            color:
+                isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
