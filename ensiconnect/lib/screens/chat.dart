@@ -335,8 +335,8 @@ class _ConversationPageState extends State<ConversationPage> {
                  EnsiConnectApp.ensisaBlue :
                  EnsiConnectApp.ensisaLightBlue :
                  Theme.of(context).brightness == Brightness.dark ?
-                 Color.fromARGB(255, 72, 72, 72) :
-                 Color.fromARGB(255, 209, 209, 209),
+                 const Color.fromARGB(255, 72, 72, 72) :
+                 const Color.fromARGB(255, 209, 209, 209),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -386,13 +386,13 @@ class _ConversationPageState extends State<ConversationPage> {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.face,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
                   onPressed: () {},
                 ),
-                Expanded(
+                const Expanded(
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
@@ -405,14 +405,14 @@ class _ConversationPageState extends State<ConversationPage> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.attach_file,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
                   onPressed: () {},
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.send,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
