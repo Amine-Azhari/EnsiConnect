@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../service/auth_service.dart';
-import '../main.dart';
+import "../widgets/ensiconnect_app.dart";
 
 class Auth extends StatefulWidget {
   const Auth({super.key});

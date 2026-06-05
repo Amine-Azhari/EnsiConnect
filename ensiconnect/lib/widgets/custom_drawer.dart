@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../main.dart'; // Pour accéder à EnsiConnectApp.ensisaBlue
+import "./ensiconnect_app.dart";
 import '../models/user.dart'; // Pour le modèle User
 import '../screens/setting_page.dart'; // Pour la navigation vers les paramètres
 import '../service/auth_service.dart'; // Pour le service d'authentification
