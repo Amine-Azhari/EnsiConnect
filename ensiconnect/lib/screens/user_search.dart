@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // Importation de la page de paramètres
-import '../main.dart'; // Pour accéder aux couleurs de l'app
+import "../widgets/ensiconnect_app.dart";
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
@@ -11,44 +11,85 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
+class StarRating extends StatelessWidget {
+  final double note;
+
+  const StarRating({super.key, required this.note});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: List.generate(5, (i) {
+        if (note >= i + 1) {
+          return const Icon(Icons.star, size: 16, color: Colors.amber);
+        } else if (note >= i + 0.5) {
+          return const Icon(Icons.star_half, size: 16, color: Colors.amber);
+        } else {
+          return const Icon(Icons.star_border, size: 16, color: Colors.amber);
+        }
+      }),
+    );
+  }
+}
 
 class _SearchPageState extends State<SearchPage> {
   String resultat = "";
-  String filtreSelectionne = "Toutes";
+  String recherche = "";
+  Set<String> filtresSelectionnes = {};
 
   //temporaire
   final List<String> filtres = [
-    "Toutes",
     "Programmation",
     "Mathématiques",
     "Réseaux",
-    "Autre",
+    "SGBD",
   ];
 
+  //temporaire
   final List<Map<String, dynamic>> tuteurs = [
     {
       "nom": "Amine",
       "matieres": ["Mathématiques", "SGBD"],
+      "note": 4.5,
     },
     {
       "nom": "Ayoub",
       "matieres": ["Programmation"],
+      "note": 4.0,
     },
     {
       "nom": "Alexis",
-      "matieres": ["Réseaux"],
+      "matieres": ["Réseaux","Mathématiques"],
+      "note": 4.8,
     },
   ];
 
-  //temporaire
+  
   List<Map<String, dynamic>> get tuteursFiltres {
-    if (filtreSelectionne == "Toutes") return tuteurs;
+    return tuteurs.where((tuteur) {
+      final nom = (tuteur["nom"] as String).toLowerCase();
+      final matieres = (tuteur["matieres"] as List<String>);
 
-    return tuteurs.where((t) {
-      final matieres = t["matieres"] as List<String>;
-      return matieres.contains(filtreSelectionne);
+      // Filtres multiples
+      final correspondFiltres =
+          filtresSelectionnes.isEmpty ||
+          matieres.any((m) => filtresSelectionnes.contains(m));
+
+      // Recherche par nom ou matière
+      final correspondRecherche =
+          recherche.isEmpty ||
+          nom.contains(recherche.toLowerCase()) ||
+          matieres.any(
+            (m) => m.toLowerCase().contains(recherche.toLowerCase()),
+          );
+
+      return correspondFiltres && correspondRecherche;
     }).toList();
+
+
+
   }
+
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -86,13 +127,25 @@ class _SearchPageState extends State<SearchPage> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    recherche = value;
+                  });
+                },
                 decoration: InputDecoration(
-                  hintText: "Rechercher une matière, un tuteur...",
-                  hintStyle: TextStyle(color: hintColor, fontSize: 14),
-                  prefixIcon: Icon(Icons.search_rounded, color: hintColor),
+                  hintText: "Rechercher une matière ou un tuteur...",
+                  hintStyle: TextStyle(
+                    color: hintColor,
+                    fontSize: 14,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: hintColor,
+                  ),
                   border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 15),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 15,
+                  ),
                 ),
               ),
             ),
@@ -104,16 +157,21 @@ class _SearchPageState extends State<SearchPage> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: filtres.map((filtre) {
+                  final selected = filtresSelectionnes.contains(filtre);
+
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
+                    child: FilterChip(
                       label: Text(filtre),
-                      labelStyle: TextStyle(color:Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
-                      selected: filtreSelectionne == filtre,
-                      selectedColor:Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
-                      onSelected: (selected) {
+                      selected: selected,
+                      selectedColor: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
+                      onSelected: (value) {
                         setState(() {
-                          filtreSelectionne = filtre;
+                          if (value) {
+                            filtresSelectionnes.add(filtre);
+                          } else {
+                            filtresSelectionnes.remove(filtre);
+                          }
                         });
                       },
                     ),
@@ -138,39 +196,69 @@ class _SearchPageState extends State<SearchPage> {
             const SizedBox(height: 12),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: tuteursFiltres.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    child: ListTile(
-                      leading: const CircleAvatar(
-                        child: Icon(Icons.person),
-                      ),
-                      title: Text(tuteursFiltres[index]["nom"]),
-                      subtitle: Wrap(
-                        spacing: 6,
-                        children: (tuteursFiltres[index]["matieres"] as List)
-                            .map(
-                              (matiere) => Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
-                                  borderRadius: BorderRadius.circular(12),
+              child: tuteursFiltres.isEmpty
+                ? const Center(
+                    child: Text("Aucun tuteur trouvé"),
+                  )
+                :ListView.builder(
+                  itemCount: tuteursFiltres.length,
+                  itemBuilder: (context, index) {
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      child: ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.person),
+                        ),
+                        title: Text(tuteursFiltres[index]["nom"]),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: (tuteursFiltres[index]["matieres"] as List<String>)
+                                  .map(
+                                    (matiere) => Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? EnsiConnectApp.ensisaBlue
+                                            : EnsiConnectApp.ensisaLightBlue,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        matiere,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Row(
+                              children: [
+                                StarRating(note: tuteursFiltres[index]["note"] as double),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "${tuteursFiltres[index]["note"]}/5",
+                                  style: const TextStyle(fontSize: 12),
                                 ),
-                                child: Text(matiere),
-                              )
-                            )
-                            .toList(),
+                              ],
+                            ),
+                          ],
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          print("Tuteur sélectionné : ${tuteursFiltres[index]["nom"]}");
+                        },
                       ),
-                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () {
-                        print("Tuteur sélectionné : ${tuteursFiltres[index]["nom"]}");
-                      },
-                    ),
-                  );
-                },
-              ),
+                    );
+                  },
+                ),
+              
             )
           ],
         ),
