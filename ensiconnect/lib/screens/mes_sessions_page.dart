@@ -3,7 +3,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/session.dart';
 import 'sessions_details.dart';
-import '../main.dart'; // Pour accéder aux couleurs de l'application
+import "../widgets/ensiconnect_app.dart";
 
 class MesSessionsPage extends StatefulWidget {
   const MesSessionsPage({super.key});

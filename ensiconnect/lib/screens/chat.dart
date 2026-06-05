@@ -1,6 +1,5 @@
-import '../main.dart';
+import "../widgets/ensiconnect_app.dart";
 import 'package:flutter/material.dart';
-import 'setting_page.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import '../models/message.dart';
