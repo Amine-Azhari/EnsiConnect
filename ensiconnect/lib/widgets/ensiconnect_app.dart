@@ -13,12 +13,13 @@ final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
 
 class EnsiConnectApp extends StatelessWidget {
   const EnsiConnectApp({super.key});
-
+  
   // Charte graphique
   static const Color ensisaBlue = Color(0xFF0055A5);
   static const Color ensisaLightBlue = Color(0xFFE6F0FA);
   static const Color backgroundColor = Color(0xFFF8F9FA);
   static const Color accentOrange = Color(0xFFFF9800);
+  static const Color backgroundlightColor = Colors.lightBlueAccent;
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/ensiconnect_app.dart';
 import '../models/session.dart';
@@ -15,7 +16,7 @@ class SessionsDetailsPage extends StatefulWidget {
 
 class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final AuthServices _authServices = AuthServices();
+  final UserServices _userServices = UserServices();
 
   bool _isLoading = true;
   bool _isUpdating = false;
@@ -37,7 +38,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
   Future<void> _loadDetails() async {
     try {
-      final currentUser = await _authServices.getCurrentUser();
+      final currentUser = await _userServices.getCurrentUser();
       final session = widget.session;
 
       final matiereNom = await _getDocumentName('Matiere', session.matiereId);

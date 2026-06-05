@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../service/auth_service.dart';
+import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
@@ -11,7 +11,7 @@ class ProfilPage extends StatefulWidget {
 }
 
 class _ProfilPageState extends State<ProfilPage> {
-  final AuthServices _auth = AuthServices();
+  final UserServices _user = UserServices();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _descriptionController = TextEditingController();
@@ -41,7 +41,7 @@ class _ProfilPageState extends State<ProfilPage> {
   }
 
   Future<void> _loadUser() async {
-    final user = await _auth.getCurrentUser();
+    final user = await _user.getCurrentUser();
 
     if (!mounted) return;
 
