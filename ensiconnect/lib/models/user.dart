@@ -13,9 +13,9 @@ class User {
     required this.firstName,
     required this.lastName,
     required this.email,
-    required this.promotion,
-    required this.filiere,
-    required this.role,
+    this.promotion = '1A',
+    this.filiere = 'Informatique',
+    this.role = 'Étudiant',
     this.profilePictureUrl,
   });
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../service/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,12 +13,24 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Redirection vers l'écran de navigation après 3 secondes
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    // On attend 3 secondes pour l'animation
+    await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+
+    // Vérifie si une session existe
+    final user = await AuthServices().getCurrentUser();
+    
+    if (mounted) {
+      if (user != null) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
         Navigator.of(context).pushReplacementNamed('/auth');
       }
-    });
+    }
   }
 
   @override

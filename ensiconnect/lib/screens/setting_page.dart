@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main.dart'; // Accès au notifier global isDarkModeNotifier
+import '../main.dart'; // Accès au notifier global isDarkModeNotifier
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingPage extends StatefulWidget {
