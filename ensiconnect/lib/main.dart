@@ -16,7 +16,7 @@ void main() async {
 
   // On crée une instance du service et on lance l'insertion
   final service = FirebaseDataService();
-  await service.initialiserDonneesDeTest();
+  await service.ajouterSallesManquantes();
 
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();
