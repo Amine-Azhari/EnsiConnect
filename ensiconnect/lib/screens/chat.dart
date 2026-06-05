@@ -5,6 +5,8 @@ import '../widgets/custom_header.dart';
 import '../models/message.dart';
 import '../models/conversation.dart';
 import 'package:intl/intl.dart';
+import '../service/chat_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -15,6 +17,8 @@ class ChatPage extends StatefulWidget{
 
 class _ChatPageState extends State<ChatPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final chatService = ChatService();
 
   final String currentUserId = "user1";
 
@@ -42,43 +46,75 @@ class _ChatPageState extends State<ChatPage> {
               ),
               const SizedBox(height: 10),
 
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: conversations.length,
-                itemBuilder: (context, index) {
-                  final convo = conversations[index];
+              StreamBuilder<QuerySnapshot>(
+                stream: chatService.getConversations(currentUserId),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  final otherUser = convo.name != null
-                    ? convo.name!
-                    : getOtherUser(convo.participants, currentUserId);
+                  final docs = snapshot.data!.docs;
 
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(otherUser[0].toUpperCase()),
-                    ),
-                    title: Text(otherUser),
-                    subtitle: Text(
-                      convo.lastMessage,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,),
-                    trailing: Text(
-                      formatTimeAgo(convo.lastMessageAt),
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ConversationPage(
-                            conversation:convo,
-                            currentUserId: currentUserId,
-                          ),
+                  if (docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Aucune conversation",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final data = docs[index].data() as Map<String, dynamic>;
+
+                      final participants = List<String>.from(data['participants']);
+
+                      final otherUser = data['name'] != null
+                        ? data['name']!
+                        : getOtherUser(participants, currentUserId);
+
+                      final lastMessageAt = data['lastMessageAt'];      
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          child: Text(otherUser[0].toUpperCase()),
                         ),
+                        title: Text(otherUser),
+                        subtitle: Text(
+                          data['lastMessage'] ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,),
+                        trailing: Text(
+                          formatTimeAgo(lastMessageAt),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ConversationPage(
+                                conversation:Conversation(
+                                  id:docs[index].id,
+                                  participants: participants,
+                                  messages: const[],
+                                  lastMessage: data['lastMessage'] ?? '',
+                                  lastMessageAt: lastMessageAt,
+                                  createdAt: null,
+                                  name: data['name'],
+                                ),
+                                currentUserId: currentUserId,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   );
-                },
+                }
               )
             ],
           ),

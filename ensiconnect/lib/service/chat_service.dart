@@ -24,4 +24,20 @@ class ChatService {
         .snapshots();
     }
 
+    Future<void> sendMessage({
+      required String conversationId,
+      required String senderId,
+      required String content,
+    }) async {
+      final messageRef = _db
+          .collection('conversations')
+          .doc(conversationId)
+          .collection('messages');
+
+      await messageRef.add({
+        'senderId': senderId,
+        'content': content,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+  }
 }
