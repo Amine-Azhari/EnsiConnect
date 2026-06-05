@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import "../widgets/ensiconnect_app.dart";
 import '../models/help_request.dart';
-import '../service/auth_service.dart';
+import '../service/user_service.dart';
 import '../service/help_request_service.dart';
 
 class DemandeAidePage extends StatefulWidget {
@@ -14,7 +14,7 @@ class DemandeAidePage extends StatefulWidget {
 class _DemandeAidePageState extends State<DemandeAidePage> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
-  final AuthServices _authServices = AuthServices();
+  final UserServices _userServices = UserServices();
   final HelpRequestService _helpRequestService = HelpRequestService();
 
   @override
@@ -32,7 +32,7 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
       return;
     }
 
-    final currentUser = await _authServices.getCurrentUser();
+    final currentUser = await _userServices.getCurrentUser();
     if (!mounted) return;
 
     if (currentUser == null) {
@@ -148,7 +148,7 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
         elevation: 0,
       ),
       body: FutureBuilder(
-        future: _authServices.getCurrentUser(),
+        future: _userServices.getCurrentUser(),
         builder: (context, userSnapshot) {
           final currentUserId = userSnapshot.data?.id;
 
