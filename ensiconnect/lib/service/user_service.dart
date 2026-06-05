@@ -11,11 +11,7 @@ class UserServices {
   CollectionReference<Map<String, dynamic>> get _etudiants =>
       _db.collection('Etudiant');
 
-<<<<<<< HEAD
   // Recupere l'utilisateur actuellement connecte depuis Firestore.
-=======
-        // Recupere l'utilisateur actuellement connecte depuis Firestore.
->>>>>>> c7e3314 (split user and auth)
   Future<User?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('user_email');
