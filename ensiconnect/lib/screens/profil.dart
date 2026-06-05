@@ -4,7 +4,9 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
 class ProfilPage extends StatefulWidget {
-  const ProfilPage({super.key});
+  final String? userId; // 👈 profil consulté (optionnel)
+
+  const ProfilPage({super.key, this.userId});
 
   @override
   State<ProfilPage> createState() => _ProfilPageState();
@@ -28,15 +30,20 @@ class _ProfilPageState extends State<ProfilPage> {
 
   bool isEditing = false;
 
+  String currentUserId = "";
+
   String fullName = "";
   String email = "";
 
-  // ✅ NOUVEAU depuis DB
   String filiere = "";
   String promotion = "";
 
-  int sessions = 12;
-  double averageNote = 4.2;
+  // ✅ NOUVEAU : depuis Firestore
+  int sessions = 0;
+  double averageNote = 0.0;
+
+  bool get isOwnProfile =>
+      widget.userId == null || widget.userId == currentUserId;
 
   @override
   void initState() {
@@ -53,50 +60,51 @@ class _ProfilPageState extends State<ProfilPage> {
       setState(() {
         fullName = "Utilisateur inconnu";
         email = "";
-        filiere = "";
-        promotion = "";
-        skills = [];
-        _descriptionController.text = "";
       });
       return;
     }
 
     setState(() {
+      currentUserId = user.id;
+
       fullName = user.fullName;
       email = user.email;
 
       filiere = user.filiere;
       promotion = user.promotion;
 
-      // nécessite les champs dans user.dart
       skills = user.skills;
       _descriptionController.text = user.description;
+
+      // ✅ AJOUT ICI
+      sessions = user.sessions;
+      averageNote = user.averageNote;
     });
   }
 
   Future<void> _toggleEdit() async {
-  if (isEditing) {
-    final user = await _auth.getCurrentUser();
+    if (!isOwnProfile) return;
 
-    if (user != null) {
+    if (isEditing) {
       await _auth.updateUserProfile(
-        userId: user.id,
+        userId: currentUserId,
         description: _descriptionController.text,
         skills: skills,
         filiere: filiere,
         promotion: promotion,
       );
     }
+
+    if (!mounted) return;
+
+    setState(() {
+      isEditing = !isEditing;
+    });
   }
 
-  if (!mounted) return;
-
-  setState(() {
-    isEditing = !isEditing;
-  });
-}
-
   void _addSkill() {
+    if (!isOwnProfile) return;
+
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
       setState(() {
         skills.add(selectedSkill!);
@@ -130,7 +138,7 @@ class _ProfilPageState extends State<ProfilPage> {
               "Informations personnelles",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 20, // ✅ plus grand
+                fontSize: 20,
               ),
             ),
             const SizedBox(height: 12),
@@ -217,14 +225,15 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 10),
 
-              Center(
-                child: ElevatedButton(
-                  onPressed: _toggleEdit,
-                  child: Text(
-                    isEditing ? "Sauvegarder" : "Modifier le profil",
+              if (isOwnProfile)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _toggleEdit,
+                    child: Text(
+                      isEditing ? "Sauvegarder" : "Modifier le profil",
+                    ),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 20),
 
@@ -239,7 +248,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               TextField(
                 controller: _descriptionController,
-                enabled: isEditing,
+                enabled: isEditing && isOwnProfile,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   hintText: "Décris-toi...",
@@ -268,13 +277,13 @@ class _ProfilPageState extends State<ProfilPage> {
                             ),
                           )
                           .toList(),
-                      onChanged: isEditing
+                      onChanged: isEditing && isOwnProfile
                           ? (v) => setState(() => selectedSkill = v)
                           : null,
                     ),
                   ),
                   IconButton(
-                    onPressed: isEditing ? _addSkill : null,
+                    onPressed: isEditing && isOwnProfile ? _addSkill : null,
                     icon: const Icon(Icons.add),
                   ),
                 ],
@@ -288,7 +297,7 @@ class _ProfilPageState extends State<ProfilPage> {
                         .map(
                           (s) => Chip(
                             label: Text(s),
-                            onDeleted: isEditing
+                            onDeleted: isEditing && isOwnProfile
                                 ? () => setState(() => skills.remove(s))
                                 : null,
                           ),
@@ -300,7 +309,9 @@ class _ProfilPageState extends State<ProfilPage> {
 
               Row(
                 children: [
-                  Expanded(child: _statCard("Sessions", "$sessions", isDark)),
+                  Expanded(
+                    child: _statCard("Sessions", "$sessions", isDark),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _statCard(

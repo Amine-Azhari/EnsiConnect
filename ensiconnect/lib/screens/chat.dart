@@ -210,8 +210,8 @@ class _ConversationPageState extends State<ConversationPage> {
                  EnsiConnectApp.ensisaBlue :
                  EnsiConnectApp.ensisaLightBlue :
                  Theme.of(context).brightness == Brightness.dark ?
-                 Color.fromARGB(255, 72, 72, 72) :
-                 Color.fromARGB(255, 209, 209, 209),
+                 const Color.fromARGB(255, 72, 72, 72) :
+                 const Color.fromARGB(255, 209, 209, 209),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(msg.content),
