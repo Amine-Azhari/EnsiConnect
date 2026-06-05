@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../main.dart';
+import "../widgets/ensiconnect_app.dart";
 import '../models/help_request.dart';
 import '../service/auth_service.dart';
 import '../service/help_request_service.dart';
