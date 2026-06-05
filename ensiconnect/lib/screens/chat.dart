@@ -231,7 +231,11 @@ class _ConversationPageState extends State<ConversationPage> {
     
   @override
   Widget build(BuildContext context) {
-    final otherUser = getOtherUser(widget.conversation.participants, widget.currentUserId);
+    final bool isGroup = widget.conversation.name != null;
+
+    final otherUser = isGroup
+                    ? widget.conversation.name!
+                    : getOtherUser(widget.conversation.participants, widget.currentUserId);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -266,11 +270,23 @@ class _ConversationPageState extends State<ConversationPage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+                crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  if (isGroup && !isMe)    
+                    Text(
+                      msg.senderId,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (isGroup && !isMe)  const SizedBox(height: 4),
+                  
                   Text(msg.content),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
+                  
                   Text(
                     msg.createdAt != null
                         ? DateFormat('HH:mm').format(msg.createdAt!)
