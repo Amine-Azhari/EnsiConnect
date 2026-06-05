@@ -4,7 +4,9 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
 class ProfilPage extends StatefulWidget {
-  const ProfilPage({super.key});
+  final String? userId;
+
+  const ProfilPage({super.key, this.userId});
 
   @override
   State<ProfilPage> createState() => _ProfilPageState();
@@ -16,23 +18,28 @@ class _ProfilPageState extends State<ProfilPage> {
 
   final TextEditingController _descriptionController = TextEditingController();
 
-  final List<String> options = [
-    "Java",
-    "Mathématiques",
-    "Anglais",
-    "Prog fonc",
-  ];
+  final List<String> options = ["Java", "Mathématiques", "Anglais", "Prog fonc"];
 
   List<String> skills = [];
   String? selectedSkill;
 
   bool isEditing = false;
 
+  String currentUserId = "";
+
   String fullName = "";
   String email = "";
 
-  int sessions = 12;
-  double averageNote = 4.2;
+  String filiere = "";
+  String promotion = "";
+
+  String profilePictureUrl = "";
+
+  int sessions = 0;
+  double averageNote = 0.0;
+
+  bool get isOwnProfile =>
+      widget.userId == null || widget.userId == currentUserId;
 
   @override
   void initState() {
@@ -45,28 +52,50 @@ class _ProfilPageState extends State<ProfilPage> {
 
     if (!mounted) return;
 
-    setState(() {
-      fullName = user?.fullName ?? "Utilisateur inconnu";
-      email = user?.email ?? "";
+    if (user == null) return;
 
-      // si ton model ne supporte pas encore → fallback safe
-      skills = (user as dynamic)?.skills ?? [];
-      _descriptionController.text = (user as dynamic)?.description ?? "";
+    setState(() {
+      currentUserId = user.id;
+
+      fullName = user.fullName;
+      email = user.email;
+
+      filiere = user.filiere;
+      promotion = user.promotion;
+
+      skills = user.skills;
+      _descriptionController.text = user.description;
+
+      sessions = user.sessions;
+      averageNote = user.averageNote;
+
+      profilePictureUrl = user.profilePictureUrl;
     });
   }
 
-  void _toggleEdit() {
+  Future<void> _toggleEdit() async {
+    if (!isOwnProfile) return;
+
+    if (isEditing) {
+      await _auth.updateUserProfile(
+        userId: currentUserId,
+        description: _descriptionController.text,
+        skills: skills,
+        filiere: filiere,
+        promotion: promotion,
+      );
+    }
+
+    if (!mounted) return;
+
     setState(() {
       isEditing = !isEditing;
     });
-
-    if (!isEditing) {
-      debugPrint("SAVE DESCRIPTION: ${_descriptionController.text}");
-      debugPrint("SAVE SKILLS: $skills");
-    }
   }
 
   void _addSkill() {
+    if (!isOwnProfile) return;
+
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
       setState(() {
         skills.add(selectedSkill!);
@@ -81,46 +110,60 @@ class _ProfilPageState extends State<ProfilPage> {
     super.dispose();
   }
 
-  Widget _infoCard() {
+  Widget _infoCard(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Informations personnelles",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text("Nom: $fullName"),
-          Text("Email: $email"),
-        ],
+      child: DefaultTextStyle(
+        style: TextStyle(
+          fontSize: 16,
+          color: isDark ? Colors.white : Colors.black,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Informations personnelles",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text("Nom: $fullName"),
+            Text("Email: $email"),
+            Text("Filière: $filiere"),
+            Text("Promotion: $promotion"),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _statCard(String title, String value) {
+  Widget _statCard(String title, String value, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade100,
+        color: isDark ? const Color(0xFF111827) : Colors.blue.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
             ),
           ),
           const SizedBox(height: 5),
-          Text(title),
+          Text(
+            title,
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
         ],
       ),
     );
@@ -128,6 +171,8 @@ class _ProfilPageState extends State<ProfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: const CustomDrawer(),
@@ -144,12 +189,14 @@ class _ProfilPageState extends State<ProfilPage> {
                     _scaffoldKey.currentState?.openDrawer(),
               ),
 
-              const Center(
+              const SizedBox(height: 10),
+
+              Center(
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(
-                    'https://picsum.photos/200',
-                  ),
+                  backgroundImage: profilePictureUrl.isNotEmpty
+                      ? NetworkImage(profilePictureUrl)
+                      : const NetworkImage('https://picsum.photos/200'),
                 ),
               ),
 
@@ -167,29 +214,25 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 10),
 
-              Center(
-                child: ElevatedButton(
-                  onPressed: _toggleEdit,
-                  child: Text(
-                    isEditing ? "Sauvegarder" : "Modifier le profil",
+              if (isOwnProfile)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _toggleEdit,
+                    child: Text(
+                      isEditing ? "Sauvegarder" : "Modifier le profil",
+                    ),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 20),
 
-              _infoCard(),
+              _infoCard(isDark),
 
               const SizedBox(height: 20),
-
-              const Text(
-                "Description",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
 
               TextField(
                 controller: _descriptionController,
-                enabled: isEditing,
+                enabled: isEditing && isOwnProfile,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   hintText: "Décris-toi...",
@@ -198,64 +241,17 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 20),
 
-              const Text(
-                "Compétences",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-
               Row(
                 children: [
                   Expanded(
-                    child: DropdownButton<String>(
-                      value: selectedSkill,
-                      hint: const Text("Choisir"),
-                      isExpanded: true,
-                      items: options
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(e),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: isEditing
-                          ? (v) => setState(() => selectedSkill = v)
-                          : null,
-                    ),
+                    child: _statCard("Sessions", "$sessions", isDark),
                   ),
-                  IconButton(
-                    onPressed: isEditing ? _addSkill : null,
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              ),
-
-              Wrap(
-                spacing: 8,
-                children: skills.isEmpty
-                    ? [const Text("Aucune compétence")]
-                    : skills
-                        .map(
-                          (s) => Chip(
-                            label: Text(s),
-                            onDeleted: isEditing
-                                ? () => setState(() => skills.remove(s))
-                                : null,
-                          ),
-                        )
-                        .toList(),
-              ),
-
-              const SizedBox(height: 20),
-
-              Row(
-                children: [
-                  Expanded(child: _statCard("Sessions", "$sessions")),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _statCard(
                       "Note moyenne",
                       averageNote.toStringAsFixed(1),
+                      isDark,
                     ),
                   ),
                 ],
