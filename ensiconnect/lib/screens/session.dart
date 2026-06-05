@@ -1,7 +1,9 @@
+import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/ensiconnect_app.dart';
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
@@ -145,7 +147,7 @@ class _PostSessionPageState extends State<PostSessionPage>
     // TODO : appel Firebase ici
     try {
       final db = FirebaseFirestore.instance;
-      final user = FirebaseAuth.instance.currentUser;
+      final user = UserServices().getCurrentUser();
     
       // 1. Récupère ou crée la salle
       final salleSnap = await db
@@ -189,7 +191,7 @@ class _PostSessionPageState extends State<PostSessionPage>
         'Titre': _data.titre,
         'MatiereID': matiereId,
         'SalleID': salleId,
-        'OrganisateurID': user?.uid ?? 'inconnu',
+        // 'OrganisateurID': OrganisateurID ?? 'inconnu',
         'Date': dateStr,
         'Heure_Debut': heureStr,
         'Heure_Fin': null,
