@@ -9,6 +9,7 @@ import 'service/firebase_options.dart';
 import 'service/data_insert.dart';
 import 'screens/mes_sessions_page.dart';
 import 'screens/mes_sessions_page_2.dart';
+import 'screens/session.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
@@ -83,6 +84,7 @@ class EnsiConnectApp extends StatelessWidget {
             '/mes_sessions': (context) => const MesSessionsPage(),
             '/mes_sessions_page_2': (context) => const MesSessionsPage2(),
             '/demande_aide': (context) => const DemandeAidePage(),
+            '/post_session': (context) => const PostSessionPage(),
           },
         );
       },
