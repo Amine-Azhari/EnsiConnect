@@ -30,14 +30,17 @@ class _SearchPageState extends State<SearchPage> {
     {
       "nom": "Amine",
       "matieres": ["Mathématiques", "SGBD"],
+      "note": 4.5,
     },
     {
       "nom": "Ayoub",
       "matieres": ["Programmation"],
+      "note": 4.0,
     },
     {
       "nom": "Alexis",
       "matieres": ["Réseaux","Mathématiques"],
+      "note": 4.8,
     },
   ];
 
@@ -62,6 +65,22 @@ class _SearchPageState extends State<SearchPage> {
 
       return correspondFiltres && correspondRecherche;
     }).toList();
+
+    Widget buildStars(double note) {
+      List<Widget> stars = [];
+
+      for (int i = 1; i <= 5; i++) {
+        if (note >= i) {
+          stars.add(const Icon(Icons.star, size: 16, color: Colors.amber));
+        } else if (note >= i - 0.5) {
+          stars.add(const Icon(Icons.star_half, size: 16, color: Colors.amber));
+        } else {
+          stars.add(const Icon(Icons.star_border, size: 16, color: Colors.amber));
+        }
+      }
+
+      return Row(children: stars);
+    }
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -184,20 +203,35 @@ class _SearchPageState extends State<SearchPage> {
                           child: Icon(Icons.person),
                         ),
                         title: Text(tuteursFiltres[index]["nom"]),
-                        subtitle: Wrap(
-                          spacing: 6,
-                          children: (tuteursFiltres[index]["matieres"] as List<String>)
-                              .map(
-                                (matiere) => Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(matiere),
-                                )
-                              )
-                              .toList(),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Wrap(
+                              spacing: 6,
+                              children: (tuteursFiltres[index]["matieres"] as List<String>)
+                                  .map(
+                                    (matiere) => Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context).brightness == Brightness.dark
+                                            ? EnsiConnectApp.ensisaBlue
+                                            : EnsiConnectApp.ensisaLightBlue,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(matiere),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                buildStars((tuteursFiltres[index]["note"] as double)),
+                                const SizedBox(width: 8),
+                                Text("${tuteursFiltres[index]["note"]}/5"),
+                              ],
+                            ),
+                          ],
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                         onTap: () {
