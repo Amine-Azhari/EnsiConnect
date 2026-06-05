@@ -36,15 +36,15 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image(
               image: AssetImage('assets/images/icon-192.png'),
-              width: 150,
-              height: 150,
+              width: 300,
+              height: 300,
             ),
 
             // Espacement
