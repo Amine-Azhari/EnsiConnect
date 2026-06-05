@@ -1,4 +1,3 @@
-import 'setting_page.dart';
 import '../main.dart';
 import 'package:flutter/material.dart';
 import '../widgets/custom_drawer.dart';

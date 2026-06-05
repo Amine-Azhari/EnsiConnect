@@ -287,7 +287,7 @@ class _ProfilPageState extends State<ProfilPage> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: selectedSkill,
+                      initialValue: selectedSkill,
                       items: options
                           .map((e) => DropdownMenuItem(
                                 value: e,
