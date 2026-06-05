@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../service/auth_service.dart';
+import '../widgets/custom_drawer.dart';
+import '../widgets/custom_header.dart';
 
 class ProfilPage extends StatefulWidget {
   const ProfilPage({super.key});
@@ -10,6 +12,7 @@ class ProfilPage extends StatefulWidget {
 
 class _ProfilPageState extends State<ProfilPage> {
   final AuthServices _auth = AuthServices();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _descriptionController = TextEditingController();
 
@@ -46,26 +49,21 @@ class _ProfilPageState extends State<ProfilPage> {
       fullName = user?.fullName ?? "Utilisateur inconnu";
       email = user?.email ?? "";
 
-      // ⚠️ fallback si ton modèle n’a pas encore ces champs
-      skills = (user as dynamic).skills ?? [];
-      _descriptionController.text = (user as dynamic).description ?? "";
+      // si ton model ne supporte pas encore → fallback safe
+      skills = (user as dynamic)?.skills ?? [];
+      _descriptionController.text = (user as dynamic)?.description ?? "";
     });
   }
 
-  void _toggleEdit() async {
-    if (isEditing) {
-      // ⚠️ ICI on ne force aucune base de données
-      // tu peux brancher Firebase plus tard
-      debugPrint("SAVE:");
-      debugPrint(_descriptionController.text);
-      debugPrint(skills.toString());
-    }
-
-    if (!mounted) return;
-
+  void _toggleEdit() {
     setState(() {
       isEditing = !isEditing;
     });
+
+    if (!isEditing) {
+      debugPrint("SAVE DESCRIPTION: ${_descriptionController.text}");
+      debugPrint("SAVE SKILLS: $skills");
+    }
   }
 
   void _addSkill() {
@@ -131,127 +129,139 @@ class _ProfilPageState extends State<ProfilPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      key: _scaffoldKey,
+      drawer: const CustomDrawer(),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 40),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-            const CircleAvatar(
-              radius: 50,
-              backgroundImage: NetworkImage("https://picsum.photos/200"),
-            ),
-
-            const SizedBox(height: 15),
-
-            Text(
-              fullName,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+              CustomHeader(
+                onMenuPressed: () =>
+                    _scaffoldKey.currentState?.openDrawer(),
               ),
-            ),
 
-            const SizedBox(height: 10),
+              const Center(
+                child: CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage(
+                    'https://picsum.photos/200',
+                  ),
+                ),
+              ),
 
-            ElevatedButton(
-              onPressed: _toggleEdit,
-              child: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
-            ),
+              const SizedBox(height: 10),
 
-            const SizedBox(height: 20),
+              Center(
+                child: Text(
+                  fullName,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
 
-            _infoCard(),
+              const SizedBox(height: 10),
 
-            const SizedBox(height: 20),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _toggleEdit,
+                  child: Text(
+                    isEditing ? "Sauvegarder" : "Modifier le profil",
+                  ),
+                ),
+              ),
 
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
+              const SizedBox(height: 20),
+
+              _infoCard(),
+
+              const SizedBox(height: 20),
+
+              const Text(
                 "Description",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
 
-            TextField(
-              controller: _descriptionController,
-              enabled: isEditing,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                hintText: "Décris-toi...",
+              TextField(
+                controller: _descriptionController,
+                enabled: isEditing,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: "Décris-toi...",
+                ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
+              const Text(
                 "Compétences",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
-            ),
 
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButton<String>(
-                    value: selectedSkill,
-                    hint: const Text("Choisir"),
-                    isExpanded: true,
-                    items: options
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButton<String>(
+                      value: selectedSkill,
+                      hint: const Text("Choisir"),
+                      isExpanded: true,
+                      items: options
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(e),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: isEditing
+                          ? (v) => setState(() => selectedSkill = v)
+                          : null,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: isEditing ? _addSkill : null,
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+
+              Wrap(
+                spacing: 8,
+                children: skills.isEmpty
+                    ? [const Text("Aucune compétence")]
+                    : skills
                         .map(
-                          (e) => DropdownMenuItem(
-                            value: e,
-                            child: Text(e),
+                          (s) => Chip(
+                            label: Text(s),
+                            onDeleted: isEditing
+                                ? () => setState(() => skills.remove(s))
+                                : null,
                           ),
                         )
                         .toList(),
-                    onChanged: isEditing
-                        ? (v) => setState(() => selectedSkill = v)
-                        : null,
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(child: _statCard("Sessions", "$sessions")),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _statCard(
+                      "Note moyenne",
+                      averageNote.toStringAsFixed(1),
+                    ),
                   ),
-                ),
-                IconButton(
-                  onPressed: isEditing ? _addSkill : null,
-                  icon: const Icon(Icons.add),
-                ),
-              ],
-            ),
-
-            Wrap(
-              spacing: 8,
-              children: skills.isEmpty
-                  ? [const Text("Aucune compétence")]
-                  : skills
-                      .map(
-                        (s) => Chip(
-                          label: Text(s),
-                          onDeleted: isEditing
-                              ? () => setState(() => skills.remove(s))
-                              : null,
-                        ),
-                      )
-                      .toList(),
-            ),
-
-            const SizedBox(height: 20),
-
-            Row(
-              children: [
-                Expanded(child: _statCard("Sessions", "$sessions")),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _statCard(
-                    "Note moyenne",
-                    averageNote.toStringAsFixed(1),
-                  ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
