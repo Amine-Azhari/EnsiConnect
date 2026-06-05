@@ -14,16 +14,15 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   String resultat = "";
-  String filtreSelectionne = "Toutes";
   String recherche = "";
+  Set<String> filtresSelectionnes = {};
 
   //temporaire
   final List<String> filtres = [
-    "Toutes",
     "Programmation",
     "Mathématiques",
     "Réseaux",
-    "Autre",
+    "SGBD",
   ];
 
   //temporaire
@@ -48,11 +47,10 @@ class _SearchPageState extends State<SearchPage> {
       final nom = (tuteur["nom"] as String).toLowerCase();
       final matieres = (tuteur["matieres"] as List<String>);
 
-      // Filtre par matière
-      final correspondFiltre = filtreSelectionne == "Toutes" ||
-          matieres.any(
-            (m) => m.toLowerCase().contains(filtreSelectionne.toLowerCase()),
-          );
+      // Filtres multiples
+      final correspondFiltres =
+          filtresSelectionnes.isEmpty ||
+          matieres.any((m) => filtresSelectionnes.contains(m));
 
       // Recherche par nom ou matière
       final correspondRecherche =
@@ -62,7 +60,7 @@ class _SearchPageState extends State<SearchPage> {
             (m) => m.toLowerCase().contains(recherche.toLowerCase()),
           );
 
-      return correspondFiltre && correspondRecherche;
+      return correspondFiltres && correspondRecherche;
     }).toList();
   }
 
@@ -133,16 +131,21 @@ class _SearchPageState extends State<SearchPage> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: filtres.map((filtre) {
+                  final selected = filtresSelectionnes.contains(filtre);
+
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
+                    child: FilterChip(
                       label: Text(filtre),
-                      labelStyle: TextStyle(color:Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87),
-                      selected: filtreSelectionne == filtre,
-                      selectedColor:Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
-                      onSelected: (selected) {
+                      selected: selected,
+                      selectedColor: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
+                      onSelected: (value) {
                         setState(() {
-                          filtreSelectionne = filtre;
+                          if (value) {
+                            filtresSelectionnes.add(filtre);
+                          } else {
+                            filtresSelectionnes.remove(filtre);
+                          }
                         });
                       },
                     ),
