@@ -107,13 +107,13 @@ class Conversation extends StatelessWidget {
             child: Row(
               children: [
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.face,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
                   onPressed: () {},
                 ),
-                Expanded(
+                const Expanded(
                   child: TextField(
                     decoration: InputDecoration(
                       hintText: "Votre message",
@@ -125,14 +125,14 @@ class Conversation extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.attach_file,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
                   onPressed: () {},
                 ),
                 IconButton(
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.send,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
