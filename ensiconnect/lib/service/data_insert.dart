@@ -3,6 +3,71 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class FirebaseDataService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
+  final salles = [
+    // Amphis
+    {'Nom': 'Grand Amphi', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'Petit Amphi', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'Amphi 116', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Amphi RAS', 'Batiment': 'ENSISA Werner'},
+
+    // Salles informatiques
+    {'Nom': 'E37', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E38', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'PC 1', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'PC 2', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'PC 3', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'PC 4', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'PC Master', 'Batiment': 'ENSISA Lumière'},
+
+    // Salles de cours
+    {'Nom': 'E20a', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E20b', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E21', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E22', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E23', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E24', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E25', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E26', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E27', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E28', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E30', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E31', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E32', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E33', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E34', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'E36', 'Batiment': 'ENSISA Lumière'},
+
+    // Laboratoires et TP
+    {'Nom': 'TP Auto 1', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Auto 2', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Auto 3', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Électronique', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Info Indus', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Méca 1', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Méca 2', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Physique', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP SN', 'Batiment': 'ENSISA Lumière'},
+    {'Nom': 'TP Réseaux', 'Batiment': 'ENSISA Lumière'},
+
+    // Werner
+    {'Nom': 'Salle 157', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Salle 158', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Salle 401', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Salle 402', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Salle 403', 'Batiment': 'ENSISA Werner'},
+
+    // Ateliers et labos Werner
+    {'Nom': 'Labo Chimie', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Labo Métrologie', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Salle Robot', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'Salle Lectra', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'TP 207', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'TP 300', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'TP 321', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'TP 322', 'Batiment': 'ENSISA Werner'},
+    {'Nom': 'TP 323', 'Batiment': 'ENSISA Werner'},
+  ];
+
   Future<void> initialiserDonneesDeTest() async {
 
     // On vérifie s'il y a déjà des étudiants
@@ -36,6 +101,13 @@ class FirebaseDataService {
       DocumentReference refSalleA = await _db.collection('Salle').add({'Nom': 'Salle TD 101'});
       await _db.collection('Salle').add({'Nom': 'Bibliothèque (Box 3)'});
       await _db.collection('Salle').add({'Nom': 'En ligne (Discord)'});
+      await _db.collection('Salle').add({'Nom': 'Salle Ensisa E99'});
+
+
+      for (final salle in salles) {
+        await _db.collection('Salle').add(salle);
+      }
+      
 
       // Insertion de la Session
       DocumentReference refSessionMaths = await _db.collection('Session').add({
