@@ -17,13 +17,10 @@ dependencies:
   firebase_core: ^4.10.0
   cloud_firestore: ^6.5.0
   table_calendar: ^3.2.0
-<<<<<<< HEAD
   firebase_auth: ^6.5.2
   
-=======
   image_picker: ^1.2.2
   firebase_storage: ^13.4.2
->>>>>>> be80c2f1adf70ec7e5ccffd2323e6ff1c5200b04
 dev_dependencies:
   flutter_test:
     sdk: flutter
