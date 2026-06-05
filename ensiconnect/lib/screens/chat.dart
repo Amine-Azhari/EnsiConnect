@@ -392,7 +392,7 @@ class _ConversationPageState extends State<ConversationPage> {
                   ),
                   onPressed: () {},
                 ),
-                const Expanded(
+                Expanded(
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
