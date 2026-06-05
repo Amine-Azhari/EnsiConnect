@@ -11,6 +11,26 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
+class StarRating extends StatelessWidget {
+  final double note;
+
+  const StarRating({super.key, required this.note});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: List.generate(5, (i) {
+        if (note >= i + 1) {
+          return const Icon(Icons.star, size: 16, color: Colors.amber);
+        } else if (note >= i + 0.5) {
+          return const Icon(Icons.star_half, size: 16, color: Colors.amber);
+        } else {
+          return const Icon(Icons.star_border, size: 16, color: Colors.amber);
+        }
+      }),
+    );
+  }
+}
 
 class _SearchPageState extends State<SearchPage> {
   String resultat = "";
@@ -66,21 +86,8 @@ class _SearchPageState extends State<SearchPage> {
       return correspondFiltres && correspondRecherche;
     }).toList();
 
-    Widget buildStars(double note) {
-      List<Widget> stars = [];
 
-      for (int i = 1; i <= 5; i++) {
-        if (note >= i) {
-          stars.add(const Icon(Icons.star, size: 16, color: Colors.amber));
-        } else if (note >= i - 0.5) {
-          stars.add(const Icon(Icons.star_half, size: 16, color: Colors.amber));
-        } else {
-          stars.add(const Icon(Icons.star_border, size: 16, color: Colors.amber));
-        }
-      }
 
-      return Row(children: stars);
-    }
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -205,9 +212,11 @@ class _SearchPageState extends State<SearchPage> {
                         title: Text(tuteursFiltres[index]["nom"]),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Wrap(
                               spacing: 6,
+                              runSpacing: 4,
                               children: (tuteursFiltres[index]["matieres"] as List<String>)
                                   .map(
                                     (matiere) => Container(
@@ -218,17 +227,25 @@ class _SearchPageState extends State<SearchPage> {
                                             : EnsiConnectApp.ensisaLightBlue,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      child: Text(matiere),
+                                      child: Text(
+                                        matiere,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
                                     ),
                                   )
                                   .toList(),
                             ),
+
                             const SizedBox(height: 6),
+
                             Row(
                               children: [
-                                buildStars((tuteursFiltres[index]["note"] as double)),
+                                StarRating(note: tuteursFiltres[index]["note"] as double),
                                 const SizedBox(width: 8),
-                                Text("${tuteursFiltres[index]["note"]}/5"),
+                                Text(
+                                  "${tuteursFiltres[index]["note"]}/5",
+                                  style: const TextStyle(fontSize: 12),
+                                ),
                               ],
                             ),
                           ],
