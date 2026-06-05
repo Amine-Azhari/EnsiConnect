@@ -1,32 +1,82 @@
 class HelpRequest {
-  final String authorName;
+  final String? id;
+  final String authorId;
+  final String authorFirstName;
+  final String authorLastName;
   final String subject;
   final String message;
-  final String timeAgo;
+  final DateTime? createdAt;
   final bool isMe;
 
   HelpRequest({
-    required this.authorName,
+    this.id,
+    required this.authorId,
+    required this.authorFirstName,
+    required this.authorLastName,
     required this.subject,
     required this.message,
-    required this.timeAgo,
+    this.createdAt,
     this.isMe = false,
   });
-}
 
-// On déclare la liste à l'extérieur de la classe pour qu'elle devienne globale en mémoire.
-// Ainsi, elle ne sera pas réinitialisée lorsqu'on quitte et revient sur la page.
-final List<HelpRequest> globalRequests = [
-  HelpRequest(
-    authorName: "Alice Dupont",
-    subject: "Mathématiques - Algèbre linéaire",
-    message: "Bonjour, je bloque sur la diagonalisation des matrices. Quelqu'un pourrait m'expliquer la méthode pas à pas ?",
-    timeAgo: "Il y a 2h",
-  ),
-  HelpRequest(
-    authorName: "Lucas Martin",
-    subject: "Programmation - C",
-    message: "Je n'arrive pas à comprendre le fonctionnement des pointeurs et de l'allocation dynamique avec malloc(). Help svp !",
-    timeAgo: "Il y a 5h",
-  ),
-];
+  String get authorName {
+    final fullName = '$authorFirstName $authorLastName'.trim();
+    return fullName.isEmpty ? 'Utilisateur' : fullName;
+  }
+
+  String get timeAgo => _formatTimeAgo(createdAt);
+
+  factory HelpRequest.fromMap(
+    Map<String, dynamic> map, {
+    String? id,
+    bool isMe = false,
+  }) {
+    final createdAtRaw = map['CreatedAt'];
+    DateTime? createdAt;
+    if (createdAtRaw is DateTime) {
+      createdAt = createdAtRaw;
+    } else if (createdAtRaw != null && createdAtRaw.toString().isNotEmpty) {
+      createdAt = DateTime.tryParse(createdAtRaw.toString());
+    }
+
+    return HelpRequest(
+      id: id,
+      authorId: map['OrganisateurID'] ?? '',
+      authorFirstName: map['OrganisateurPrenom'] ?? '',
+      authorLastName: map['OrganisateurNom'] ?? '',
+      subject: map['Sujet'] ?? '',
+      message: map['Description'] ?? '',
+      createdAt: createdAt,
+      isMe: isMe,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'OrganisateurID': authorId,
+      'OrganisateurPrenom': authorFirstName,
+      'OrganisateurNom': authorLastName,
+      'Sujet': subject,
+      'Description': message,
+      'CreatedAt': createdAt?.toIso8601String() ?? DateTime.now().toIso8601String(),
+    };
+  }
+
+  static String _formatTimeAgo(DateTime? createdAt) {
+    if (createdAt == null) {
+      return 'Date inconnue';
+    }
+
+    final difference = DateTime.now().difference(createdAt);
+    if (difference.inMinutes < 1) {
+      return "À l'instant";
+    }
+    if (difference.inHours < 1) {
+      return 'Il y a ${difference.inMinutes} min';
+    }
+    if (difference.inDays < 1) {
+      return 'Il y a ${difference.inHours} h';
+    }
+    return 'Il y a ${difference.inDays} j';
+  }
+}

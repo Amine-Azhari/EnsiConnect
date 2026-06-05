@@ -139,13 +139,28 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                       });
                     },
                     eventLoader: _getEventsForDay,
+                    calendarBuilders: CalendarBuilders(
+                      markerBuilder: (context, day, events) {
+                        if (events.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Container(
+                            width: 7,
+                            height: 7,
+                            margin: const EdgeInsets.only(bottom: 6),
+                            decoration: const BoxDecoration(
+                              color: EnsiConnectApp.ensisaBlue,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     calendarStyle: CalendarStyle(
-                      // Style des points sous les dates (markers)
-                      markerDecoration: const BoxDecoration(
-                        color: EnsiConnectApp.ensisaBlue,
-                        shape: BoxShape.circle,
-                      ),
                       // Style du jour sélectionné
                       selectedDecoration: const BoxDecoration(
                         color: EnsiConnectApp.ensisaBlue,
