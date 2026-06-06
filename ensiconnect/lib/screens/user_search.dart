@@ -4,6 +4,7 @@ import "../widgets/ensiconnect_app.dart";
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../service/user_service.dart';
 
 
 class SearchPage extends StatefulWidget {
@@ -35,6 +36,7 @@ class StarRating extends StatelessWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  String? currentUserId;
   String resultat = "";
   String recherche = "";
   Set<String> filtresSelectionnes = {};
@@ -52,7 +54,22 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    chargerTuteurs();
+    initialiserPage();
+  }
+
+  Future<void> initialiserPage() async {
+    await initUser();
+    await chargerTuteurs();
+  }
+
+  //Utilisateur actuel
+  Future<void> initUser() async {
+    final userService = UserServices();
+    final user = await userService.getCurrentUser();
+
+    setState(() {
+      currentUserId = user?.id;
+    });
   }
 
   //Récupère les données dans Etudiant
@@ -64,7 +81,7 @@ class _SearchPageState extends State<SearchPage> {
       tuteurs.clear();
 
       tuteurs.addAll(
-        etudiantSnap.docs.map((doc) {
+        etudiantSnap.docs.where((doc) => doc.id != currentUserId).map((doc) {
           return {
             "id": doc.id,
             "nom": doc["Nom"],
