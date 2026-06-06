@@ -168,8 +168,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         final created = await _db.collection('RejoindreSession').add({
           'EtudiantID': _currentStudentId,
           'SessionID': sessionId,
-          'Date': DateTime.now().toIso8601String().split('T').first,
-          'Contenu': '',
         });
 
         if (!mounted) return;
