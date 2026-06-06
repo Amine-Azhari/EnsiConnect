@@ -108,7 +108,7 @@ class _ProfilPageState extends State<ProfilPage> {
       context,
       MaterialPageRoute(
         builder: (_) => const ProfilPage(
-          userId: "romain_fontaine", // 👈 profil test
+          userId: "romain_fontaine", // profil test
         ),
       ),
     );
@@ -318,7 +318,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 30),
 
-              // 👇 PROFIL TEST EN BAS
+              // PROFIL TEST EN BAS
               const Divider(),
               const SizedBox(height: 10),
 
