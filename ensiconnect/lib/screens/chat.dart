@@ -4,6 +4,9 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import '../models/message.dart';
 import '../models/conversation.dart';
+import 'package:intl/intl.dart';
+import '../service/chat_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -14,6 +17,8 @@ class ChatPage extends StatefulWidget{
 
 class _ChatPageState extends State<ChatPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final chatService = ChatService();
 
   final String currentUserId = "user1";
 
@@ -41,34 +46,75 @@ class _ChatPageState extends State<ChatPage> {
               ),
               const SizedBox(height: 10),
 
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: conversations.length,
-                itemBuilder: (context, index) {
-                  final convo = conversations[index];
+              StreamBuilder<QuerySnapshot>(
+                stream: chatService.getConversations(currentUserId),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  final otherUser = getOtherUser(convo.participants, currentUserId); 
+                  final docs = snapshot.data!.docs;
 
-                  return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(otherUser[0].toUpperCase()),
-                    ),
-                    title: Text(otherUser),
-                    subtitle: Text(convo.lastMessage),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ConversationPage(
-                            conversation:convo,
-                            currentUserId: currentUserId,
-                          ),
+                  if (docs.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        "Aucune conversation",
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: docs.length,
+                    itemBuilder: (context, index) {
+                      final data = docs[index].data() as Map<String, dynamic>;
+
+                      final participants = List<String>.from(data['participants']);
+
+                      final otherUser = data['name'] != null
+                        ? data['name']!
+                        : getOtherUser(participants, currentUserId);
+
+                      final lastMessageAt = data['lastMessageAt'];      
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          child: Text(otherUser[0].toUpperCase()),
                         ),
+                        title: Text(otherUser),
+                        subtitle: Text(
+                          data['lastMessage'] ?? '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,),
+                        trailing: Text(
+                          formatTimeAgo(lastMessageAt),
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ConversationPage(
+                                conversation:Conversation(
+                                  id:docs[index].id,
+                                  participants: participants,
+                                  messages: const[],
+                                  lastMessage: data['lastMessage'] ?? '',
+                                  lastMessageAt: lastMessageAt,
+                                  createdAt: null,
+                                  name: data['name'],
+                                ),
+                                currentUserId: currentUserId,
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
                   );
-                },
+                }
               )
             ],
           ),
@@ -149,8 +195,109 @@ final List<Conversation> conversations = [
         content: ":) 👍",
         createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
       ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "On révise ensemble demain ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui carrément",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user4",
+        content: ":) 👍",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
+      ),
     ],
   ),
+
+  Conversation(
+    id: "group1",
+    name: "Projet ENSISA 🚀",
+    participants: [
+      "user1",
+      "user2",
+      "user3",
+      "user4",
+    ],
+    lastMessage: "On valide le rapport aujourd'hui wow ce message est long parce que je teste des trucs",
+    lastMessageAt: DateTime.now().subtract(const Duration(minutes: 15)),
+    createdAt: DateTime.now().subtract(const Duration(days: 3)),
+    messages: [
+      Message(
+        senderId: "user2",
+        content: "Salut l'équipe 👋",
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+      Message(
+        senderId: "user3",
+        content: "Vous avez avancé sur le projet ?",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 30)),
+      ),
+      Message(
+        senderId: "user1",
+        content: "Oui, j'ai fini la partie UI",
+        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+      ),
+      Message(
+        senderId: "user4",
+        content: "Top 👍",
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+      Message(
+        senderId: "user2",
+        content: "On valide le rapport aujourd'hui wow ce message est long parce que je teste des trucs",
+        createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
+      ),
+    ],
+  )
 ];
 
 String getOtherUser(List<String> participants, String currentUserId) {
@@ -176,10 +323,24 @@ class ConversationPage extends StatefulWidget {
 
 class _ConversationPageState extends State<ConversationPage> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+  }
     
   @override
   Widget build(BuildContext context) {
-    final otherUser = getOtherUser(widget.conversation.participants, widget.currentUserId);
+    final bool isGroup = widget.conversation.name != null;
+
+    final otherUser = isGroup
+                    ? widget.conversation.name!
+                    : getOtherUser(widget.conversation.participants, widget.currentUserId);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -192,6 +353,7 @@ class _ConversationPageState extends State<ConversationPage> {
       ),
 
       body:ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(10),
         itemCount: widget.conversation.messages.length,
         itemBuilder: (context, index) {
@@ -213,7 +375,32 @@ class _ConversationPageState extends State<ConversationPage> {
                  const Color.fromARGB(255, 209, 209, 209),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(msg.content),
+              child: Column(
+                crossAxisAlignment:
+                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isGroup && !isMe)    
+                    Text(
+                      msg.senderId,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (isGroup && !isMe)  const SizedBox(height: 4),
+                  
+                  Text(msg.content),
+                  const SizedBox(height: 6),
+                  
+                  Text(
+                    msg.createdAt != null
+                        ? DateFormat('HH:mm').format(msg.createdAt!)
+                        : '',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -241,8 +428,9 @@ class _ConversationPageState extends State<ConversationPage> {
                   ),
                   onPressed: () {},
                 ),
-                const Expanded(
+                Expanded(
                   child: TextField(
+                    controller: _controller,
                     decoration: InputDecoration(
                       hintText: "Votre message",
                       hintStyle: TextStyle(
@@ -264,7 +452,12 @@ class _ConversationPageState extends State<ConversationPage> {
                     Icons.send,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
-                  onPressed: () {_controller.clear();},
+                  onPressed: () async {
+                    final text = _controller.text.trim();
+
+                    if(text.isEmpty) return;
+
+                    _controller.clear();},// Envoi du message
                 ),
               ],
             ),
@@ -273,4 +466,34 @@ class _ConversationPageState extends State<ConversationPage> {
       ),
     );
   }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 10),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+}
+
+String formatTimeAgo(DateTime? date) {
+  if (date == null) return '';
+
+  final difference = DateTime.now().difference(date);
+
+  if (difference.inMinutes < 1) {
+    return "À l'instant";
+  }
+
+  if (difference.inHours < 1) {
+    return "Il y a ${difference.inMinutes} min";
+  }
+
+  if (difference.inDays < 1) {
+    return "Il y a ${difference.inHours} h";
+  }
+
+  return "Il y a ${difference.inDays} j";
 }
