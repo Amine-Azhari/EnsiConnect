@@ -5,6 +5,7 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
 
@@ -56,9 +57,8 @@ class _SearchPageState extends State<SearchPage> {
 
   //Récupère les données dans Etudiant
   Future<void> chargerTuteurs() async {
-    final etudiantSnap = await FirebaseFirestore.instance
-        .collection('Etudiant')
-        .get();
+    
+    final etudiantSnap = await FirebaseFirestore.instance.collection('Etudiant').get();
 
     setState(() {
       tuteurs.clear();
@@ -69,7 +69,6 @@ class _SearchPageState extends State<SearchPage> {
             "id": doc.id,
             "nom": doc["Nom"],
             "prenom": doc["Prenom"],
-            //test
             "matieres": <String>[],
             "note": 0.0,
           };
@@ -82,7 +81,9 @@ class _SearchPageState extends State<SearchPage> {
 
   
   List<Map<String, dynamic>> get tuteursFiltres {
+
     return tuteurs.where((tuteur) {
+      
       final nom = (tuteur["nom"] as String).toLowerCase();
       final prenom = (tuteur["prenom"] as String).toLowerCase();
       final matieres = (tuteur["matieres"] as List<String>);
