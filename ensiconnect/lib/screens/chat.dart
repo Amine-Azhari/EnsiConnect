@@ -6,6 +6,7 @@ import '../service/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
 import 'chat_messages.dart';
+import '../models/user.dart';
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -21,23 +22,7 @@ class _ChatPageState extends State<ChatPage> {
 
   final UserServices _user = UserServices();
 
-  String currentUserId = "";
-
-  Future<void> _loadUser() async {
-    final user = await _user.getCurrentUser();
-
-    if (!mounted || user == null) return;
-
-    setState(() {
-      currentUserId = user.id;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUser();
-  }
+  final Map<String, String> _userNamesCache = {};
 
   @override
   Widget build(BuildContext context) {
@@ -48,98 +33,189 @@ class _ChatPageState extends State<ChatPage> {
       key: _scaffoldKey, 
       drawer: const CustomDrawer(),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CustomHeader(
-                onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                "Vos messages",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
-              ),
-              const SizedBox(height: 10),
+        child: FutureBuilder<User?>(
+          future: _user.getCurrentUser(),
+          builder: (context, userSnapshot) {
 
-              StreamBuilder<QuerySnapshot>(
-                stream: chatService.getConversations(currentUserId),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+            if (!userSnapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                  final docs = snapshot.data!.docs;
+            final currentUserId = userSnapshot.data!.id;
 
-                  if (docs.isEmpty) {
-                    return const Center(
-                      child: Text(
-                        "Aucune conversation",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    );
-                  }
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomHeader(
+                    onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Vos messages",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
+                  ),
 
-                  return ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: docs.length,
-                    itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
+                  // Boutton de test
+                  FloatingActionButton(
+                    onPressed: () async {
+                      final convoId = await chatService.getOrCreateConversation(
+                        participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz"], // test
+                      );
 
-                      final participants = List<String>.from(data['participants']);
-
-                      final otherUser = data['name'] != null
-                        ? data['name']!
-                        : getOtherUser(participants, currentUserId);
-
-                      final lastMessageAt = data['lastMessageAt'];      
-
-                      return ListTile(
-                        leading: CircleAvatar(
-                          child: Text(otherUser[0].toUpperCase()),
-                        ),
-                        title: Text(otherUser),
-                        subtitle: Text(
-                          data['lastMessage'] ?? '',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,),
-                        trailing: Text(
-                          formatTimeAgo(lastMessageAt),
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                        // Ouvre la page de la conversation sélectionée
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ConversationPage(
-                                conversation:Conversation(
-                                  id:docs[index].id,
-                                  participants: participants,
-                                  messages: const[],
-                                  lastMessage: data['lastMessage'] ?? '',
-                                  lastMessageAt: lastMessageAt,
-                                  createdAt: null,
-                                  name: data['name'],
-                                ),
-                                currentUserId: currentUserId,
-                              ),
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ConversationPage(
+                            conversation: Conversation(
+                              id: convoId,
+                              participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz"],
+                              messages: const [],
+                              lastMessage: '',
+                              lastMessageAt: null,
+                              createdAt: null,
+                              name: null,
                             ),
+                            currentUserId: currentUserId,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Icon(Icons.add),
+                  ),
+                  // Boutton de test
+
+                  const SizedBox(height: 10),
+
+                  StreamBuilder<QuerySnapshot>(
+                    stream: chatService.getConversations(currentUserId),
+                    builder: (context, snapshot) {
+                      print("state: ${snapshot.connectionState}");
+                      print("hasData: ${snapshot.hasData}");
+                      print("hasError: ${snapshot.hasError}");
+                      print("data: ${snapshot.data}");
+
+                      if (!snapshot.hasData) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      
+                      if (snapshot.hasError) {
+                        return const Center(child: Text("Erreur de chargement"));
+                      }
+
+                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                        return const Center(child: Text("Aucune conversation"));
+                      }
+
+                      final docs = snapshot.data!.docs;
+
+                      if (docs.isEmpty) {
+                        return const Center(
+                          child: Text(
+                            "Aucune conversation",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        );
+                      }
+
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: docs.length,
+
+                        
+
+                        itemBuilder: (context, index) {
+                          final data = docs[index].data() as Map<String, dynamic>;
+
+                          final participants = List<String>.from(data['participants']);
+
+                          final otherUser = data['name'] != null
+                            ? data['name']!
+                            : getOtherUser(participants, currentUserId);
+
+                          final lastMessageAt = (data['lastMessageAt'] as Timestamp?)?.toDate();      
+
+                          return ListTile(
+                            leading: FutureBuilder<String>(
+                              future: data['name'] != null
+                                  ? Future.value(data['name'])
+                                  : getUserName(getOtherUser(participants, currentUserId)),
+                              builder: (context, snapshot) {
+                                final name = snapshot.data ?? '?';
+                                return CircleAvatar(
+                                  child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
+                                );
+                              },
+                            ),
+                            title: FutureBuilder<String>(
+                              future: data['name'] != null
+                                  ? Future.value(data['name'])
+                                  : getUserName(getOtherUser(participants, currentUserId)),
+                              builder: (context, snapshot) {
+                                final name = snapshot.data ?? '...';
+
+                                return Text(name);
+                              },
+                            ),
+                            subtitle: Text(
+                              data['lastMessage'] ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,),
+                            trailing: Text(
+                              formatTimeAgo(lastMessageAt),
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                            
+                            // Ouvre la page de la conversation sélectionée
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ConversationPage(
+                                    conversation:Conversation(
+                                      id:docs[index].id,
+                                      participants: participants,
+                                      messages: const[],
+                                      lastMessage: data['lastMessage'] ?? '',
+                                      lastMessageAt: lastMessageAt,
+                                      createdAt: null,
+                                      name: data['name'],
+                                    ),
+                                    currentUserId: currentUserId,
+                                  ),
+                                ),
+                              );
+                            },
                           );
                         },
                       );
-                    },
-                  );
-                }
-              )
-            ],
-          ),
-        ),
+                    }
+                  )
+                ],
+              ),
+            );
+          },
+        )
       ),
     );
   }
+
+  Future<String> getUserName(String userId) async {
+    if (_userNamesCache.containsKey(userId)) {
+      return _userNamesCache[userId]!;
+    }
+
+    final user = await chatService.getUserById(userId);
+
+    final name = user?.fullName ?? userId;
+
+    _userNamesCache[userId] = name;
+
+    return name;
+  }
+
 }
 
 String getOtherUser(List<String> participants, String currentUserId) {
