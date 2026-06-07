@@ -243,26 +243,6 @@ class _AuthState extends State<Auth> {
               ),
             ),
           ),
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                'Mot de passe oublié ?',
-                style: TextStyle(
-                  color: EnsiConnectApp.ensisaBlue,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
           const SizedBox(height: 22),
           _PrimaryButton(
             label: _isLoading ? 'Connexion...' : 'Se connecter',
@@ -472,22 +452,22 @@ class _AuthInput extends StatelessWidget {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
             color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE5E8EF),
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide:
               const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.redAccent),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.redAccent, width: 1.4),
         ),
       ),
@@ -542,7 +522,7 @@ class _PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF5D6DF5),
+          backgroundColor: EnsiConnectApp.ensisaBlue,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
