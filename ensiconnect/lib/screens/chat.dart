@@ -7,6 +7,7 @@ import '../models/conversation.dart';
 import 'package:intl/intl.dart';
 import '../service/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../service/user_service.dart';
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -20,7 +21,25 @@ class _ChatPageState extends State<ChatPage> {
 
   final chatService = ChatService();
 
-  final String currentUserId = "user1";
+  final UserServices _user = UserServices();
+
+  String currentUserId = "";
+
+  Future<void> _loadUser() async {
+    final user = await _user.getCurrentUser();
+
+    if (!mounted || user == null) return;
+
+    setState(() {
+      currentUserId = user.id;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,8 +142,6 @@ class _ChatPageState extends State<ChatPage> {
     );
   }
 }
-
-
 
 
 final List<Conversation> conversations = [
@@ -325,10 +342,11 @@ class _ConversationPageState extends State<ConversationPage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  final ChatService chatService = ChatService(); 
+
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
@@ -336,8 +354,10 @@ class _ConversationPageState extends State<ConversationPage> {
     
   @override
   Widget build(BuildContext context) {
+    //Savoir si la conversation est une conversation de groupe
     final bool isGroup = widget.conversation.name != null;
 
+    // Nom de la conversation
     final otherUser = isGroup
                     ? widget.conversation.name!
                     : getOtherUser(widget.conversation.participants, widget.currentUserId);
@@ -352,59 +372,81 @@ class _ConversationPageState extends State<ConversationPage> {
         foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
       ),
 
-      body:ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.all(10),
-        itemCount: widget.conversation.messages.length,
-        itemBuilder: (context, index) {
-          final msg = widget.conversation.messages[index];
-          final isMe = msg.senderId == widget.currentUserId;
-          return Align(
-            alignment:
-                isMe ? Alignment.centerRight : Alignment.centerLeft,
-            child: Container(
-              margin: const EdgeInsets.symmetric(vertical: 4),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isMe ?
-                  Theme.of(context).brightness == Brightness.dark ?
-                 EnsiConnectApp.ensisaBlue :
-                 EnsiConnectApp.ensisaLightBlue :
-                 Theme.of(context).brightness == Brightness.dark ?
-                 const Color.fromARGB(255, 72, 72, 72) :
-                 const Color.fromARGB(255, 209, 209, 209),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                crossAxisAlignment:
-                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isGroup && !isMe)    
-                    Text(
-                      msg.senderId,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                    ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: chatService.getMessages(widget.conversation.id),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data!.docs;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToBottom();
+          });
+
+          return ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(10),
+            itemCount: docs.length,
+            itemBuilder: (context, index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+
+              final msg = Message(
+                senderId: data['senderId'],
+                content: data['content'],
+                createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+              );
+
+              final isMe = msg.senderId == widget.currentUserId;
+
+              return Align(
+                alignment:
+                    isMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isMe ?
+                      Theme.of(context).brightness == Brightness.dark ?
+                      EnsiConnectApp.ensisaBlue :
+                      EnsiConnectApp.ensisaLightBlue :
+                      Theme.of(context).brightness == Brightness.dark ?
+                      const Color.fromARGB(255, 72, 72, 72) :
+                      const Color.fromARGB(255, 209, 209, 209),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  if (isGroup && !isMe)  const SizedBox(height: 4),
-                  
-                  Text(msg.content),
-                  const SizedBox(height: 6),
-                  
-                  Text(
-                    msg.createdAt != null
-                        ? DateFormat('HH:mm').format(msg.createdAt!)
-                        : '',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  child: Column(
+                    crossAxisAlignment:
+                        isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    children: [
+                      if (isGroup && !isMe)    
+                        Text(
+                          msg.senderId,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (isGroup && !isMe)  const SizedBox(height: 4),
+                      
+                      Text(msg.content),
+                      const SizedBox(height: 6),
+                      
+                      Text(
+                        msg.createdAt != null
+                            ? DateFormat('HH:mm').format(msg.createdAt!)
+                            : '',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           );
         },
-      ),
+      ),  
 
       bottomNavigationBar: SafeArea(
         child: Padding(
@@ -447,6 +489,7 @@ class _ConversationPageState extends State<ConversationPage> {
                   ),
                   onPressed: () {},
                 ),
+                // Bouton d'envoi d'un message
                 IconButton(
                   icon: const Icon(
                     Icons.send,
@@ -457,7 +500,13 @@ class _ConversationPageState extends State<ConversationPage> {
 
                     if(text.isEmpty) return;
 
-                    _controller.clear();},// Envoi du message
+                    await chatService.sendMessage(
+                      conversationId : widget.conversation.id,
+                      senderId : widget.currentUserId,
+                      content : text,
+                    );
+
+                    _controller.clear();},
                 ),
               ],
             ),
