@@ -6,19 +6,24 @@ import '../models/conversation.dart';
 import '../service/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
+import '../models/user.dart';
 
 class ConversationPage extends StatefulWidget {
   final Conversation conversation;
   final String currentUserId;
 
-  const ConversationPage({
+  String? otherUserName;
+
+  ConversationPage({
     super.key,
     required this.conversation,
     required this.currentUserId,
+    this.otherUserName,
   });
 
   @override
   State<ConversationPage> createState() => _ConversationPageState();
+
 }
 
 class _ConversationPageState extends State<ConversationPage> {
@@ -27,9 +32,13 @@ class _ConversationPageState extends State<ConversationPage> {
 
   final ChatService chatService = ChatService(); 
 
+  String? otherUserName;
+
   @override
   void initState() {
     super.initState();
+
+    _loadOtherUserName();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
@@ -40,16 +49,14 @@ class _ConversationPageState extends State<ConversationPage> {
     //Savoir si la conversation est une conversation de groupe
     final bool isGroup = widget.conversation.name != null;
 
-    // Nom de la conversation
-    final otherUser = isGroup
-                    ? widget.conversation.name!
-                    : getOtherUser(widget.conversation.participants, widget.currentUserId);
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
 
       appBar: AppBar(
-        title: Text(otherUser),
+        title: Text(
+          otherUserName ?? '',
+          
+        ),
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
@@ -207,5 +214,26 @@ class _ConversationPageState extends State<ConversationPage> {
         curve: Curves.easeOut,
       );
     }
+  }
+
+  // Charger le nom de la conversation 
+  Future<void> _loadOtherUserName() async {
+    final convo = widget.conversation;
+
+    if (convo.name != null) {
+      setState(() {
+        otherUserName = convo.name;
+      });
+      return;
+    }
+    final otherId = getOtherUser(
+      convo.participants,
+      widget.currentUserId,
+    );
+    final user = await chatService.getUserById(otherId);
+    if (!mounted) return;
+    setState(() {
+      otherUserName = user?.fullName ?? otherId;
+    });
   }
 }
