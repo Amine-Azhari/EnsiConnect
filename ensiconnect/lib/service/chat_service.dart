@@ -15,6 +15,7 @@ class ChatService {
           .snapshots();
     }
 
+    // Trouver les messages dans une conversation
     Stream<QuerySnapshot> getMessages(String conversationId) {
       return _db
         .collection('conversations')
@@ -39,5 +40,10 @@ class ChatService {
         'content': content,
         'createdAt': FieldValue.serverTimestamp(),
       });
+
+      await _db.collection('conversations').doc(conversationId).update({
+      'lastMessage': content,
+      'lastMessageAt': FieldValue.serverTimestamp(),
+    });
   }
 }
