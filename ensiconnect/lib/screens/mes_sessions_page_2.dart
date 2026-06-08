@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import "../widgets/ensiconnect_app.dart";
 import '../service/joined_session_service.dart';
+import 'sessions_details.dart';
 
 enum _SessionFilter { all, today, week }
 
@@ -145,8 +146,7 @@ class _MesSessionsPage2State extends State<MesSessionsPage2> {
                   if (sessions.isEmpty)
                     const _EmptyState(
                       title: 'Aucune reservation',
-                      subtitle:
-                          'Votre profil n\'est inscrit a aucune session',
+                      subtitle: 'Votre profil n\'est inscrit a aucune session',
                     )
                   else if (filteredSessions.isEmpty)
                     const _EmptyState(
@@ -161,6 +161,20 @@ class _MesSessionsPage2State extends State<MesSessionsPage2> {
                         child: _ReservationCard(
                           reservation: reservation,
                           isDark: isDark,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SessionsDetailsPage(
+                                  session: reservation.session,
+                                ),
+                              ),
+                            );
+
+                            if (context.mounted) {
+                              await _reloadSessions();
+                            }
+                          },
                         ),
                       ),
                     ),
@@ -228,127 +242,134 @@ class _ReservationCard extends StatelessWidget {
   const _ReservationCard({
     required this.reservation,
     required this.isDark,
+    required this.onTap,
   });
 
   final JoinedSessionDetails reservation;
   final bool isDark;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final color = _getSubjectColor(reservation.subjectName, isDark);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey.shade900 : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark ? Colors.grey.shade800 : color.withValues(alpha: 0.18),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.18)
-                : color.withValues(alpha: 0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
+    return InkWell(
+      borderRadius: BorderRadius.circular(24),
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey.shade900 : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color:
+                isDark ? Colors.grey.shade800 : color.withValues(alpha: 0.18),
           ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              reservation.subjectName,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              reservation.session.description.isNotEmpty
-                  ? reservation.session.description
-                  : reservation.joinMessage.isNotEmpty
-                      ? reservation.joinMessage
-                      : 'Inscription confirmee pour cette session.',
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.4,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 10,
-              children: [
-                _InfoPill(
-                  icon: Icons.calendar_month_rounded,
-                  text: _formatDate(reservation.session.date),
-                  isDark: isDark,
-                ),
-                _InfoPill(
-                  icon: Icons.schedule_rounded,
-                  text:
-                      '${reservation.session.heureDebut} - ${reservation.session.heureFin}',
-                  isDark: isDark,
-                ),
-                _InfoPill(
-                  icon: Icons.location_on_outlined,
-                  text: reservation.roomName,
-                  isDark: isDark,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: color.withValues(alpha: 0.16),
-                  child: Text(
-                    _initials(reservation.organizerName),
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        reservation.organizerName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        'Organisateur de la session',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark
-                              ? Colors.grey.shade500
-                              : Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.18)
+                  : color.withValues(alpha: 0.08),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                reservation.subjectName,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                reservation.session.description.isNotEmpty
+                    ? reservation.session.description
+                    : reservation.joinMessage.isNotEmpty
+                        ? reservation.joinMessage
+                        : 'Inscription confirmee pour cette session.',
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.4,
+                  color: isDark ? Colors.grey.shade400 : Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 12,
+                runSpacing: 10,
+                children: [
+                  _InfoPill(
+                    icon: Icons.calendar_month_rounded,
+                    text: _formatDate(reservation.session.date),
+                    isDark: isDark,
+                  ),
+                  _InfoPill(
+                    icon: Icons.schedule_rounded,
+                    text:
+                        '${reservation.session.heureDebut} - ${reservation.session.heureFin}',
+                    isDark: isDark,
+                  ),
+                  _InfoPill(
+                    icon: Icons.location_on_outlined,
+                    text: reservation.roomName,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: color.withValues(alpha: 0.16),
+                    child: Text(
+                      _initials(reservation.organizerName),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          reservation.organizerName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          'Organisateur de la session',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? Colors.grey.shade500
+                                : Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
+                    color: isDark ? Colors.grey.shade600 : Colors.grey.shade500,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
