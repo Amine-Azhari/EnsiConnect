@@ -26,7 +26,7 @@ class SessionFormSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -87,8 +87,8 @@ class SessionPickerTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
         decoration: BoxDecoration(
           color: hasValue
-              ? _ensisaBlue.withOpacity(0.08)
-              : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50),
+              ? _ensisaBlue.withValues(alpha: 0.08)
+              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: hasValue ? _ensisaBlue : (isDark ? Colors.white24 : Colors.grey.shade300),

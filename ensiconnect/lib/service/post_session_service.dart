@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'user_service.dart';
+import 'package:ensiconnect/service/user_service.dart';
 
 class PostSessionService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
