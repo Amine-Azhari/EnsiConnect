@@ -112,14 +112,21 @@ class _HomePageState extends State<HomePage> {
             final title = matiereNom != 'Matière inconnue' ? matiereNom : (session.sujet.isNotEmpty ? session.sujet : 'Session');
             
             // Generate a simple relative time or just use the date and time
-            final difference = sessionDateTime.difference(now);
+            final nowDateOnly = DateTime(now.year, now.month, now.day);
+            final sessionDateOnly = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            final differenceInDays = sessionDateOnly.difference(nowDateOnly).inDays;
+
             String timeString;
-            if (difference.inDays == 0) {
+            if (differenceInDays == 0) {
               timeString = "Aujourd'hui à ${session.heureDebut}";
-            } else if (difference.inDays == 1) {
+            } else if (differenceInDays == 1) {
               timeString = "Demain à ${session.heureDebut}";
             } else {
-              timeString = "Le ${session.date} à ${session.heureDebut}";
+              final mois = [
+                '', 'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+                'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'
+              ];
+              timeString = "Le ${sessionDateOnly.day} ${mois[sessionDateOnly.month]} à ${session.heureDebut}";
             }
 
             upcoming.add({
