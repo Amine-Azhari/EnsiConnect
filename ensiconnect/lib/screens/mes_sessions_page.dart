@@ -490,7 +490,7 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
             ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // TODO: Ajouter l'action de réservation
+          Navigator.pushNamed(context, '/post_session');
         },
         backgroundColor: EnsiConnectApp.ensisaBlue,
         icon: const Icon(Icons.add, color: Colors.white),
