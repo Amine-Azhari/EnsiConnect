@@ -108,9 +108,7 @@ class ChatService {
         .doc(conversationId)
         .update({
           'participants': FieldValue.arrayUnion([userId]),
-        });
-
-    
+        });  
   }
 
     Future<void> deleteUserFromConversation({
@@ -119,9 +117,10 @@ class ChatService {
   }) async {
     final query = await _db
         .collection('conversations')
-        .doc(conversationId);
-
-    
+        .doc(conversationId)
+        .update({
+          'participants': FieldValue.arrayRemove([userId]),
+        });;
   }
 
   // A demander d'implémenter dans user_service
