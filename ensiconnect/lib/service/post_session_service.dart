@@ -13,6 +13,8 @@ class PostSessionService {
     required String lieu,
     required int nbPlaces,
     required List<String> tags,
+    required List<String> participants,
+    required String? heureFin,
   }) async {
     final user = await UserServices().getCurrentUser();
 
@@ -57,10 +59,11 @@ class PostSessionService {
       'OrganisateurID': user?.id ?? 'inconnu',
       'Date': dateStr,
       'Heure_Debut': heureDebut,
-      'Heure_Fin': null,
+      'Heure_Fin': heureFin,
       'NbPlaces': nbPlaces,
       'Tags': tags,
       'Public': true,
+      'Participants': participants,
     });
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../widgets/session_widgets.dart';
 import '../service/post_session_service.dart';
 import '../widgets/ensiconnect_app.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
@@ -13,6 +14,7 @@ class SessionFormData {
   String? matiere;
   DateTime? date;
   TimeOfDay? heure;
+  TimeOfDay? heureFin;
   String lieu;
   int nbPlaces;
   List<String> tags;
@@ -22,6 +24,7 @@ class SessionFormData {
     this.matiere,
     this.date,
     this.heure,
+    this.heureFin,
     this.lieu = '',
     this.nbPlaces = 2,
     this.tags = const [],
@@ -61,6 +64,14 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   final Set<String> _tagsSelectionnes = {};
 
+  final _searchCtrl = TextEditingController();
+  List<Map<String, dynamic>> _resultatsRecherche = [];
+  final List<Map<String, dynamic>> _etudiantsAjoutes = [];
+  bool _searching = false;
+
+  List<String> _salles = [];
+  bool _sallesLoading = true;
+
   late AnimationController _animCtrl;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
@@ -80,10 +91,12 @@ class _PostSessionPageState extends State<PostSessionPage>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));
     _animCtrl.forward();
+    _chargerSalles();
   }
 
   @override
   void dispose() {
+    _searchCtrl.dispose();
     _animCtrl.dispose();
     _titreCtrl.dispose();
     _lieuCtrl.dispose();
@@ -130,6 +143,20 @@ class _PostSessionPageState extends State<PostSessionPage>
     if (picked != null) setState(() => _data.heure = picked);
   }
 
+  Future<void> _pickTimeFin() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _data.heureFin ?? TimeOfDay.now(),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) setState(() => _data.heureFin = picked);
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_data.date == null || _data.heure == null) {
@@ -147,9 +174,11 @@ class _PostSessionPageState extends State<PostSessionPage>
         matiere: _data.matiere,
         date: _data.date!,
         heureDebut: _toHHmm(_data.heure!),
+        heureFin: _data.heureFin != null ? _toHHmm(_data.heureFin!) : null,
         lieu: _data.lieu,
         nbPlaces: _data.nbPlaces,
         tags: _data.tags,
+        participants: _etudiantsAjoutes.map((e) => e['id'] as String).toList(),
       );
     } catch (e) {
       if (!mounted) return;
@@ -173,6 +202,35 @@ class _PostSessionPageState extends State<PostSessionPage>
       ),
     );
     Navigator.of(context).pop();
+  }
+
+  Future<void> _chargerSalles() async {
+    final snap = await FirebaseFirestore.instance.collection('Salle').get();
+    setState(() {
+      _salles = snap.docs.map((d) => d['Nom'] as String).toList();
+      _sallesLoading = false;
+    });
+  }
+
+  Future<void> _rechercherEtudiants(String query) async {
+    if (query.trim().isEmpty) {
+      setState(() => _resultatsRecherche = []);
+      return;
+    }
+    setState(() => _searching = true);
+    final snap = await FirebaseFirestore.instance.collection('Etudiant').get();
+    final q = query.toLowerCase();
+    setState(() {
+      _resultatsRecherche = snap.docs
+          .where((doc) {
+            final prenom = (doc['Prenom'] ?? '').toString().toLowerCase();
+            final nom = (doc['Nom'] ?? '').toString().toLowerCase();
+            return prenom.contains(q) || nom.contains(q);
+          })
+          .map((doc) => {'id': doc.id, ...doc.data()})
+          .toList();
+      _searching = false;
+    });
   }
 
   void _showError(String msg) {
@@ -233,25 +291,34 @@ class _PostSessionPageState extends State<PostSessionPage>
                   label: 'Quand ?',
                   cardColor: cardColor,
                   children: [
+                    SessionPickerTile(
+                      icon: Icons.event,
+                      title: 'Date',
+                      value: _data.date != null ? _formatDate(_data.date!) : null,
+                      placeholder: 'Choisir',
+                      onTap: _pickDate,
+                      isDark: isDark,
+                    ),
+                    const SizedBox(height: 10),
                     Row(children: [
                       Expanded(
                         child: SessionPickerTile(
-                          icon: Icons.event,
-                          title: 'Date',
-                          value: _data.date != null ? _formatDate(_data.date!) : null,
+                          icon: Icons.access_time_rounded,
+                          title: 'Heure de début',
+                          value: _data.heure != null ? _formatTime(_data.heure!) : null,
                           placeholder: 'Choisir',
-                          onTap: _pickDate,
+                          onTap: _pickTime,
                           isDark: isDark,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: SessionPickerTile(
-                          icon: Icons.access_time_rounded,
-                          title: 'Heure',
-                          value: _data.heure != null ? _formatTime(_data.heure!) : null,
+                          icon: Icons.access_time_filled_rounded,
+                          title: 'Heure de fin',
+                          value: _data.heureFin != null ? _formatTime(_data.heureFin!) : null,
                           placeholder: 'Choisir',
-                          onTap: _pickTime,
+                          onTap: _pickTimeFin,
                           isDark: isDark,
                         ),
                       ),
@@ -264,18 +331,13 @@ class _PostSessionPageState extends State<PostSessionPage>
                   icon: Icons.location_on_rounded,
                   label: 'Lieu',
                   cardColor: cardColor,
-                  children: [
-                    _buildTextField(
-                      controller: _lieuCtrl,
-                      label: 'Salle ou espace',
-                      hint: 'ex. Bibliothèque – Salle B12',
-                      icon: Icons.place_rounded,
-                      isDark: isDark,
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Champ requis' : null,
-                      onSaved: (v) => _data.lieu = v!.trim(),
-                    ),
-                  ],
+                  children: [SessionSalleDropdown(
+                  salles: _salles,
+                  loading: _sallesLoading,
+                  value: _data.lieu.isEmpty ? null : _data.lieu,
+                  isDark: isDark,
+                  onChanged: (v) => setState(() => _data.lieu = v ?? ''),
+                ),],
                 ),
                 const SizedBox(height: 16),
 
@@ -300,6 +362,27 @@ class _PostSessionPageState extends State<PostSessionPage>
                 const SizedBox(height: 16),
 
                 SessionFormSection(
+                  icon: Icons.person_add_rounded,
+                  label: 'Participants',
+                  cardColor: cardColor,
+                  children: [SessionEtudiantSearch(
+                  searchCtrl: _searchCtrl,
+                  resultats: _resultatsRecherche,
+                  etudiantsAjoutes: _etudiantsAjoutes,
+                  searching: _searching,
+                  isDark: isDark,
+                  onSearch: _rechercherEtudiants,
+                  onAjouter: (e) => setState(() {
+                    _etudiantsAjoutes.add(e);
+                    _resultatsRecherche = [];
+                    _searchCtrl.clear();
+                  }),
+                  onRetirer: (e) => setState(() => _etudiantsAjoutes.remove(e)),
+                ),],
+                ),
+                const SizedBox(height: 16),
+
+                SessionFormSection(
                   icon: Icons.label_rounded,
                   label: 'Tags',
                   cardColor: cardColor,
@@ -318,7 +401,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                 ),
                 const SizedBox(height: 16),
 
-                SessionPublicBadge(cardColor: cardColor),
+                
               ],
             ),
           ),
@@ -330,20 +413,21 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   PreferredSizeWidget _buildAppBar() {
+
+    
     return AppBar(
       backgroundColor: EnsiConnectApp.ensisaBlue,
       foregroundColor: Colors.white,
       elevation: 0,
-      title: const Text(
-        'Créer une session',
-        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-      ),
+      
       centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle.light,
       leading: IconButton(
         icon: const Icon(Icons.close_rounded),
         onPressed: () => Navigator.of(context).pop(),
       ),
+
+      
     );
   }
 
