@@ -40,16 +40,11 @@ class CustomDrawer extends StatelessWidget {
                       radius: 30,
                       backgroundColor: Colors.blue.shade600,
                       child: Text(
-                        currentUser.firstName.isNotEmpty
-                            ? (currentUser.firstName[0] +
-                                (currentUser.lastName.isNotEmpty ? currentUser.lastName[0] : ''))
-                                .toUpperCase()
-                            : '?',
+                        currentUser.initials.toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          letterSpacing: 1.2,
                         ),
                       ),
                     ),
