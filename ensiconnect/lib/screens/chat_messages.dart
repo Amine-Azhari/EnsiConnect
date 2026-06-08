@@ -101,6 +101,8 @@ class _ConversationPageState extends State<ConversationPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+
+                    // Photo de profil
                     if (isGroup && !isMe)
                       FutureBuilder<String>(
                         future: data['name'] != null
@@ -113,55 +115,61 @@ class _ConversationPageState extends State<ConversationPage> {
                         );
                       },
                     ),
-                    if (isGroup && !isMe) const Padding(padding: const EdgeInsets.symmetric(horizontal:5,vertical: 5)),
-                    Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isMe ?
-                          Theme.of(context).brightness == Brightness.dark ?
-                          EnsiConnectApp.ensisaBlue :
-                          EnsiConnectApp.ensisaLightBlue :
-                          Theme.of(context).brightness == Brightness.dark ?
-                          const Color.fromARGB(255, 72, 72, 72) :
-                          const Color.fromARGB(255, 209, 209, 209),
-                        borderRadius: BorderRadius.circular(12),
+                    if (isGroup && !isMe) const Padding(padding: EdgeInsets.symmetric(horizontal:5,vertical: 5)),
+
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.7,
                       ),
-                      child: Column(
-                        crossAxisAlignment:
-                            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                        children: [
-                          if (isGroup && !isMe)
-                            FutureBuilder<String>(
-                              future: data['name'] != null
-                                  ? Future.value(data['name'])
-                                  : getUserName(msg.senderId),
-                              builder: (context, snapshot) {
-                                final name = snapshot.data ?? '?';
-                                return Text(
-                                  name,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                );
-                              },
-                            ),
+                      child :Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isMe ?
+                            Theme.of(context).brightness == Brightness.dark ?
+                            EnsiConnectApp.ensisaBlue :
+                            EnsiConnectApp.ensisaLightBlue :
+                            Theme.of(context).brightness == Brightness.dark ?
+                            const Color.fromARGB(255, 72, 72, 72) :
+                            const Color.fromARGB(255, 209, 209, 209),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment:
+                              isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                          children: [
+                            if (isGroup && !isMe)
+                              FutureBuilder<String>(
+                                future: data['name'] != null
+                                    ? Future.value(data['name'])
+                                    : getUserName(msg.senderId),
+                                builder: (context, snapshot) {
+                                  final name = snapshot.data ?? '?';
+                                  return Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                },
+                              ),
+                              
+                            if (isGroup && !isMe)  const SizedBox(height: 4),
                             
-                          if (isGroup && !isMe)  const SizedBox(height: 4),
-                          
-                          Text(msg.content),
-                          const SizedBox(height: 6),
-                          
-                          Text(
-                            msg.createdAt != null
-                                ? DateFormat('HH:mm').format(msg.createdAt!)
-                                : '',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
+                            Text(msg.content),
+                            const SizedBox(height: 6),
+                            
+                            Text(
+                              msg.createdAt != null
+                                  ? DateFormat('HH:mm').format(msg.createdAt!)
+                                  : '',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    )
                   ]
                 )
               );
