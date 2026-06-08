@@ -35,11 +35,39 @@ class UserServices {
       promotion: data['Promotion'] ?? '1A',
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
-      // profilePictureUrl: data['ProfilePictureUrl'],
       description: data['description'] ?? '',
       skills: List<String>.from(data['skills'] ?? []),
-      sessions: (data['sessions'] ?? 0),
-      averageNote: (data['averageNote'] ?? 0.0),
+      sessions: data['sessions'] ?? 0,
+      averageNote: (data['averageNote'] ?? 0.0).toDouble(),
+    );
+  }
+
+  // Récupère un utilisateur à partir d'un userId Firestore
+  Future<User?> getUserById(String userId) async {
+    final result = await _etudiants
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    if (result.docs.isEmpty) {
+      return null;
+    }
+
+    final doc = result.docs.first;
+    final data = doc.data();
+
+    return User(
+      id: doc.id,
+      firstName: data['Prenom'] ?? '',
+      lastName: data['Nom'] ?? '',
+      email: data['eMail'] ?? '',
+      promotion: data['Promotion'] ?? '1A',
+      filiere: data['Filiere'] ?? 'Informatique',
+      role: data['Role'] ?? 'Étudiant',
+      description: data['description'] ?? '',
+      skills: List<String>.from(data['skills'] ?? []),
+      sessions: data['sessions'] ?? 0,
+      averageNote: (data['averageNote'] ?? 0.0).toDouble(),
     );
   }
 
