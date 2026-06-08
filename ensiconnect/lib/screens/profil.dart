@@ -162,6 +162,7 @@ class _ProfilPageState extends State<ProfilPage> {
             Theme.of(context).brightness == Brightness.dark
                 ? Colors.white
                 : Colors.black87,
+
         leading: isOwnProfile
             ? IconButton(
                 icon: const Icon(Icons.menu),
@@ -190,7 +191,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
                 const SizedBox(height: 20),
 
-                // ✅ AVATAR FIXÉ (CORRECTION ICI)
                 Center(
                   child: CircleAvatar(
                     radius: 30,
@@ -363,7 +363,21 @@ class _ProfilPageState extends State<ProfilPage> {
                   spacing: 8,
                   children: skills.isEmpty
                       ? [const Text("Aucune compétence")]
-                      : skills.map((s) => Chip(label: Text(s))).toList(),
+                      : skills.map((s) {
+                          return Chip(
+                            label: Text(s),
+                            deleteIcon: (isEditing && isOwnProfile)
+                                ? const Icon(Icons.close, size: 18)
+                                : null,
+                            onDeleted: (isEditing && isOwnProfile)
+                                ? () {
+                                    setState(() {
+                                      skills.remove(s);
+                                    });
+                                  }
+                                : null,
+                          );
+                        }).toList(),
                 ),
               ],
             ),

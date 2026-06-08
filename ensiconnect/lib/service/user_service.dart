@@ -28,7 +28,7 @@ class UserServices {
     return _mapUser(result.docs.first);
   }
 
-  //  GET USER BY ID 
+  //  GET USER BY ID
   Future<User?> getUserById(String userId) async {
     final doc = await _etudiants.doc(userId).get();
 
@@ -37,7 +37,7 @@ class UserServices {
     return _mapUser(doc);
   }
 
-  //  MAP FIRESTORE → USER 
+  //  MAP FIRESTORE → USER
   User _mapUser(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data() ?? {};
 
@@ -51,15 +51,22 @@ class UserServices {
       role: data['Role'] ?? 'Étudiant',
       description: data['description'] ?? '',
 
-      //  SAFE CAST (IMPORTANT)
+      //  SAFE CAST SKILLS
       skills: List<String>.from(data['skills'] ?? []),
 
-      sessions: (data['sessions'] ?? 0) as int,
-      averageNote: (data['averageNote'] ?? 0).toDouble(),
+      //  SAFE CAST SESSIONS
+      sessions: (data['sessions'] is num)
+          ? (data['sessions'] as num).toInt()
+          : 0,
+
+      //  SAFE CAST AVERAGE NOTE (FIX IMPORTANT)
+      averageNote: (data['averageNote'] is num)
+          ? (data['averageNote'] as num).toDouble()
+          : 0.0,
     );
   }
 
-  //  MATIERES / SKILLS OPTIONS 
+  //  MATIERES / SKILLS OPTIONS
   Future<List<Map<String, dynamic>>> getAllSkillsOptions() async {
     final snapshot = await _db.collection('Matiere').get();
 
