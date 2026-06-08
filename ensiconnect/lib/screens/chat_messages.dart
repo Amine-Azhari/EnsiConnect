@@ -110,8 +110,11 @@ class _ConversationPageState extends State<ConversationPage> {
                           : getUserName(msg.senderId),
                       builder: (context, snapshot) {
                         final name = snapshot.data ?? '?';
-                        return CircleAvatar(
-                          child: Text(getInitials(name)),
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 15),
+                          child:CircleAvatar(
+                            child: Text(getInitials(name)),
+                          ),
                         );
                       },
                     ),
