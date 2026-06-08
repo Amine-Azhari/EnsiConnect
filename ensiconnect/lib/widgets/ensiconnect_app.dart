@@ -7,6 +7,7 @@ import '../screens/auth.dart';
 import '../screens/menu_principal.dart';
 import '../screens/splash_screen.dart';
 import 'package:ensiconnect/screens/demande_aide_page.dart';
+import '../screens/top_tutors.dart';
 
 // On garde le notifier global
 final ValueNotifier<bool> isDarkModeNotifier = ValueNotifier<bool>(false);
@@ -60,6 +61,7 @@ class EnsiConnectApp extends StatelessWidget {
             '/demande_aide': (context) => const DemandeAidePage(),
             '/post_session': (context) => const PostSessionPage(),
             '/user_search': (context) => const SearchPage(),
+            '/top_tutors': (context) => const TopTutorsPage(),
           },
         );
       },
