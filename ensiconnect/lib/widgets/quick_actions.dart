@@ -1,7 +1,34 @@
 import 'package:flutter/material.dart';
 
-class QuickActionsGrid extends StatelessWidget {
+class QuickActionsGrid extends StatefulWidget {
   const QuickActionsGrid({super.key});
+
+  @override
+  State<QuickActionsGrid> createState() => _QuickActionsGridState();
+}
+
+class _QuickActionsGridState extends State<QuickActionsGrid> {
+  bool _isNavigating = false;
+
+  Future<void> _pushNamed(String routeName) async {
+    if (_isNavigating) {
+      return;
+    }
+
+    setState(() {
+      _isNavigating = true;
+    });
+
+    try {
+      await Navigator.pushNamed(context, routeName);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isNavigating = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +40,7 @@ class QuickActionsGrid extends StatelessWidget {
           label: "Demander\nune aide",
           color: const Color(0xFF7E57C2),
           onTap: () {
-            Navigator.pushNamed(context, '/demande_aide');
+            _pushNamed('/demande_aide');
           },
         ),
         ActionItem(
@@ -21,7 +48,7 @@ class QuickActionsGrid extends StatelessWidget {
           label: "Meilleurs\ntuteurs",
           color: const Color(0xFF42A5F5),
           onTap: () {
-            Navigator.pushNamed(context, '/top_tutors');
+            _pushNamed('/top_tutors');
           },
         ),
         ActionItem(
@@ -29,7 +56,7 @@ class QuickActionsGrid extends StatelessWidget {
           label: "Sessions \nprevues",
           color: const Color(0xFFEF5350),
           onTap: () {
-            Navigator.pushNamed(context, '/mes_sessions');
+            _pushNamed('/mes_sessions');
           },
         ),
         ActionItem(
@@ -37,7 +64,7 @@ class QuickActionsGrid extends StatelessWidget {
           label: "Mes\nreservations",
           color: const Color(0xFF66BB6A),
           onTap: () {
-            Navigator.pushNamed(context, '/mes_sessions_page_2');
+            _pushNamed('/mes_sessions_page_2');
           },
         ),
       ],
