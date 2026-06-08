@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'evaluation_dialog.dart';
 import '../screens/notification_screen.dart';
 
 class CustomNotificationButton extends StatelessWidget {
@@ -24,12 +23,6 @@ class CustomNotificationButton extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: () {
-          // showDialog(
-          //     context: context,
-          //     builder: (BuildContext context) {
-          //       return const EvaluationDialog(sessionId: 'id_session_ici'); 
-          //   },
-          // );
           Navigator.push(
             context,
             MaterialPageRoute(
