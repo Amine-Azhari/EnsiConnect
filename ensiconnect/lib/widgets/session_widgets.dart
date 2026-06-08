@@ -37,14 +37,14 @@ class SessionFormSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(icon, color: _ensisaBlue, size: 18),
+            Icon(icon, color: Colors.white, size: 18),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
-                color: _ensisaBlue,
+                color: Colors.white,
                 letterSpacing: 0.4,
               ),
             ),

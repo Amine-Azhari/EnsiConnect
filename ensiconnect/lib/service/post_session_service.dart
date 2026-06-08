@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensiconnect/service/user_service.dart';
+import '../service/chat_service.dart';
+
 
 
 class PostSessionService {
@@ -8,6 +10,7 @@ class PostSessionService {
   Future<void> creerSession({
     required String titre,
     required String? matiere,
+    required String description,
     required DateTime date,
     required String heureDebut,
     required String lieu,
@@ -62,8 +65,17 @@ class PostSessionService {
       'Heure_Fin': heureFin,
       'NbPlaces': nbPlaces,
       'Tags': tags,
+      'Description': description,
       'Public': true,
       'Participants': participants,
     });
+
+    // 5. Crée le salon de discussion associé
+    final chatService = ChatService();
+    await chatService.getOrCreateConversation(
+      participants: [user?.id ?? 'inconnu', ...participants],
+      name: titre,
+    );
   }
 }
+

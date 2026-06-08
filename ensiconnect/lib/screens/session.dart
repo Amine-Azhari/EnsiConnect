@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
 class SessionFormData {
+  String description;
   String titre;
   String? matiere;
   DateTime? date;
@@ -20,6 +21,7 @@ class SessionFormData {
   List<String> tags;
 
   SessionFormData({
+    this.description = '',
     this.titre = '',
     this.matiere,
     this.date,
@@ -44,6 +46,7 @@ class _PostSessionPageState extends State<PostSessionPage>
     with SingleTickerProviderStateMixin {
   // static const Color ensisaBlue = Color(0xFF0055A5);
 
+  final _descriptionCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _data = SessionFormData();
   final _service = PostSessionService();
@@ -96,6 +99,7 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   @override
   void dispose() {
+    _descriptionCtrl.dispose();
     _searchCtrl.dispose();
     _animCtrl.dispose();
     _titreCtrl.dispose();
@@ -170,6 +174,7 @@ class _PostSessionPageState extends State<PostSessionPage>
 
     try {
       await _service.creerSession(
+        description: _data.description,
         titre: _data.titre,
         matiere: _data.matiere,
         date: _data.date!,
@@ -284,6 +289,42 @@ class _PostSessionPageState extends State<PostSessionPage>
                     _buildDropdown(isDark),
                   ],
                 ),
+
+                const SizedBox(height: 16),
+
+                SessionFormSection(
+                  icon: Icons.description_rounded,
+                  label: 'Description',
+                  cardColor: cardColor,
+                  children: [
+                    TextFormField(
+                      controller: _descriptionCtrl,
+                      maxLength: 200,
+                      maxLines: 3,
+                      onSaved: (v) => _data.description = v?.trim() ?? '',
+                      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+                      decoration: InputDecoration(
+                        hintText: 'Décris le contenu de la session...',
+                        hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                        counterStyle: TextStyle(color: isDark ? Colors.white54 : Colors.black45),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                      ),
+                    ),
+                  ],
+                ),
+
                 const SizedBox(height: 16),
 
                 SessionFormSection(
@@ -380,25 +421,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                   onRetirer: (e) => setState(() => _etudiantsAjoutes.remove(e)),
                 ),],
                 ),
-                const SizedBox(height: 16),
-
-                SessionFormSection(
-                  icon: Icons.label_rounded,
-                  label: 'Tags',
-                  cardColor: cardColor,
-                  children: [
-                    SessionTagsGrid(
-                      tagsDisponibles: _tagsDisponibles,
-                      tagsSelectionnes: _tagsSelectionnes,
-                      onToggle: (tag) => setState(() {
-                        _tagsSelectionnes.contains(tag)
-                            ? _tagsSelectionnes.remove(tag)
-                            : _tagsSelectionnes.add(tag);
-                      }),
-                      isDark: isDark,
-                    ),
-                  ],
-                ),
+                
                 const SizedBox(height: 16),
 
                 
@@ -419,11 +442,15 @@ class _PostSessionPageState extends State<PostSessionPage>
       backgroundColor: EnsiConnectApp.ensisaBlue,
       foregroundColor: Colors.white,
       elevation: 0,
+      title: const Text(                                    // ← ici
+        'Créer une session',
+        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+      ),
       
       centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle.light,
       leading: IconButton(
-        icon: const Icon(Icons.close_rounded),
+        icon: const Icon(Icons.arrow_back_rounded),
         onPressed: () => Navigator.of(context).pop(),
       ),
 
