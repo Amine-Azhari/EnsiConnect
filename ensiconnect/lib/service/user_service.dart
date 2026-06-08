@@ -71,6 +71,37 @@ class UserServices {
     );
   }
 
+  Future<List<Map<String, dynamic>>> getAllMatieres() async {
+    final snapshot = await _db.collection('Matiere').get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+      return {
+        'id': doc.id,
+        'name': data['name'] ?? data['Nom'] ?? '',
+      };
+    }).toList();
+  }
+
+  Future<List<String>> getAllSkillsOptions() async {
+    try {
+      final doc = await _db.collection('Config').doc('skills').get();
+
+      if (!doc.exists || doc.data() == null) return [];
+
+      final data = doc.data();
+
+      final list = data?['Matiere']; // 👈 ICI le vrai nom
+
+      if (list is! List) return [];
+
+      return List<String>.from(list);
+    } catch (e) {
+      print("ERROR getAllSkillsOptions: $e");
+      return [];
+    }
+  }
+
   // Mise à jour du profil utilisateur
   Future<void> updateUserProfile({
     required String userId,
