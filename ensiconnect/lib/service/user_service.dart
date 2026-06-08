@@ -11,10 +11,11 @@ class UserServices {
   CollectionReference<Map<String, dynamic>> get _etudiants =>
       _db.collection('Etudiant');
 
-  // Recupere l'utilisateur actuellement connecte depuis Firestore.
+  //  CURRENT USER
   Future<User?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('user_email');
+
     if (email == null) return null;
 
     final result = await _etudiants
@@ -24,8 +25,21 @@ class UserServices {
 
     if (result.docs.isEmpty) return null;
 
-    final doc = result.docs.first;
-    final data = doc.data();
+    return _mapUser(result.docs.first);
+  }
+
+  //  GET USER BY ID 
+  Future<User?> getUserById(String userId) async {
+    final doc = await _etudiants.doc(userId).get();
+
+    if (!doc.exists) return null;
+
+    return _mapUser(doc);
+  }
+
+  //  MAP FIRESTORE → USER 
+  User _mapUser(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data() ?? {};
 
     return User(
       id: doc.id,
@@ -35,15 +49,31 @@ class UserServices {
       promotion: data['Promotion'] ?? '1A',
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
-      // profilePictureUrl: data['ProfilePictureUrl'],
       description: data['description'] ?? '',
+
+      //  SAFE CAST (IMPORTANT)
       skills: List<String>.from(data['skills'] ?? []),
-      sessions: (data['sessions'] ?? 0),
-      averageNote: (data['averageNote'] ?? 0.0),
+
+      sessions: (data['sessions'] ?? 0) as int,
+      averageNote: (data['averageNote'] ?? 0).toDouble(),
     );
   }
 
-  // Mise à jour du profil utilisateur
+  //  MATIERES / SKILLS OPTIONS 
+  Future<List<Map<String, dynamic>>> getAllSkillsOptions() async {
+    final snapshot = await _db.collection('Matiere').get();
+
+    return snapshot.docs.map((doc) {
+      final data = doc.data();
+
+      return {
+        'id': doc.id,
+        'name': (data['Nom'] ?? data['name'] ?? '').toString(),
+      };
+    }).toList();
+  }
+
+  //  UPDATE USER PROFILE
   Future<void> updateUserProfile({
     required String userId,
     required String description,

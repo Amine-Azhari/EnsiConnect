@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'evaluation_dialog.dart';
 
 class CustomNotificationButton extends StatelessWidget {
   const CustomNotificationButton({super.key});
@@ -19,7 +20,12 @@ class CustomNotificationButton extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: () {
-          // TODO: Ajouter l'action des notifications
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return const EvaluationDialog(sessionId: 'id_session_ici'); 
+              },
+            ); 
         },
         icon: Icon(Icons.notifications_none_rounded, color: textColor),
       ),

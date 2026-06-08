@@ -21,7 +21,7 @@ class QuickActionsGrid extends StatelessWidget {
           label: "Trouver\nun tuteur",
           color: const Color(0xFF42A5F5),
           onTap: () {
-            Navigator.pushNamed(context, '/user_search');
+            Navigator.pushNamed(context, '/user_search');   
           },
         ),
         ActionItem(
