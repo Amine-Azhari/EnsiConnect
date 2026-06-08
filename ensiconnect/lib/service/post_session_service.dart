@@ -60,6 +60,7 @@ class PostSessionService {
       'MatiereID': matiereId,
       'SalleID': salleId,
       'OrganisateurID': user?.id ?? 'inconnu',
+      'OrganisateurNom': user != null ? '${user.firstName} ${user.lastName}' : 'Inconnu',
       'Date': dateStr,
       'Heure_Debut': heureDebut,
       'Heure_Fin': heureFin,

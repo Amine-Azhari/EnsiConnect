@@ -167,6 +167,17 @@ class _PostSessionPageState extends State<PostSessionPage>
       _showError('Veuillez sélectionner une date et une heure.');
       return;
     }
+
+    if (_data.heureFin != null) {
+  final startMinutes = _data.heure!.hour * 60 + _data.heure!.minute;
+  final endMinutes = _data.heureFin!.hour * 60 + _data.heureFin!.minute;
+
+  if (endMinutes <= startMinutes) {
+    _showError("L'heure de fin doit être après l'heure de début.");
+    return;
+  }
+}
+
     _formKey.currentState!.save();
     _data.tags = _tagsSelectionnes.toList();
 
