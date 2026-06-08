@@ -243,16 +243,13 @@ class _SearchPageState extends State<SearchPage> {
 
             const SizedBox(height: 20),
 
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Tuteurs recommandés",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("${tuteursFiltres.length} tuteur(s)",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
                 ),
-              ),
+              ],
             ),
             const SizedBox(height: 12),
 
