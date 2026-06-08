@@ -51,7 +51,9 @@ class _ProfilPageState extends State<ProfilPage> {
   }
 
   Future<void> _loadUser() async {
-    final user = await _user.getCurrentUser();
+    final user = widget.userId != null
+        ? await _user.getUserById(widget.userId!)
+        : await _user.getCurrentUser();
 
     if (!mounted || user == null) return;
 
@@ -107,8 +109,8 @@ class _ProfilPageState extends State<ProfilPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const ProfilPage(
-          userId: "romain_fontaine", // profil test
+        builder: (_) => ProfilPage(
+          userId: "romain_fontaine",
         ),
       ),
     );
@@ -318,7 +320,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 30),
 
-              // PROFIL TEST EN BAS
               const Divider(),
               const SizedBox(height: 10),
 
