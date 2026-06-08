@@ -14,6 +14,7 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
+//Affichage des étoiles sur le profil
 class StarRating extends StatelessWidget {
   final double note;
 
@@ -86,8 +87,9 @@ class _SearchPageState extends State<SearchPage> {
             "id": doc.id,
             "nom": doc["Nom"],
             "prenom": doc["Prenom"],
-            "matieres": <String>[],
-            "note": 0.0,
+            "matieres": doc.data().containsKey("skills") ? List<String>.from(doc.data()["skills"]) : <String>[],
+            "note": (doc.data()["averageNote"] ?? 0.0).toDouble(),
+            //"matieres": <String>[],
           };
         }),
       );
