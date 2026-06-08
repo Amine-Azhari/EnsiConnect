@@ -62,6 +62,8 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
       // 2. Récupération des sessions
       final sessionSnap = await db.collection('Session').get();
       final Map<DateTime, List<Session>> newSessionsByDate = {};
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
 
       for (var doc in sessionSnap.docs) {
         final session = Session.fromMap(doc.data(), doc.id);
@@ -69,6 +71,33 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
           try {
             // Suppose la date est au format 'YYYY-MM-DD' (comme inséré dans data_insert.dart)
             final DateTime parsedDate = DateTime.parse(session.date);
+            final sessionDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+
+            // Supprimer la session si elle est passée de date
+            bool isExpired = false;
+
+            if (sessionDate.isBefore(today)) {
+              isExpired = true;
+            } else if (sessionDate.isAtSameMomentAs(today)) {
+              if (session.heureFin.isNotEmpty) {
+                final parts = session.heureFin.split(':');
+                if (parts.length >= 2) {
+                  final hour = int.tryParse(parts[0]) ?? 23;
+                  final minute = int.tryParse(parts[1]) ?? 59;
+                  final endTime = DateTime(
+                      sessionDate.year, sessionDate.month, sessionDate.day, hour, minute);
+                  if (endTime.isBefore(now)) {
+                    isExpired = true;
+                  }
+                }
+              }
+            }
+
+            if (isExpired) {
+              db.collection('Session').doc(doc.id).delete();
+              continue; // Ne pas l'ajouter à l'affichage
+            }
+
             final normalized = _normalizeDate(parsedDate);
 
             if (newSessionsByDate[normalized] == null) {
