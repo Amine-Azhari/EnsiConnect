@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../widgets/ensiconnect_app.dart';
 import '../models/session.dart';
 import '../service/auth_service.dart';
+import 'profil.dart';
 
 class SessionsDetailsPage extends StatefulWidget {
   const SessionsDetailsPage({super.key, required this.session});
@@ -190,6 +191,20 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         setState(() => _isUpdating = false);
       }
     }
+  }
+
+  void _openParticipantProfile(_SessionParticipant participant) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfilPage(userId: participant.id),
+      ),
+    );
+  }
+
+  void _openParticipantProfileFromSheet(_SessionParticipant participant) {
+    Navigator.pop(context);
+    _openParticipantProfile(participant);
   }
 
   @override
@@ -444,9 +459,13 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                 child: Row(
                   children: [
                     for (final participant in visibleParticipants) ...[
-                      _ParticipantAvatar(
-                        participant: participant,
-                        color: subjectColor,
+                      InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () => _openParticipantProfile(participant),
+                        child: _ParticipantAvatar(
+                          participant: participant,
+                          color: subjectColor,
+                        ),
                       ),
                       const SizedBox(width: 10),
                     ],
@@ -494,6 +513,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                   participant.name,
                   style: const TextStyle(fontWeight: FontWeight.w700),
                 ),
+                trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                onTap: () => _openParticipantProfileFromSheet(participant),
               );
             },
           ),
