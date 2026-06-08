@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/custom_session_drawer.dart';
 import '../widgets/ensiconnect_app.dart';
+
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
@@ -39,9 +41,9 @@ class PostSessionPage extends StatefulWidget {
 class _PostSessionPageState extends State<PostSessionPage>
     with SingleTickerProviderStateMixin {
   // Couleurs ENSISA
-  static const Color ensisaBlue = Color(0xFF0055A5);
-  static const Color ensisaLightBlue = Color(0xFFE6F0FA);
-  static const Color accentOrange = Color(0xFFFF9800);
+  // static const Color ensisaBlue = Color(0xFF0055A5);
+  // static const Color ensisaLightBlue = Color(0xFFE6F0FA);
+  // static const Color accentOrange = Color(0xFFFF9800);
 
   final _formKey = GlobalKey<FormState>();
   final _data = SessionFormData();
@@ -50,12 +52,20 @@ class _PostSessionPageState extends State<PostSessionPage>
   final _titreCtrl = TextEditingController();
   final _lieuCtrl = TextEditingController();
 
+  final Set<String> _tagsSelectionnes = {};
+
+  bool _submitting = false;
+
+  // Animation d'entrée
+  late AnimationController _animCtrl;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
   // Tags disponibles
   final List<String> _tagsDisponibles = [
     'Informatique', 'Automatique et système embarqués', 'Mécanique', 'Textile',
     'Génie industriel', 
   ];
-  final Set<String> _tagsSelectionnes = {};
 
   // Matières
   final List<String> _matieres = [
@@ -63,13 +73,6 @@ class _PostSessionPageState extends State<PostSessionPage>
     'Automatique', 'Électronique', 'Réseau & Télécoms',
     'Mathématiques', 'Chimie', 'Autre',
   ];
-
-  // Animation d'entrée
-  late AnimationController _animCtrl;
-  late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
-
-  bool _submitting = false;
 
   @override
   void initState() {
@@ -111,7 +114,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       lastDate: now.add(const Duration(days: 365)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor: ensisaBlue),
+          colorScheme: ColorScheme.fromSeed(seedColor:EnsiConnectApp.ensisaBlue),
         ),
         child: child!,
       ),
@@ -125,7 +128,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       initialTime: _data.heure ?? TimeOfDay.now(),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor: ensisaBlue),
+          colorScheme: ColorScheme.fromSeed(seedColor:EnsiConnectApp.ensisaBlue),
         ),
         child: child!,
       ),
@@ -147,7 +150,7 @@ class _PostSessionPageState extends State<PostSessionPage>
     // TODO : appel Firebase ici
     try {
       final db = FirebaseFirestore.instance;
-      final user = UserServices().getCurrentUser();
+      final user = await UserServices().getCurrentUser();
     
       // 1. Récupère ou crée la salle
       final salleSnap = await db
@@ -243,7 +246,7 @@ class _PostSessionPageState extends State<PostSessionPage>
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    final subtleColor = isDark ? Colors.white12 : Colors.black12;
+    // final subtleColor = isDark ? Colors.white12 : Colors.black12;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -372,11 +375,11 @@ class _PostSessionPageState extends State<PostSessionPage>
     );
   }
 
-  // ── AppBar ─────────────────────────────────────────────────────────────────
+      // ── AppBar ─────────────────────────────────────────────────────────────────
 
   PreferredSizeWidget _buildAppBar(bool isDark) {
     return AppBar(
-      backgroundColor: ensisaBlue,
+      backgroundColor: EnsiConnectApp.ensisaBlue,
       foregroundColor: Colors.white,
       elevation: 0,
       title: const Text(
@@ -399,7 +402,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [ensisaBlue, ensisaBlue.withValues(alpha: 0.75)],
+          colors: [EnsiConnectApp.ensisaBlue, EnsiConnectApp.ensisaBlue.withValues(alpha: 0.75)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -466,14 +469,14 @@ class _PostSessionPageState extends State<PostSessionPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(icon, color: ensisaBlue, size: 18),
+            Icon(icon, color: EnsiConnectApp.ensisaBlue, size: 18),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
-                color: ensisaBlue,
+                color: EnsiConnectApp.ensisaBlue,
                 letterSpacing: 0.4,
               ),
             ),
@@ -504,7 +507,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, color: ensisaBlue, size: 20),
+        prefixIcon: Icon(icon, color: EnsiConnectApp.ensisaBlue, size: 20),
         labelStyle: const TextStyle(fontSize: 13),
         hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
         border: OutlineInputBorder(
@@ -518,7 +521,7 @@ class _PostSessionPageState extends State<PostSessionPage>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: ensisaBlue, width: 1.8),
+          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -541,10 +544,10 @@ class _PostSessionPageState extends State<PostSessionPage>
       style: TextStyle(
           fontSize: 14, color: isDark ? Colors.white : Colors.black87),
       dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: ensisaBlue),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: EnsiConnectApp.ensisaBlue),
       decoration: InputDecoration(
         prefixIcon:
-            const Icon(Icons.school_rounded, color: ensisaBlue, size: 20),
+            const Icon(Icons.school_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -553,7 +556,7 @@ class _PostSessionPageState extends State<PostSessionPage>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: ensisaBlue, width: 1.8),
+          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
         ),
         filled: true,
         fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
@@ -585,11 +588,11 @@ class _PostSessionPageState extends State<PostSessionPage>
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
         decoration: BoxDecoration(
           color: hasValue
-              ? ensisaBlue.withValues(alpha: 0.08)
+              ? EnsiConnectApp.ensisaBlue.withValues(alpha: 0.08)
               : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: hasValue ? ensisaBlue : (isDark ? Colors.white24 : Colors.grey.shade300),
+            color: hasValue ? EnsiConnectApp.ensisaBlue : (isDark ? Colors.white24 : Colors.grey.shade300),
             width: hasValue ? 1.6 : 1,
           ),
         ),
@@ -597,13 +600,13 @@ class _PostSessionPageState extends State<PostSessionPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              Icon(icon, size: 16, color: hasValue ? ensisaBlue : Colors.grey),
+              Icon(icon, size: 16, color: hasValue ? EnsiConnectApp.ensisaBlue : Colors.grey),
               const SizedBox(width: 6),
               Text(title,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: hasValue ? ensisaBlue : Colors.grey,
+                    color: hasValue ? EnsiConnectApp.ensisaBlue : Colors.grey,
                     letterSpacing: 0.3,
                   )),
             ]),
@@ -629,11 +632,11 @@ class _PostSessionPageState extends State<PostSessionPage>
   Widget _buildPlacesSelector(bool isDark) {
     return Row(
       children: [
-        const Icon(Icons.people_alt_outlined, color: ensisaBlue, size: 20),
+        const Icon(Icons.people_alt_outlined, color: EnsiConnectApp.ensisaBlue, size: 20),
         const SizedBox(width: 10),
         const Text('Nombre de places :', style: TextStyle(fontSize: 14)),
         const Spacer(),
-        _PlacesCounter(
+        PlacesCounter(
           value: _data.nbPlaces,
           onChanged: (v) => setState(() => _data.nbPlaces = v),
           isDark: isDark,
@@ -660,10 +663,10 @@ class _PostSessionPageState extends State<PostSessionPage>
             duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
             decoration: BoxDecoration(
-              color: selected ? ensisaBlue : Colors.transparent,
+              color: selected ? EnsiConnectApp.ensisaBlue : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: selected ? ensisaBlue : (isDark ? Colors.white30 : Colors.grey.shade300),
+                color: selected ? EnsiConnectApp.ensisaBlue : (isDark ? Colors.white30 : Colors.grey.shade300),
               ),
             ),
             child: Text(
@@ -743,12 +746,12 @@ class _PostSessionPageState extends State<PostSessionPage>
         child: ElevatedButton(
           onPressed: _submitting ? null : _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: ensisaBlue,
+            backgroundColor: EnsiConnectApp.ensisaBlue,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14)),
             elevation: 4,
-            shadowColor: ensisaBlue.withValues(alpha: 0.4),
+            shadowColor: EnsiConnectApp.ensisaBlue.withValues(alpha: 0.4),
           ),
           child: _submitting
               ? const SizedBox(
@@ -768,66 +771,6 @@ class _PostSessionPageState extends State<PostSessionPage>
                   ],
                 ),
         ),
-      ),
-    );
-  }
-}
-
-// ─── Widget compteur de places ─────────────────────────────────────────────
-
-class _PlacesCounter extends StatelessWidget {
-  final int value;
-  final ValueChanged<int> onChanged;
-  final bool isDark;
-
-  const _PlacesCounter({
-    required this.value,
-    required this.onChanged,
-    required this.isDark,
-  });
-
-  static const Color ensisaBlue = Color(0xFF0055A5);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _btn(Icons.remove, () {
-          if (value > 2) onChanged(value - 1);
-        }),
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 150),
-          transitionBuilder: (child, anim) =>
-              ScaleTransition(scale: anim, child: child),
-          child: Text(
-            '$value',
-            key: ValueKey(value),
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: ensisaBlue,
-            ),
-          ),
-        ),
-        _btn(Icons.add, () {
-          if (value < 20) onChanged(value + 1);
-        }),
-      ],
-    );
-  }
-
-  Widget _btn(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: ensisaBlue.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: ensisaBlue, size: 18),
       ),
     );
   }
