@@ -42,13 +42,7 @@ class _SearchPageState extends State<SearchPage> {
   String recherche = "";
   Set<String> filtresSelectionnes = {};
 
-  //temporaire
-  final List<String> filtres = [
-    "Programmation",
-    "Mathématiques",
-    "Réseaux",
-    "SGBD",
-  ];
+  List<String> filtres = [];
 
   final List<Map<String, dynamic>> tuteurs = [];
 
@@ -78,21 +72,37 @@ class _SearchPageState extends State<SearchPage> {
     
     final etudiantSnap = await FirebaseFirestore.instance.collection('Etudiant').get();
 
-    setState(() {
-      tuteurs.clear();
+    final Set<String> matieresUniques = {};
 
-      tuteurs.addAll(
-        etudiantSnap.docs.where((doc) => doc.id != currentUserId).map((doc) {
+    final liste = etudiantSnap.docs
+        .where((doc) => doc.id != currentUserId)
+        .map((doc) {
+          final skills = doc.data().containsKey("skills")
+              ? List<String>.from(doc.data()["skills"])
+              : <String>[];
+
+          matieresUniques.addAll(skills);
+
           return {
             "id": doc.id,
             "nom": doc["Nom"],
             "prenom": doc["Prenom"],
-            "matieres": doc.data().containsKey("skills") ? List<String>.from(doc.data()["skills"]) : <String>[],
+            "matieres": skills,
             "note": (doc.data()["averageNote"] ?? 0.0).toDouble(),
-            //"matieres": <String>[],
           };
-        }),
-      );
+        })
+        .toList();
+    //Trier par note décroissantes
+    liste.sort(
+      (a, b) => (b["note"] as double).compareTo(a["note"] as double),
+    );
+
+    setState(() {
+      tuteurs.clear();
+      tuteurs.addAll(liste);
+
+      //créé une liste sans répétition
+      filtres = matieresUniques.toList()..sort();
     });
   }
 
