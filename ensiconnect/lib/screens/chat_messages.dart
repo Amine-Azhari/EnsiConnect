@@ -83,13 +83,25 @@ class _ConversationPageState extends State<ConversationPage> {
                                 );
                               }
 
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  child: Text(
-                                    getInitials(user?.fullName ?? '?'),
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProfilPage(
+                                        userId: user!.id,                                
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    child: Text(
+                                      getInitials(user?.fullName ?? '?'),
+                                    ),
                                   ),
+                                  title: Text(user?.fullName ?? id),
                                 ),
-                                title: Text(user?.fullName ?? id),
                               );
                             },
                           );
