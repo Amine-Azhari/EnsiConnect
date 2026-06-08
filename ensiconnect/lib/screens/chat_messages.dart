@@ -53,13 +53,46 @@ class _ConversationPageState extends State<ConversationPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
+
+      
       
 
       appBar: AppBar(
-        title: Text(
-          otherUserName ?? '',
-          
+        title: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    otherUserName ?? '',
+                  ),
+                ],
+              )
+            ),
+            
+
+            // Photo de profil si conversation normale
+            if(!isGroup) 
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfilPage(
+                        userId: getOtherUser(widget.conversation.participants, widget.currentUserId),                                
+                      ),
+                    ),
+                  );
+                },
+                child:CircleAvatar(
+                  child: Text(getInitials(otherUserName ?? '?')),
+                ), 
+              ),
+          ],
         ),
+
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
@@ -104,34 +137,34 @@ class _ConversationPageState extends State<ConversationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    // Photo de profil qui redirige vers le profil
+                    // Photo de profil qui redirige vers le profil si groupe
                     if (isGroup && !isMe)
                       FutureBuilder<String>(
                         future: data['name'] != null
                           ? Future.value(data['name'])
                           : getUserName(msg.senderId),
-                      builder: (context, snapshot) {
-                        final name = snapshot.data ?? '?';
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 15),
-                          child :GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => ProfilPage(
-                                    userId: msg.senderId,
+                        builder: (context, snapshot) {
+                          final name = snapshot.data ?? '?';
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 15),
+                            child :GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilPage(
+                                      userId: msg.senderId,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            child:CircleAvatar(
-                              child: Text(getInitials(name)),
+                                );
+                              },
+                              child:CircleAvatar(
+                                child: Text(getInitials(name)),
+                              ), 
                             ), 
-                          ), 
-                        );
-                      },
-                    ),
+                          );
+                        },
+                      ),
                     if (isGroup && !isMe) const Padding(padding: EdgeInsets.symmetric(horizontal:5,vertical: 5)),
 
                     ConstrainedBox(

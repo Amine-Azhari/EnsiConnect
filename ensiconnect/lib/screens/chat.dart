@@ -57,36 +57,6 @@ class _ChatPageState extends State<ChatPage> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
                   ),
 
-                  // Boutton de test
-                  FloatingActionButton(
-                    onPressed: () async {
-                      final convoId = await chatService.getOrCreateConversation(
-                        participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz", "jSP6nSgCrSeNLwfghni7"],
-                        // name: "Conversation de groupe" // test
-                      );
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ConversationPage(
-                            conversation: Conversation(
-                              id: convoId,
-                              participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz"],
-                              messages: const [],
-                              lastMessage: '',
-                              lastMessageAt: null,
-                              createdAt: null,
-                              name: null,
-                            ),
-                            currentUserId: currentUserId,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Icon(Icons.add),
-                  ),
-                  // Boutton de test
-
                   const SizedBox(height: 10),
 
                   StreamBuilder<QuerySnapshot>(
