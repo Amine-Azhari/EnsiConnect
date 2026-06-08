@@ -6,6 +6,7 @@ import '../widgets/custom_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
 import 'profil.dart';
+import 'dart:async';
 
 
 class SearchPage extends StatefulWidget {
@@ -42,6 +43,7 @@ class _SearchPageState extends State<SearchPage> {
   String resultat = "";
   String recherche = "";
   Set<String> filtresSelectionnes = {};
+  Timer? _debounce;
 
   List<String> filtres = [];
 
@@ -51,6 +53,12 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     initialiserPage();
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
   }
 
   Future<void> initialiserPage() async {
@@ -104,6 +112,14 @@ class _SearchPageState extends State<SearchPage> {
 
       //créé une liste sans répétition
       filtres = matieresUniques.toList()..sort();
+    });
+  }
+
+  //Recherche lorsqu'il y a une pause
+  void _onSearchChanged(String val) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      setState(() => recherche = val);
     });
   }
 
@@ -176,11 +192,7 @@ class _SearchPageState extends State<SearchPage> {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    recherche = value;
-                  });
-                },
+                onChanged: _onSearchChanged,
                 decoration: InputDecoration(
                   hintText: "Rechercher une matière ou un tuteur...",
                   hintStyle: TextStyle(
@@ -231,16 +243,13 @@ class _SearchPageState extends State<SearchPage> {
 
             const SizedBox(height: 20),
 
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Tuteurs recommandés",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("${tuteursFiltres.length} tuteur(s)",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
                 ),
-              ),
+              ],
             ),
             const SizedBox(height: 12),
 
@@ -258,9 +267,7 @@ class _SearchPageState extends State<SearchPage> {
                       child: ListTile(
                         leading: CircleAvatar(
                           child: Text(
-                            '${(tuteursFiltres[index]["prenom"] as String)[0]}'
-                            '${(tuteursFiltres[index]["nom"] as String)[0]}'
-                                .toUpperCase(),
+                            '${(tuteursFiltres[index]["prenom"] as String)[0]}${(tuteursFiltres[index]["nom"] as String)[0]}'.toUpperCase(),
                             ),
                         ),
                         title: Text("${tuteursFiltres[index]["prenom"]} ${tuteursFiltres[index]["nom"]}"),
