@@ -109,6 +109,13 @@ class _ProfilPageState extends State<ProfilPage> {
     }
   }
 
+  void _removeSkill(String skill) {
+    if (!isOwnProfile) return;
+    setState(() {
+      skills.remove(skill);
+    });
+  }
+
   String getInitials(String name) {
     if (name.trim().isEmpty) return "?";
     final parts = name.trim().split(" ");
@@ -146,6 +153,15 @@ class _ProfilPageState extends State<ProfilPage> {
     );
   }
 
+  // ⚡ NAVIGATION SANS ANIMATION
+  PageRouteBuilder _noAnimationRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (_, __, ___) => page,
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -158,229 +174,191 @@ class _ProfilPageState extends State<ProfilPage> {
         title: Text(isOwnProfile ? 'Mon profil' : 'Profil'),
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor:
-            Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black87,
-
+        foregroundColor: isDark ? Colors.white : Colors.black87,
         leading: isOwnProfile
             ? IconButton(
                 icon: const Icon(Icons.menu),
-                onPressed: () {
-                  _scaffoldKey.currentState?.openDrawer();
-                },
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
               )
             : IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: () => Navigator.pop(context),
               ),
       ),
 
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height - 150,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-                Center(
-                  child: CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.blue.shade600,
-                    child: Text(
-                      getInitials(fullName),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.blue,
+                child: Text(
+                  getInitials(fullName),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-                Center(
-                  child: Text(
-                    fullName,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+              Text(
+                fullName,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
+              ),
 
-                const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-                if (!isOwnProfile)
-                  Center(
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.chat),
-                      label: const Text("Envoyer un message"),
-                      onPressed: () async {
-                        final convoId =
-                            await chatService.getOrCreateConversation(
-                          participants: [
-                            currentUserId,
-                            widget.userId!,
-                          ],
-                        );
+              if (!isOwnProfile)
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.chat),
+                  label: const Text("Envoyer un message"),
+                  onPressed: () async {
+                    final convoId =
+                        await chatService.getOrCreateConversation(
+                      participants: [currentUserId, widget.userId!],
+                    );
 
-                        if (!mounted) return;
+                    if (!mounted) return;
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ConversationPage(
-                              conversation: Conversation(
-                                id: convoId,
-                                participants: [
-                                  currentUserId,
-                                  widget.userId!,
-                                ],
-                                messages: const [],
-                                lastMessage: '',
-                                lastMessageAt: null,
-                                createdAt: null,
-                                name: null,
-                              ),
-                              currentUserId: currentUserId,
-                            ),
+                    Navigator.of(context).push(
+                      _noAnimationRoute(
+                        ConversationPage(
+                          conversation: Conversation(
+                            id: convoId,
+                            participants: [currentUserId, widget.userId!],
+                            messages: const [],
+                            lastMessage: '',
+                            lastMessageAt: null,
+                            createdAt: null,
+                            name: null,
                           ),
-                        );
-                      },
-                    ),
-                  ),
-
-                const SizedBox(height: 15),
-
-                if (isOwnProfile)
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _toggleEdit,
-                      child: Text(
-                        isEditing ? "Sauvegarder" : "Modifier le profil",
-                      ),
-                    ),
-                  ),
-
-                const SizedBox(height: 20),
-
-                Row(
-                  children: [
-                    Expanded(child: _statCard("Sessions", "$sessions", isDark)),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _statCard(
-                        "Note moyenne",
-                        averageNote.toStringAsFixed(1),
-                        isDark,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF111827)
-                        : Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Informations personnelles",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          currentUserId: currentUserId,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text("Email: $email"),
-                      Text("Filière: $filiere"),
-                      Text("Promotion: $promotion"),
-                    ],
-                  ),
+                    );
+                  },
                 ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 15),
 
-                TextField(
-                  controller: _descriptionController,
-                  enabled: isEditing && isOwnProfile,
-                  maxLines: 3,
-                  decoration: const InputDecoration(
-                    hintText: "Décris-toi...",
-                  ),
+              if (isOwnProfile)
+                ElevatedButton(
+                  onPressed: _toggleEdit,
+                  child: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
                 ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-                Row(
+              Row(
+                children: [
+                  Expanded(child: _statCard("Sessions", "$sessions", isDark)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _statCard(
+                      "Note moyenne",
+                      averageNote.toStringAsFixed(1),
+                      isDark,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: DropdownButton<String>(
-                        value: (selectedSkill != null &&
-                                skillsOptions.contains(selectedSkill))
-                            ? selectedSkill
-                            : null,
-                        hint: const Text("Choisir"),
-                        isExpanded: true,
-                        items: skillsOptions
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: isEditing && isOwnProfile
-                            ? (v) => setState(() => selectedSkill = v)
-                            : null,
+                    const Text(
+                      "Informations personnelles",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    IconButton(
-                      onPressed: isEditing && isOwnProfile ? _addSkill : null,
-                      icon: const Icon(Icons.add),
-                    ),
+                    const SizedBox(height: 10),
+                    Text("Email: $email"),
+                    Text("Filière: $filiere"),
+                    Text("Promotion: $promotion"),
                   ],
                 ),
+              ),
 
-                Wrap(
-                  spacing: 8,
-                  children: skills.isEmpty
-                      ? [const Text("Aucune compétence")]
-                      : skills.map((s) {
-                          return Chip(
-                            label: Text(s),
-                            deleteIcon: (isEditing && isOwnProfile)
-                                ? const Icon(Icons.close, size: 18)
-                                : null,
-                            onDeleted: (isEditing && isOwnProfile)
-                                ? () {
-                                    setState(() {
-                                      skills.remove(s);
-                                    });
-                                  }
-                                : null,
-                          );
-                        }).toList(),
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: _descriptionController,
+                enabled: isEditing && isOwnProfile,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: "Décris-toi...",
                 ),
-              ],
-            ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: DropdownButton<String>(
+                      value: (selectedSkill != null &&
+                              skillsOptions.contains(selectedSkill))
+                          ? selectedSkill
+                          : null,
+                      hint: const Text("Choisir"),
+                      isExpanded: true,
+                      items: skillsOptions
+                          .map((e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e),
+                              ))
+                          .toList(),
+                      onChanged: isEditing && isOwnProfile
+                          ? (v) => setState(() => selectedSkill = v)
+                          : null,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: isEditing && isOwnProfile ? _addSkill : null,
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+              ),
+
+              Wrap(
+                spacing: 8,
+                children: skills.isEmpty
+                    ? [const Text("Aucune compétence")]
+                    : skills.map((s) {
+                        return Chip(
+                          label: Text(s),
+                          deleteIcon: isEditing && isOwnProfile
+                              ? const Icon(Icons.close, size: 18)
+                              : null,
+                          onDeleted: isEditing && isOwnProfile
+                              ? () => _removeSkill(s)
+                              : null,
+                        );
+                      }).toList(),
+              ),
+            ],
           ),
         ),
       ),

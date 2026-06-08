@@ -28,6 +28,17 @@ class UserServices {
     return _mapUser(result.docs.first);
   }
 
+
+  Future<void> setAverageNote({
+  required String userId,
+  required double note,
+}) async {
+  await _etudiants.doc(userId).set({
+    'averageNote': note,
+    'updatedAt': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+}
+
   //  GET USER BY ID
   Future<User?> getUserById(String userId) async {
     final doc = await _etudiants.doc(userId).get();

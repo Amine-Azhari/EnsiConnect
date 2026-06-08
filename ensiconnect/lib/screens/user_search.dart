@@ -316,12 +316,11 @@ class _SearchPageState extends State<SearchPage> {
 
                         //redirection profil tuteur
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProfilPage(
-                                userId: tuteursFiltres[index]["id"] as String,
-                              ),
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder: (_, __, ___) => ProfilPage(userId: userId),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
                             ),
                           );
                         },

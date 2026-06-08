@@ -4,6 +4,7 @@ import '../models/user.dart'; // Pour le modèle User
 import '../screens/setting_page.dart'; // Pour la navigation vers les paramètres
 import '../service/user_service.dart'; // Pour le service d'authentification
 import '../service/auth_service.dart';
+import '../screens/profil.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -65,10 +66,11 @@ class CustomDrawer extends StatelessWidget {
                 title: const Text('Paramètres'),
                 onTap: () {
                   Navigator.pop(context); // Ferme le Drawer
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingPage()), 
-                  );
+                  Navigator.of(context).push(PageRouteBuilder(
+                    pageBuilder: (_, __, ___) => ProfilPage(userId: null),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ));
                 },
               ),
               ListTile(
