@@ -52,6 +52,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      
 
       appBar: AppBar(
         title: Text(
@@ -183,7 +184,12 @@ class _ConversationPageState extends State<ConversationPage> {
 
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(15.0),
+          padding: EdgeInsets.only(
+            left: 15,
+            right: 15,
+            top: 15,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 15,
+          ),
           child: Container(
             height: 61,
             decoration: BoxDecoration(
