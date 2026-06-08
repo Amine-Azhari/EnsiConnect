@@ -190,7 +190,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
                 const SizedBox(height: 20),
 
-                // ✅ AVATAR FIXÉ (CORRECTION ICI)
+                // AVATAR FIXÉ (CORRECTION ICI)
                 Center(
                   child: CircleAvatar(
                     radius: 30,
