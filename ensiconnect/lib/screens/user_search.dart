@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import "../widgets/ensiconnect_app.dart";
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../service/user_service.dart';
+
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -33,6 +36,7 @@ class StarRating extends StatelessWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  String? currentUserId;
   String resultat = "";
   String recherche = "";
   Set<String> filtresSelectionnes = {};
@@ -45,29 +49,60 @@ class _SearchPageState extends State<SearchPage> {
     "SGBD",
   ];
 
-  //temporaire
-  final List<Map<String, dynamic>> tuteurs = [
-    {
-      "nom": "Amine",
-      "matieres": ["Mathématiques", "SGBD"],
-      "note": 4.5,
-    },
-    {
-      "nom": "Ayoub",
-      "matieres": ["Programmation"],
-      "note": 4.0,
-    },
-    {
-      "nom": "Alexis",
-      "matieres": ["Réseaux","Mathématiques"],
-      "note": 4.8,
-    },
-  ];
+  final List<Map<String, dynamic>> tuteurs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    initialiserPage();
+  }
+
+  Future<void> initialiserPage() async {
+    await initUser();
+    await chargerTuteurs();
+  }
+
+  //Utilisateur actuel
+  Future<void> initUser() async {
+    final userService = UserServices();
+    final user = await userService.getCurrentUser();
+
+    setState(() {
+      currentUserId = user?.id;
+    });
+  }
+
+  //Récupère les données dans Etudiant
+  Future<void> chargerTuteurs() async {
+    
+    final etudiantSnap = await FirebaseFirestore.instance.collection('Etudiant').get();
+
+    setState(() {
+      tuteurs.clear();
+
+      tuteurs.addAll(
+        etudiantSnap.docs.where((doc) => doc.id != currentUserId).map((doc) {
+          return {
+            "id": doc.id,
+            "nom": doc["Nom"],
+            "prenom": doc["Prenom"],
+            "matieres": <String>[],
+            "note": 0.0,
+          };
+        }),
+      );
+    });
+  }
+
+
 
   
   List<Map<String, dynamic>> get tuteursFiltres {
+
     return tuteurs.where((tuteur) {
+      
       final nom = (tuteur["nom"] as String).toLowerCase();
+      final prenom = (tuteur["prenom"] as String).toLowerCase();
       final matieres = (tuteur["matieres"] as List<String>);
 
       // Filtres multiples
@@ -79,6 +114,7 @@ class _SearchPageState extends State<SearchPage> {
       final correspondRecherche =
           recherche.isEmpty ||
           nom.contains(recherche.toLowerCase()) ||
+          prenom.contains(recherche.toLowerCase()) ||
           matieres.any(
             (m) => m.toLowerCase().contains(recherche.toLowerCase()),
           );
@@ -209,7 +245,7 @@ class _SearchPageState extends State<SearchPage> {
                         leading: const CircleAvatar(
                           child: Icon(Icons.person),
                         ),
-                        title: Text(tuteursFiltres[index]["nom"]),
+                        title: Text("${tuteursFiltres[index]["prenom"]} ${tuteursFiltres[index]["nom"]}"),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,

@@ -1,7 +1,10 @@
+import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/session_widgets.dart';
 import '../service/post_session_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/ensiconnect_app.dart';
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
@@ -387,7 +390,7 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   Widget _buildDropdown(bool isDark) {
     return DropdownButtonFormField<String>(
-      value: _data.matiere,
+      initialValue: _data.matiere,
       hint: const Text('Matière concernée', style: TextStyle(fontSize: 13)),
       style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
       dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
@@ -427,7 +430,7 @@ class _PostSessionPageState extends State<PostSessionPage>
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             elevation: 4,
-            shadowColor: ensisaBlue.withOpacity(0.4),
+            shadowColor: ensisaBlue.withValues(alpha: 0.4),
           ),
           child: _submitting
               ? const SizedBox(
