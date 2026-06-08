@@ -5,6 +5,7 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
+import 'profil.dart';
 
 
 class SearchPage extends StatefulWidget {
@@ -14,7 +15,7 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
-//Affichage des étoiles sur le profil
+//Gestion des étoiles
 class StarRating extends StatelessWidget {
   final double note;
 
@@ -243,6 +244,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             const SizedBox(height: 12),
 
+            //Affichage tuteurs
             Expanded(
               child: tuteursFiltres.isEmpty
                 ? const Center(
@@ -254,8 +256,12 @@ class _SearchPageState extends State<SearchPage> {
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.person),
+                        leading: CircleAvatar(
+                          child: Text(
+                            '${(tuteursFiltres[index]["prenom"] as String)[0]}'
+                            '${(tuteursFiltres[index]["nom"] as String)[0]}'
+                                .toUpperCase(),
+                            ),
                         ),
                         title: Text("${tuteursFiltres[index]["prenom"]} ${tuteursFiltres[index]["nom"]}"),
                         subtitle: Column(
@@ -286,6 +292,7 @@ class _SearchPageState extends State<SearchPage> {
 
                             const SizedBox(height: 6),
 
+                            //Affichage des étoiles
                             Row(
                               children: [
                                 StarRating(note: tuteursFiltres[index]["note"] as double),
@@ -299,8 +306,17 @@ class _SearchPageState extends State<SearchPage> {
                           ],
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+
+                        //redirection profil tuteur
                         onTap: () {
-                          print("Tuteur sélectionné : ${tuteursFiltres[index]["nom"]}");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfilPage(
+                                userId: tuteursFiltres[index]["id"] as String,
+                              ),
+                            ),
+                          );
                         },
                       ),
                     );
