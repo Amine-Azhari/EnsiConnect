@@ -5,7 +5,8 @@ class NotificationEvaluationService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Future<void> submitEvaluation({
-    required String sessionId,
+    // required String sessionId,
+    required String tutorId,
     required int note,
     required String commentaire,
   }) async {
@@ -16,7 +17,8 @@ class NotificationEvaluationService {
 
 
     await _db.collection('Evaluation').add({
-      'SessionID': sessionId,
+      // 'SessionID': sessionId,
+      'tutorID': tutorId,
       'EleveID': userId,
       'Note': note,
       'Commentaire': commentaire,
