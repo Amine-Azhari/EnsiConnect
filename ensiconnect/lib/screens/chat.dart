@@ -61,7 +61,8 @@ class _ChatPageState extends State<ChatPage> {
                   FloatingActionButton(
                     onPressed: () async {
                       final convoId = await chatService.getOrCreateConversation(
-                        participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz"], // test
+                        participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz", "jSP6nSgCrSeNLwfghni7"],
+                        name: "Conversation de groupe" // test
                       );
 
                       Navigator.push(

@@ -99,6 +99,31 @@ class ChatService {
   }
 
 
+  Future<void> addUserIntoConversation({
+    required String userId,
+    required String conversationId
+  }) async {
+    final query = await _db
+        .collection('conversations')
+        .doc(conversationId)
+        .update({
+          'participants': FieldValue.arrayUnion([userId]),
+        });
+
+    
+  }
+
+    Future<void> deleteUserFromConversation({
+    required String userId,
+    required String conversationId
+  }) async {
+    final query = await _db
+        .collection('conversations')
+        .doc(conversationId);
+
+    
+  }
+
   // A demander d'implémenter dans user_service
   CollectionReference<Map<String, dynamic>> get _etudiants =>
       _db.collection('Etudiant');

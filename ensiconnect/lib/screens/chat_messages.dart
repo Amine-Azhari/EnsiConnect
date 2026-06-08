@@ -6,7 +6,6 @@ import '../models/conversation.dart';
 import '../service/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
-import '../models/user.dart';
 
 class ConversationPage extends StatefulWidget {
   final Conversation conversation;
@@ -155,7 +154,7 @@ class _ConversationPageState extends State<ConversationPage> {
               children: [
                 IconButton(
                   icon: const Icon(
-                    Icons.face,
+                    Icons.attach_file,
                     color: EnsiConnectApp.ensisaBlue,
                   ),
                   onPressed: () {},
@@ -171,13 +170,6 @@ class _ConversationPageState extends State<ConversationPage> {
                       border: InputBorder.none,
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.attach_file,
-                    color: EnsiConnectApp.ensisaBlue,
-                  ),
-                  onPressed: () {},
                 ),
                 // Bouton d'envoi d'un message
                 IconButton(
