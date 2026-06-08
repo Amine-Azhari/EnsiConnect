@@ -33,6 +33,8 @@ class _ConversationPageState extends State<ConversationPage> {
 
   String? otherUserName;
 
+  final Map<String, String> _userNamesCache = {};
+
   @override
   void initState() {
     super.initState();
@@ -109,14 +111,23 @@ class _ConversationPageState extends State<ConversationPage> {
                     crossAxisAlignment:
                         isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                     children: [
-                      if (isGroup && !isMe)    
-                        Text(
-                          msg.senderId,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                      if (isGroup && !isMe)
+                        FutureBuilder<String>(
+                          future: data['name'] != null
+                              ? Future.value(data['name'])
+                              : getUserName(msg.senderId),
+                          builder: (context, snapshot) {
+                            final name = snapshot.data ?? '?';
+                            return Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
-                      ),
+                        
                       if (isGroup && !isMe)  const SizedBox(height: 4),
                       
                       Text(msg.content),
@@ -227,5 +238,19 @@ class _ConversationPageState extends State<ConversationPage> {
     setState(() {
       otherUserName = user?.fullName ?? otherId;
     });
+  }
+
+  Future<String> getUserName(String userId) async {
+    if (_userNamesCache.containsKey(userId)) {
+      return _userNamesCache[userId]!;
+    }
+
+    final user = await chatService.getUserById(userId);
+
+    final name = user?.fullName ?? userId;
+
+    _userNamesCache[userId] = name;
+
+    return name;
   }
 }
