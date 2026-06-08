@@ -91,57 +91,79 @@ class _ConversationPageState extends State<ConversationPage> {
 
               final isMe = msg.senderId == widget.currentUserId;
 
+              
+
               return Align(
                 alignment:
                     isMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: isMe ?
-                      Theme.of(context).brightness == Brightness.dark ?
-                      EnsiConnectApp.ensisaBlue :
-                      EnsiConnectApp.ensisaLightBlue :
-                      Theme.of(context).brightness == Brightness.dark ?
-                      const Color.fromARGB(255, 72, 72, 72) :
-                      const Color.fromARGB(255, 209, 209, 209),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment:
-                        isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                    children: [
-                      if (isGroup && !isMe)
-                        FutureBuilder<String>(
-                          future: data['name'] != null
-                              ? Future.value(data['name'])
-                              : getUserName(msg.senderId),
-                          builder: (context, snapshot) {
-                            final name = snapshot.data ?? '?';
-                            return Text(
-                              name,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                          },
-                        ),
-                        
-                      if (isGroup && !isMe)  const SizedBox(height: 4),
-                      
-                      Text(msg.content),
-                      const SizedBox(height: 6),
-                      
-                      Text(
-                        msg.createdAt != null
-                            ? DateFormat('HH:mm').format(msg.createdAt!)
-                            : '',
-                        style: Theme.of(context).textTheme.bodySmall,
+                
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (isGroup && !isMe)
+                      FutureBuilder<String>(
+                        future: data['name'] != null
+                          ? Future.value(data['name'])
+                          : getUserName(msg.senderId),
+                      builder: (context, snapshot) {
+                        final name = snapshot.data ?? '?';
+                        return CircleAvatar(
+                          child: Text(getInitials(name)),
+                        );
+                      },
+                    ),
+                    if (isGroup && !isMe) const Padding(padding: const EdgeInsets.symmetric(horizontal:5,vertical: 5)),
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isMe ?
+                          Theme.of(context).brightness == Brightness.dark ?
+                          EnsiConnectApp.ensisaBlue :
+                          EnsiConnectApp.ensisaLightBlue :
+                          Theme.of(context).brightness == Brightness.dark ?
+                          const Color.fromARGB(255, 72, 72, 72) :
+                          const Color.fromARGB(255, 209, 209, 209),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ],
-                  ),
-                ),
+                      child: Column(
+                        crossAxisAlignment:
+                            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                        children: [
+                          if (isGroup && !isMe)
+                            FutureBuilder<String>(
+                              future: data['name'] != null
+                                  ? Future.value(data['name'])
+                                  : getUserName(msg.senderId),
+                              builder: (context, snapshot) {
+                                final name = snapshot.data ?? '?';
+                                return Text(
+                                  name,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
+                            ),
+                            
+                          if (isGroup && !isMe)  const SizedBox(height: 4),
+                          
+                          Text(msg.content),
+                          const SizedBox(height: 6),
+                          
+                          Text(
+                            msg.createdAt != null
+                                ? DateFormat('HH:mm').format(msg.createdAt!)
+                                : '',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ]
+                )
               );
             },
           );

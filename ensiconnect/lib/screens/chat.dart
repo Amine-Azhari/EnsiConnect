@@ -123,18 +123,12 @@ class _ChatPageState extends State<ChatPage> {
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: docs.length,
-
-                        
+                        itemCount: docs.length,                        
 
                         itemBuilder: (context, index) {
                           final data = docs[index].data() as Map<String, dynamic>;
 
                           final participants = List<String>.from(data['participants']);
-
-                          final otherUser = data['name'] != null
-                            ? data['name']!
-                            : getOtherUser(participants, currentUserId);
 
                           final lastMessageAt = (data['lastMessageAt'] as Timestamp?)?.toDate();      
 
@@ -146,7 +140,7 @@ class _ChatPageState extends State<ChatPage> {
                               builder: (context, snapshot) {
                                 final name = snapshot.data ?? '?';
                                 return CircleAvatar(
-                                  child: Text(name.isNotEmpty ? name[0].toUpperCase() : '?'),
+                                  child: Text(getInitials(name)),
                                 );
                               },
                             ),
@@ -244,4 +238,17 @@ String formatTimeAgo(DateTime? date) {
   }
 
   return "Il y a ${difference.inDays} j";
+}
+
+String getInitials(String name) {
+  if (name.trim().isEmpty) return "?";
+
+  final parts = name.trim().split(" ");
+
+  if (parts.length == 1) {
+    return parts[0][0].toUpperCase();
+  }
+  
+
+  return (parts[0][0] + parts[1][0]).toUpperCase();
 }
