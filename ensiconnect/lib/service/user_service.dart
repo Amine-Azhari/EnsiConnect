@@ -11,10 +11,11 @@ class UserServices {
   CollectionReference<Map<String, dynamic>> get _etudiants =>
       _db.collection('Etudiant');
 
-  // Recupere l'utilisateur actuellement connecte depuis Firestore.
+  //  CURRENT USER
   Future<User?> getCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('user_email');
+
     if (email == null) return null;
 
     final result = await _etudiants
@@ -24,37 +25,21 @@ class UserServices {
 
     if (result.docs.isEmpty) return null;
 
-    final doc = result.docs.first;
-    final data = doc.data();
-
-    return User(
-      id: doc.id,
-      firstName: data['Prenom'] ?? '',
-      lastName: data['Nom'] ?? '',
-      email: data['eMail'] ?? '',
-      promotion: data['Promotion'] ?? '1A',
-      filiere: data['Filiere'] ?? 'Informatique',
-      role: data['Role'] ?? 'Étudiant',
-      description: data['description'] ?? '',
-      skills: List<String>.from(data['skills'] ?? []),
-      sessions: data['sessions'] ?? 0,
-      averageNote: (data['averageNote'] ?? 0.0).toDouble(),
-    );
+    return _mapUser(result.docs.first);
   }
 
-  // Récupère un utilisateur à partir d'un userId Firestore
+  //  GET USER BY ID 
   Future<User?> getUserById(String userId) async {
-    final result = await _etudiants
-        .where('userId', isEqualTo: userId)
-        .limit(1)
-        .get();
+    final doc = await _etudiants.doc(userId).get();
 
-    if (result.docs.isEmpty) {
-      return null;
-    }
+    if (!doc.exists) return null;
 
-    final doc = result.docs.first;
-    final data = doc.data();
+    return _mapUser(doc);
+  }
+
+  //  MAP FIRESTORE → USER 
+  User _mapUser(DocumentSnapshot<Map<String, dynamic>> doc) {
+    final data = doc.data() ?? {};
 
     return User(
       id: doc.id,
@@ -65,44 +50,30 @@ class UserServices {
       filiere: data['Filiere'] ?? 'Informatique',
       role: data['Role'] ?? 'Étudiant',
       description: data['description'] ?? '',
+
+      //  SAFE CAST (IMPORTANT)
       skills: List<String>.from(data['skills'] ?? []),
-      sessions: data['sessions'] ?? 0,
-      averageNote: (data['averageNote'] ?? 0.0).toDouble(),
+
+      sessions: (data['sessions'] ?? 0) as int,
+      averageNote: (data['averageNote'] ?? 0).toDouble(),
     );
   }
 
-  Future<List<Map<String, dynamic>>> getAllMatieres() async {
+  //  MATIERES / SKILLS OPTIONS 
+  Future<List<Map<String, dynamic>>> getAllSkillsOptions() async {
     final snapshot = await _db.collection('Matiere').get();
 
     return snapshot.docs.map((doc) {
       final data = doc.data();
+
       return {
         'id': doc.id,
-        'name': data['name'] ?? data['Nom'] ?? '',
+        'name': (data['Nom'] ?? data['name'] ?? '').toString(),
       };
     }).toList();
   }
 
-  Future<List<String>> getAllSkillsOptions() async {
-    try {
-      final doc = await _db.collection('Config').doc('skills').get();
-
-      if (!doc.exists || doc.data() == null) return [];
-
-      final data = doc.data();
-
-      final list = data?['Matiere']; // 👈 ICI le vrai nom
-
-      if (list is! List) return [];
-
-      return List<String>.from(list);
-    } catch (e) {
-      print("ERROR getAllSkillsOptions: $e");
-      return [];
-    }
-  }
-
-  // Mise à jour du profil utilisateur
+  //  UPDATE USER PROFILE
   Future<void> updateUserProfile({
     required String userId,
     required String description,
