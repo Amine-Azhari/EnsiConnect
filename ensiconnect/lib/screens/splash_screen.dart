@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../service/user_service.dart';
+import '../service/session_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,6 +18,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkSession() async {
+    // Nettoyer les sessions expirées en arrière-plan
+    SessionService().cleanupOldSessions();
+
     // On attend 3 secondes pour l'animation
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
