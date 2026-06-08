@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import '../service/chat_service.dart';
+import '../models/conversation.dart';
+import '../screens/chat_messages.dart';
 import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
@@ -15,6 +17,7 @@ class ProfilPage extends StatefulWidget {
 
 class _ProfilPageState extends State<ProfilPage> {
   final UserServices _user = UserServices();
+  final ChatService chatService = ChatService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _descriptionController = TextEditingController();
@@ -26,6 +29,8 @@ class _ProfilPageState extends State<ProfilPage> {
   bool isEditing = false;
 
   String currentUserId = "";
+  String profileUserId = "";
+
   String fullName = "";
   String email = "";
   String filiere = "";
@@ -34,8 +39,7 @@ class _ProfilPageState extends State<ProfilPage> {
   int sessions = 0;
   double averageNote = 0.0;
 
-  bool get isOwnProfile =>
-      widget.userId == null || widget.userId == currentUserId;
+  bool get isOwnProfile => currentUserId == profileUserId;
 
   @override
   void initState() {
@@ -44,16 +48,20 @@ class _ProfilPageState extends State<ProfilPage> {
   }
 
   Future<void> _loadUser() async {
+    final currentUser = await _user.getCurrentUser();
+
     final user = widget.userId != null
         ? await _user.getUserById(widget.userId!)
-        : await _user.getCurrentUser();
+        : currentUser;
 
     final options = await _user.getAllSkillsOptions();
 
-    if (!mounted || user == null) return;
+    if (!mounted || user == null || currentUser == null) return;
 
     setState(() {
-      currentUserId = user.id;
+      currentUserId = currentUser.id;
+      profileUserId = user.id;
+
       fullName = user.fullName;
       email = user.email;
       filiere = user.filiere;
@@ -66,9 +74,9 @@ class _ProfilPageState extends State<ProfilPage> {
       averageNote = (user.averageNote ?? 0).toDouble();
 
       skillsOptions = options
-    .map<String>((e) => e['name'].toString())
-    .toSet() //  supprime les doublons
-    .toList();
+          .map<String>((e) => e['name'].toString())
+          .toSet()
+          .toList();
     });
   }
 
@@ -187,17 +195,59 @@ class _ProfilPageState extends State<ProfilPage> {
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 10),
 
-              //  BOUTON MODIFIER / SAUVEGARDER
-              Center(
-                child: ElevatedButton(
-                  onPressed: isOwnProfile ? _toggleEdit : null,
-                  child: Text(
-                    isEditing ? "Sauvegarder" : "Modifier le profil",
+              if (!isOwnProfile)
+                Center(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.chat),
+                    label: const Text("Envoyer un message"),
+                    onPressed: () async {
+                      final convoId = await chatService.getOrCreateConversation(
+                        participants: [
+                          currentUserId,
+                          widget.userId!,
+                        ],
+                      );
+
+                      if (!mounted) return;
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ConversationPage(
+                            conversation: Conversation(
+                              id: convoId,
+                              participants: [
+                                currentUserId,
+                                widget.userId!,
+                              ],
+                              messages: const [],
+                              lastMessage: '',
+                              lastMessageAt: null,
+                              createdAt: null,
+                              name: null,
+                            ),
+                            currentUserId: currentUserId,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ),
+
+              const SizedBox(height: 15),
+
+              // BOUTON MODIFIER 
+              if (isOwnProfile)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _toggleEdit,
+                    child: Text(
+                      isEditing ? "Sauvegarder" : "Modifier le profil",
+                    ),
+                  ),
+                ),
 
               const SizedBox(height: 20),
 

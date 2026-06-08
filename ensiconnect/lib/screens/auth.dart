@@ -179,7 +179,27 @@ class _AuthState extends State<Auth> {
                       decoration: BoxDecoration(
                         color: cardColor,
                         borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: EnsiConnectApp.ensisaBlue.withValues(
+                            alpha: isDark ? 0.55 : 0.35,
+                          ),
+                          width: 1,
+                        ),
                         boxShadow: [
+                          BoxShadow(
+                            color: EnsiConnectApp.ensisaBlue.withValues(
+                              alpha: isDark ? 0.24 : 0.11,
+                            ),
+                            blurRadius: 42,
+                            spreadRadius: 5,
+                          ),
+                          BoxShadow(
+                            color: EnsiConnectApp.ensisaBlue.withValues(
+                              alpha: isDark ? 0.12 : 0.06,
+                            ),
+                            blurRadius: 66,
+                            spreadRadius: 11,
+                          ),
                           BoxShadow(
                             color: Colors.black.withValues(
                               alpha: isDark ? 0 : 0.08,
