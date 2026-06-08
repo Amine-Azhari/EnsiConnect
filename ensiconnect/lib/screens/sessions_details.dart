@@ -459,13 +459,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                 child: Row(
                   children: [
                     for (final participant in visibleParticipants) ...[
-                      InkWell(
-                        borderRadius: BorderRadius.circular(24),
-                        onTap: () => _openParticipantProfile(participant),
-                        child: _ParticipantAvatar(
-                          participant: participant,
-                          color: subjectColor,
-                        ),
+                      _ParticipantAvatar(
+                        participant: participant,
+                        color: subjectColor,
                       ),
                       const SizedBox(width: 10),
                     ],
