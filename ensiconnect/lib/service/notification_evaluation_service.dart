@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensiconnect/service/user_service.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationEvaluationService {
@@ -31,28 +32,47 @@ class NotificationEvaluationService {
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('user_email');
 
-    if (email == null) return null;
+    debugPrint("🔍 [DEBUG BDD] Email récupéré localement : '$email'");
 
-    final studentResult = await _db
-        .collection('etudiants') 
+    if (email == null) {
+      debugPrint("[DEBUG BDD] Échec : 'user_email' est null dans SharedPreferences.");
+      return null;
+    }
+
+    try {
+      final studentResult = await _db
+        .collection('Etudiant') 
         .where('eMail', isEqualTo: email)
         .limit(1)
         .get();
 
-    if (studentResult.docs.isEmpty) return null;
-    
-    final String studentId = studentResult.docs.first.id;
+      debugPrint("[DEBUG BDD] Nombre d'étudiants trouvés : ${studentResult.docs.length}");
 
-    final notificationsResult = await _db
-        .collection('Notification')
-        .where('receiverId', isEqualTo: studentId)
-        .get();
+      if (studentResult.docs.isEmpty) {
+        debugPrint("[DEBUG BDD] Aucun document dans la collection 'etudiants' avec eMail = '$email'");
+        return null;
+      }
 
-    return notificationsResult.docs.map((doc) {
-      final data = doc.data();
-      data['id'] = doc.id;
-      return data;
-    }).toList();
+      final String studentId = studentResult.docs.first.id;
+      debugPrint("[DEBUG BDD] ID Étudiant trouvé : $studentId");
+
+      final notificationsResult = await _db
+          .collection('Notification')
+          .where('receiverId', isEqualTo: studentId)
+          .get();
+
+      debugPrint("[DEBUG BDD] Notifications récupérées : ${notificationsResult.docs.length}");
+
+      return notificationsResult.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+
+    } catch (e) {
+      debugPrint("[DEBUG BDD] Erreur fatale Firestore : $e");
+      return null;
+    }
   }
 
   // Sans recharger
