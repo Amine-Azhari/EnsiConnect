@@ -5,6 +5,7 @@ import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
+import 'profil.dart';
 
 
 class SearchPage extends StatefulWidget {
@@ -14,6 +15,7 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
+//Gestion des étoiles
 class StarRating extends StatelessWidget {
   final double note;
 
@@ -41,13 +43,7 @@ class _SearchPageState extends State<SearchPage> {
   String recherche = "";
   Set<String> filtresSelectionnes = {};
 
-  //temporaire
-  final List<String> filtres = [
-    "Programmation",
-    "Mathématiques",
-    "Réseaux",
-    "SGBD",
-  ];
+  List<String> filtres = [];
 
   final List<Map<String, dynamic>> tuteurs = [];
 
@@ -77,20 +73,37 @@ class _SearchPageState extends State<SearchPage> {
     
     final etudiantSnap = await FirebaseFirestore.instance.collection('Etudiant').get();
 
-    setState(() {
-      tuteurs.clear();
+    final Set<String> matieresUniques = {};
 
-      tuteurs.addAll(
-        etudiantSnap.docs.where((doc) => doc.id != currentUserId).map((doc) {
+    final liste = etudiantSnap.docs
+        .where((doc) => doc.id != currentUserId)
+        .map((doc) {
+          final skills = doc.data().containsKey("skills")
+              ? List<String>.from(doc.data()["skills"])
+              : <String>[];
+
+          matieresUniques.addAll(skills);
+
           return {
             "id": doc.id,
             "nom": doc["Nom"],
             "prenom": doc["Prenom"],
-            "matieres": <String>[],
-            "note": 0.0,
+            "matieres": skills,
+            "note": (doc.data()["averageNote"] ?? 0.0).toDouble(),
           };
-        }),
-      );
+        })
+        .toList();
+    //Trier par note décroissantes
+    liste.sort(
+      (a, b) => (b["note"] as double).compareTo(a["note"] as double),
+    );
+
+    setState(() {
+      tuteurs.clear();
+      tuteurs.addAll(liste);
+
+      //créé une liste sans répétition
+      filtres = matieresUniques.toList()..sort();
     });
   }
 
@@ -231,6 +244,7 @@ class _SearchPageState extends State<SearchPage> {
             ),
             const SizedBox(height: 12),
 
+            //Affichage tuteurs
             Expanded(
               child: tuteursFiltres.isEmpty
                 ? const Center(
@@ -242,8 +256,12 @@ class _SearchPageState extends State<SearchPage> {
                     return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.person),
+                        leading: CircleAvatar(
+                          child: Text(
+                            '${(tuteursFiltres[index]["prenom"] as String)[0]}'
+                            '${(tuteursFiltres[index]["nom"] as String)[0]}'
+                                .toUpperCase(),
+                            ),
                         ),
                         title: Text("${tuteursFiltres[index]["prenom"]} ${tuteursFiltres[index]["nom"]}"),
                         subtitle: Column(
@@ -274,6 +292,7 @@ class _SearchPageState extends State<SearchPage> {
 
                             const SizedBox(height: 6),
 
+                            //Affichage des étoiles
                             Row(
                               children: [
                                 StarRating(note: tuteursFiltres[index]["note"] as double),
@@ -287,8 +306,17 @@ class _SearchPageState extends State<SearchPage> {
                           ],
                         ),
                         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+
+                        //redirection profil tuteur
                         onTap: () {
-                          print("Tuteur sélectionné : ${tuteursFiltres[index]["nom"]}");
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfilPage(
+                                userId: tuteursFiltres[index]["id"] as String,
+                              ),
+                            ),
+                          );
                         },
                       ),
                     );
