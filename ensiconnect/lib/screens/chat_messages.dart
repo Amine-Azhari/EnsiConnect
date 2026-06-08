@@ -7,6 +7,7 @@ import '../service/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
 import 'profil.dart';
+import '../models/user.dart';
 
 class ConversationPage extends StatefulWidget {
   final Conversation conversation;
@@ -58,8 +59,58 @@ class _ConversationPageState extends State<ConversationPage> {
       
 
       appBar: AppBar(
+        actions: [
+          if (isGroup)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'members') {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      final participants = widget.conversation.participants;
+
+                      return ListView(
+                        padding: EdgeInsets.only(top:10),
+                        children: participants.map((id) {
+                          return FutureBuilder<User?>(
+                            future: chatService.getUserById(id),
+                            builder: (context, snapshot) {
+                              final user = snapshot.data;
+
+                              if (!snapshot.hasData) {
+                                return const ListTile(
+                                  title: Text("Chargement..."),
+                                );
+                              }
+
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  child: Text(
+                                    getInitials(user?.fullName ?? '?'),
+                                  ),
+                                ),
+                                title: Text(user?.fullName ?? id),
+                              );
+                            },
+                          );
+                        }).toList(),
+                      );
+                    },
+                  );
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'members',
+                  child: Text('Voir les membres'),
+                ),
+              ],
+            ),
+        ],
         title: Row(
           children: [
+
+            // Nom de la conversation
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,6 +141,9 @@ class _ConversationPageState extends State<ConversationPage> {
                   child: Text(getInitials(otherUserName ?? '?')),
                 ), 
               ),
+
+            // Liste des personnes dans la conversation
+            
           ],
         ),
 
