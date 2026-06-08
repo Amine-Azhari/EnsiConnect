@@ -37,14 +37,14 @@ class SessionFormSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(icon, color: _ensisaBlue, size: 18),
+            Icon(icon, color: Colors.white, size: 18),
             const SizedBox(width: 8),
             Text(
               label,
               style: const TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 13,
-                color: _ensisaBlue,
+                color: Colors.white,
                 letterSpacing: 0.4,
               ),
             ),
@@ -346,6 +346,173 @@ class SessionPublicBadge extends StatelessWidget {
           ),
         ),
       ]),
+    );
+  }
+}
+
+// ─── 7. Salle dropdown ────────────────────────────────────────────────────────
+
+class SessionSalleDropdown extends StatelessWidget {
+  final List<String> salles;
+  final bool loading;
+  final String? value;
+  final bool isDark;
+  final void Function(String?) onChanged;
+
+  const SessionSalleDropdown({
+    super.key,
+    required this.salles,
+    required this.loading,
+    required this.value,
+    required this.isDark,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return DropdownButtonFormField<String>(
+      value: value,
+      hint: const Text('Choisir une salle', style: TextStyle(fontSize: 13)),
+      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+      dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _ensisaBlue),
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.place_rounded, color: _ensisaBlue, size: 20),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _ensisaBlue, width: 1.8),
+        ),
+        filled: true,
+        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+      ),
+      validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null,
+      items: salles
+          .map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 14))))
+          .toList(),
+      onChanged: onChanged,
+    );
+  }
+}
+
+// ─── 8. Recherche étudiants ───────────────────────────────────────────────────
+
+class SessionEtudiantSearch extends StatelessWidget {
+  final TextEditingController searchCtrl;
+  final List<Map<String, dynamic>> resultats;
+  final List<Map<String, dynamic>> etudiantsAjoutes;
+  final bool searching;
+  final bool isDark;
+  final void Function(String) onSearch;
+  final void Function(Map<String, dynamic>) onAjouter;
+  final void Function(Map<String, dynamic>) onRetirer;
+
+  const SessionEtudiantSearch({
+    super.key,
+    required this.searchCtrl,
+    required this.resultats,
+    required this.etudiantsAjoutes,
+    required this.searching,
+    required this.isDark,
+    required this.onSearch,
+    required this.onAjouter,
+    required this.onRetirer,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        TextField(
+          controller: searchCtrl,
+          onChanged: onSearch,
+          decoration: InputDecoration(
+            hintText: 'Rechercher un étudiant...',
+            prefixIcon: const Icon(Icons.search_rounded, color: _ensisaBlue),
+            suffixIcon: searching
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: _ensisaBlue),
+                    ))
+                : null,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: _ensisaBlue, width: 1.8),
+            ),
+            filled: true,
+            fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+            contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+          ),
+        ),
+        if (resultats.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+            ),
+            child: Column(
+              children: resultats.map((e) {
+                final dejaAjoute = etudiantsAjoutes.any((a) => a['id'] == e['id']);
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: _ensisaBlue.withOpacity(0.15),
+                    child: Text(
+                      (e['Prenom'] ?? '?')[0].toUpperCase(),
+                      style: const TextStyle(color: _ensisaBlue, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  title: Text('${e['Prenom']} ${e['Nom']}', style: const TextStyle(fontSize: 14)),
+                  subtitle: Text(e['eMail'] ?? '', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  trailing: dejaAjoute
+                      ? const Icon(Icons.check_circle_rounded, color: Colors.green)
+                      : IconButton(
+                          icon: const Icon(Icons.add_circle_outline_rounded, color: _ensisaBlue),
+                          onPressed: () => onAjouter(e),
+                        ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+        if (etudiantsAjoutes.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: etudiantsAjoutes.map((e) => Chip(
+              avatar: CircleAvatar(
+                backgroundColor: _ensisaBlue,
+                child: Text(
+                  (e['Prenom'] ?? '?')[0].toUpperCase(),
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                ),
+              ),
+              label: Text('${e['Prenom']} ${e['Nom']}', style: const TextStyle(fontSize: 12)),
+              deleteIcon: const Icon(Icons.close, size: 16),
+              onDeleted: () => onRetirer(e),
+              backgroundColor: isDark ? Colors.white12 : _ensisaBlue.withOpacity(0.08),
+              side: BorderSide(color: _ensisaBlue.withOpacity(0.3)),
+            )).toList(),
+          ),
+        ],
+      ],
     );
   }
 }
