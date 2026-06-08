@@ -1,9 +1,10 @@
-import 'package:ensiconnect/service/user_service.dart';
+// import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/session_widgets.dart';
 import '../service/post_session_service.dart';
 import '../widgets/ensiconnect_app.dart';
+
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ class PostSessionPage extends StatefulWidget {
 
 class _PostSessionPageState extends State<PostSessionPage>
     with SingleTickerProviderStateMixin {
-  static const Color ensisaBlue = Color(0xFF0055A5);
+  // static const Color ensisaBlue = Color(0xFF0055A5);
 
   final _formKey = GlobalKey<FormState>();
   final _data = SessionFormData();
@@ -284,7 +285,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                   cardColor: cardColor,
                   children: [
                     Row(children: [
-                      const Icon(Icons.people_alt_outlined, color: ensisaBlue, size: 20),
+                      const Icon(Icons.people_alt_outlined, color: EnsiConnectApp.ensisaBlue, size: 20),
                       const SizedBox(width: 10),
                       const Text('Nombre de places :', style: TextStyle(fontSize: 14)),
                       const Spacer(),
@@ -396,7 +397,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: EnsiConnectApp.ensisaBlue),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.school_rounded, color: ensisaBlue, size: 20),
+        prefixIcon: const Icon(Icons.school_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
