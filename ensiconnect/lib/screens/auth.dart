@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../service/auth_service.dart';
-import "../widgets/ensiconnect_app.dart";
+import '../widgets/ensiconnect_app.dart';
 
 class Auth extends StatefulWidget {
   const Auth({super.key});
@@ -152,7 +152,7 @@ class _AuthState extends State<Auth> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? Colors.black : const Color(0xFFF7F9FC);
+    final backgroundColor = isDark ? Colors.black : Colors.white;
     final cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
 
     return Scaffold(
@@ -240,26 +240,6 @@ class _AuthState extends State<Auth> {
                     ? Colors.white60
                     : Colors.black45,
                 size: 20,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              onPressed: () {},
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                'Mot de passe oublié ?',
-                style: TextStyle(
-                  color: EnsiConnectApp.ensisaBlue,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
               ),
             ),
           ),
@@ -472,22 +452,22 @@ class _AuthInput extends StatelessWidget {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
             color: isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE5E8EF),
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide:
               const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.redAccent),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(7),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.redAccent, width: 1.4),
         ),
       ),
@@ -542,7 +522,7 @@ class _PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF5D6DF5),
+          backgroundColor: EnsiConnectApp.ensisaBlue,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),

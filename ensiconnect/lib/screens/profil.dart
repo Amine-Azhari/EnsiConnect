@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import '../service/auth_service.dart';
+import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 
 class ProfilPage extends StatefulWidget {
-  const ProfilPage({super.key});
+  final String? userId;
+
+  const ProfilPage({super.key, this.userId});
 
   @override
   State<ProfilPage> createState() => _ProfilPageState();
 }
 
 class _ProfilPageState extends State<ProfilPage> {
-  final AuthServices _auth = AuthServices();
+  final UserServices _user = UserServices();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final TextEditingController _descriptionController = TextEditingController();
@@ -28,11 +30,19 @@ class _ProfilPageState extends State<ProfilPage> {
 
   bool isEditing = false;
 
+  String currentUserId = "";
+
   String fullName = "";
   String email = "";
 
-  int sessions = 12;
-  double averageNote = 4.2;
+  String filiere = "";
+  String promotion = "";
+
+  int sessions = 0;
+  double averageNote = 0.0;
+
+  bool get isOwnProfile =>
+      widget.userId == null || widget.userId == currentUserId;
 
   @override
   void initState() {
@@ -41,32 +51,50 @@ class _ProfilPageState extends State<ProfilPage> {
   }
 
   Future<void> _loadUser() async {
-    final user = await _auth.getCurrentUser();
+    final user = await _user.getCurrentUser();
+
+    if (!mounted || user == null) return;
+
+    setState(() {
+      currentUserId = user.id;
+
+      fullName = user.fullName;
+      email = user.email;
+
+      filiere = user.filiere;
+      promotion = user.promotion;
+
+      skills = user.skills;
+      _descriptionController.text = user.description;
+
+      sessions = user.sessions;
+      averageNote = user.averageNote;
+    });
+  }
+
+  Future<void> _toggleEdit() async {
+    if (!isOwnProfile) return;
+
+    if (isEditing) {
+      await _user.updateUserProfile(
+        userId: currentUserId,
+        description: _descriptionController.text,
+        skills: skills,
+        filiere: filiere,
+        promotion: promotion,
+      );
+    }
 
     if (!mounted) return;
 
     setState(() {
-      fullName = user?.fullName ?? "Utilisateur inconnu";
-      email = user?.email ?? "";
-
-      // si ton model ne supporte pas encore → fallback safe
-      skills = (user as dynamic)?.skills ?? [];
-      _descriptionController.text = (user as dynamic)?.description ?? "";
-    });
-  }
-
-  void _toggleEdit() {
-    setState(() {
       isEditing = !isEditing;
     });
-
-    if (!isEditing) {
-      debugPrint("SAVE DESCRIPTION: ${_descriptionController.text}");
-      debugPrint("SAVE SKILLS: $skills");
-    }
   }
 
   void _addSkill() {
+    if (!isOwnProfile) return;
+
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
       setState(() {
         skills.add(selectedSkill!);
@@ -75,52 +103,89 @@ class _ProfilPageState extends State<ProfilPage> {
     }
   }
 
+  void _openTestProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const ProfilPage(
+          userId: "romain_fontaine", // profil test
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _descriptionController.dispose();
     super.dispose();
   }
 
-  Widget _infoCard() {
+  String getInitials(String name) {
+    if (name.trim().isEmpty) return "?";
+
+    final parts = name.trim().split(" ");
+
+    if (parts.length == 1) {
+      return parts[0][0].toUpperCase();
+    }
+
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  Widget _infoCard(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Informations personnelles",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text("Nom: $fullName"),
-          Text("Email: $email"),
-        ],
+      child: DefaultTextStyle(
+        style: TextStyle(
+          fontSize: 16,
+          color: isDark ? Colors.white : Colors.black,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Informations personnelles",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text("Nom: $fullName"),
+            Text("Email: $email"),
+            Text("Filière: $filiere"),
+            Text("Promotion: $promotion"),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _statCard(String title, String value) {
+  Widget _statCard(String title, String value, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade100,
+        color: isDark ? const Color(0xFF111827) : Colors.blue.shade100,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black,
             ),
           ),
           const SizedBox(height: 5),
-          Text(title),
+          Text(
+            title,
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
         ],
       ),
     );
@@ -128,6 +193,8 @@ class _ProfilPageState extends State<ProfilPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: const CustomDrawer(),
@@ -138,17 +205,24 @@ class _ProfilPageState extends State<ProfilPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               CustomHeader(
                 onMenuPressed: () =>
                     _scaffoldKey.currentState?.openDrawer(),
               ),
 
-              const Center(
+              const SizedBox(height: 10),
+
+              Center(
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(
-                    'https://picsum.photos/200',
+                  backgroundColor: Colors.blue,
+                  child: Text(
+                    getInitials(fullName),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -167,29 +241,25 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 10),
 
-              Center(
-                child: ElevatedButton(
-                  onPressed: _toggleEdit,
-                  child: Text(
-                    isEditing ? "Sauvegarder" : "Modifier le profil",
+              if (isOwnProfile)
+                Center(
+                  child: ElevatedButton(
+                    onPressed: _toggleEdit,
+                    child: Text(
+                      isEditing ? "Sauvegarder" : "Modifier le profil",
+                    ),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 20),
 
-              _infoCard(),
+              _infoCard(isDark),
 
               const SizedBox(height: 20),
-
-              const Text(
-                "Description",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
 
               TextField(
                 controller: _descriptionController,
-                enabled: isEditing,
+                enabled: isEditing && isOwnProfile,
                 maxLines: 3,
                 decoration: const InputDecoration(
                   hintText: "Décris-toi...",
@@ -218,13 +288,13 @@ class _ProfilPageState extends State<ProfilPage> {
                             ),
                           )
                           .toList(),
-                      onChanged: isEditing
+                      onChanged: isOwnProfile && isEditing
                           ? (v) => setState(() => selectedSkill = v)
                           : null,
                     ),
                   ),
                   IconButton(
-                    onPressed: isEditing ? _addSkill : null,
+                    onPressed: isOwnProfile && isEditing ? _addSkill : null,
                     icon: const Icon(Icons.add),
                   ),
                 ],
@@ -238,7 +308,7 @@ class _ProfilPageState extends State<ProfilPage> {
                         .map(
                           (s) => Chip(
                             label: Text(s),
-                            onDeleted: isEditing
+                            onDeleted: isOwnProfile && isEditing
                                 ? () => setState(() => skills.remove(s))
                                 : null,
                           ),
@@ -246,16 +316,40 @@ class _ProfilPageState extends State<ProfilPage> {
                         .toList(),
               ),
 
+              const SizedBox(height: 30),
+
+              // PROFIL TEST EN BAS
+              const Divider(),
+              const SizedBox(height: 10),
+
+              const Text(
+                "Profil de test",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+
+              const SizedBox(height: 10),
+
+              ListTile(
+                leading: const CircleAvatar(
+                  child: Text("RF"),
+                ),
+                title: const Text("Romain Fontaine"),
+                subtitle: const Text("Voir le profil de test"),
+                trailing: const Icon(Icons.arrow_forward),
+                onTap: _openTestProfile,
+              ),
+
               const SizedBox(height: 20),
 
               Row(
                 children: [
-                  Expanded(child: _statCard("Sessions", "$sessions")),
+                  Expanded(child: _statCard("Sessions", "$sessions", isDark)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _statCard(
                       "Note moyenne",
                       averageNote.toStringAsFixed(1),
+                      isDark,
                     ),
                   ),
                 ],

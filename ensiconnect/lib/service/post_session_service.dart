@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ensiconnect/service/auth_service.dart';
+import 'package:ensiconnect/service/user_service.dart';
+
 
 class PostSessionService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -13,7 +14,7 @@ class PostSessionService {
     required int nbPlaces,
     required List<String> tags,
   }) async {
-    final user = await AuthServices().getCurrentUser();
+    final user = await UserServices().getCurrentUser();
 
     // 1. Récupère ou crée la salle
     final salleSnap = await _db
