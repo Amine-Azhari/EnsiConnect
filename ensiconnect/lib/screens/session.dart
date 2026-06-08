@@ -5,7 +5,6 @@ import '../widgets/session_widgets.dart';
 import '../service/post_session_service.dart';
 import '../widgets/ensiconnect_app.dart';
 
-
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
 class SessionFormData {
