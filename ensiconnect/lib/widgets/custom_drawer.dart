@@ -38,18 +38,20 @@ class CustomDrawer extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundColor: Colors.white,
-                      backgroundImage: currentUser.profilePictureUrl != null
-                          ? (currentUser.profilePictureUrl!.startsWith('http')
-                              ? NetworkImage(currentUser.profilePictureUrl!) as ImageProvider
-                              : AssetImage(currentUser.profilePictureUrl!))
-                          : null,
-                      child: currentUser.profilePictureUrl == null
-                          ? Text(
-                              currentUser.firstName.isNotEmpty ? '${currentUser.firstName[0]}${currentUser.lastName.isNotEmpty ? currentUser.lastName[0] : ''}' : '?',
-                              style: const TextStyle(fontSize: 24, color: EnsiConnectApp.ensisaBlue, fontWeight: FontWeight.bold),
-                            )
-                          : null,
+                      backgroundColor: Colors.blue.shade600,
+                      child: Text(
+                        currentUser.firstName.isNotEmpty
+                            ? (currentUser.firstName[0] +
+                                (currentUser.lastName.isNotEmpty ? currentUser.lastName[0] : ''))
+                                .toUpperCase()
+                            : '?',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Text(
