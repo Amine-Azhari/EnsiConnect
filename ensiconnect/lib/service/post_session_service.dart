@@ -7,11 +7,14 @@ class PostSessionService {
   Future<void> creerSession({
     required String titre,
     required String? matiere,
+    required String description,
     required DateTime date,
     required String heureDebut,
     required String lieu,
     required int nbPlaces,
     required List<String> tags,
+    required List<String> participants,
+    required String? heureFin,
   }) async {
     final user = await UserServices().getCurrentUser();
 
@@ -56,10 +59,20 @@ class PostSessionService {
       'OrganisateurID': user?.id ?? 'inconnu',
       'Date': dateStr,
       'Heure_Debut': heureDebut,
-      'Heure_Fin': null,
+      'Heure_Fin': heureFin,
       'NbPlaces': nbPlaces,
       'Tags': tags,
+      'Description': description,
       'Public': true,
+      'Participants': participants,
     });
+
+    // 5. Crée le salon de discussion associé
+    final chatService = ChatService();
+    await chatService.getOrCreateConversation(
+      participants: [user?.id ?? 'inconnu', ...participants],
+      name: titre,
+    );
   }
 }
+
