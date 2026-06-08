@@ -66,7 +66,7 @@ class PostSessionService {
       'Tags': tags,
       'Description': description,
       'Public': true,
-      'Participants': participants,
+      'participants': participants,
     });
 
     // 5. Crée le salon de discussion associé

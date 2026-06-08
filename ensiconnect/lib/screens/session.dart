@@ -73,7 +73,10 @@ class _PostSessionPageState extends State<PostSessionPage>
   bool _searching = false;
 
   List<String> _salles = [];
+  List<String> _sallesFiltrees = [];
+  final _salleCtrl = TextEditingController();
   bool _sallesLoading = true;
+  bool _salleSelectionnee = false;
 
   late AnimationController _animCtrl;
   late Animation<double> _fadeAnim;
@@ -99,6 +102,7 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   @override
   void dispose() {
+    _salleCtrl.dispose();
     _descriptionCtrl.dispose();
     _searchCtrl.dispose();
     _animCtrl.dispose();
@@ -224,6 +228,7 @@ class _PostSessionPageState extends State<PostSessionPage>
     final snap = await FirebaseFirestore.instance.collection('Salle').get();
     setState(() {
       _salles = snap.docs.map((d) => d['Nom'] as String).toList();
+      _sallesFiltrees = [];
       _sallesLoading = false;
     });
   }
@@ -259,6 +264,20 @@ class _PostSessionPageState extends State<PostSessionPage>
       ),
     );
   }
+
+  void _filtrerSalles(String query) {
+  setState(() {
+    _salleSelectionnee = false;
+    _data.lieu = '';
+    if (query.trim().isEmpty) {
+      _sallesFiltrees = [];
+    } else {
+      _sallesFiltrees = _salles
+          .where((s) => s.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -383,13 +402,79 @@ class _PostSessionPageState extends State<PostSessionPage>
                   icon: Icons.location_on_rounded,
                   label: 'Lieu',
                   cardColor: cardColor,
-                  children: [SessionSalleDropdown(
-                  salles: _salles,
-                  loading: _sallesLoading,
-                  value: _data.lieu.isEmpty ? null : _data.lieu,
-                  isDark: isDark,
-                  onChanged: (v) => setState(() => _data.lieu = v ?? ''),
-                ),],
+                  children: [
+                    TextFormField(
+                      controller: _salleCtrl,
+                      onChanged: _filtrerSalles,
+                      validator: (v) => _data.lieu.isEmpty ? 'Champ requis' : null,
+                      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+                      decoration: InputDecoration(
+                        hintText: 'Rechercher une salle...',
+                        hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+                        prefixIcon: const Icon(Icons.place_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
+                        suffixIcon: _sallesLoading
+                            ? const Padding(
+                                padding: EdgeInsets.all(12),
+                                child: SizedBox(width: 16, height: 16,
+                                    child: CircularProgressIndicator(strokeWidth: 2)))
+                            : _salleSelectionnee
+                                ? IconButton(
+                                    icon: const Icon(Icons.close, size: 18),
+                                    onPressed: () => setState(() {
+                                      _salleCtrl.clear();
+                                      _sallesFiltrees = [];
+                                      _salleSelectionnee = false;
+                                      _data.lieu = '';
+                                    }),
+                                  )
+                                : null,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300)),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                      ),
+                    ),
+                    if (_sallesFiltrees.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          children: _sallesFiltrees.map((salle) => ListTile(
+                            leading: const Icon(Icons.meeting_room_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
+                            title: Text(salle, style: const TextStyle(fontSize: 14)),
+                            onTap: () => setState(() {
+                              _data.lieu = salle;
+                              _salleCtrl.text = salle;
+                              _sallesFiltrees = [];
+                              _salleSelectionnee = true;
+                            }),
+                          )).toList(),
+                        ),
+                      ),
+                    ],
+                    if (_salleSelectionnee)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Row(children: [
+                          const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                          const SizedBox(width: 6),
+                          Text('Salle sélectionnée', style: TextStyle(fontSize: 12, color: Colors.green.shade700)),
+                        ]),
+                      ),
+                  ],
                 ),
                 const SizedBox(height: 16),
 
