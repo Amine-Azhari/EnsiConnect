@@ -1,10 +1,10 @@
-import 'package:ensiconnect/service/user_service.dart';
+// import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/session_widgets.dart';
 import '../service/post_session_service.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/ensiconnect_app.dart';
+
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ class PostSessionPage extends StatefulWidget {
 
 class _PostSessionPageState extends State<PostSessionPage>
     with SingleTickerProviderStateMixin {
-  static const Color ensisaBlue = Color(0xFF0055A5);
+  // static const Color ensisaBlue = Color(0xFF0055A5);
 
   final _formKey = GlobalKey<FormState>();
   final _data = SessionFormData();
@@ -52,13 +52,14 @@ class _PostSessionPageState extends State<PostSessionPage>
     'Informatique', 'Automatique et système embarqués', 'Mécanique', 'Textile',
     'Génie industriel',
   ];
-  final Set<String> _tagsSelectionnes = {};
 
   final List<String> _matieres = [
     'Algorithme et systèmes de données', 'Programmation', 'Physique',
     'Automatique', 'Électronique', 'Réseau & Télécoms',
     'Mathématiques', 'Chimie', 'Autre',
   ];
+
+  final Set<String> _tagsSelectionnes = {};
 
   late AnimationController _animCtrl;
   late Animation<double> _fadeAnim;
@@ -107,7 +108,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       lastDate: now.add(const Duration(days: 365)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor: ensisaBlue),
+          colorScheme: ColorScheme.fromSeed(seedColor:EnsiConnectApp.ensisaBlue),
         ),
         child: child!,
       ),
@@ -121,7 +122,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       initialTime: _data.heure ?? TimeOfDay.now(),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor: ensisaBlue),
+          colorScheme: ColorScheme.fromSeed(seedColor:EnsiConnectApp.ensisaBlue),
         ),
         child: child!,
       ),
@@ -284,7 +285,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                   cardColor: cardColor,
                   children: [
                     Row(children: [
-                      const Icon(Icons.people_alt_outlined, color: ensisaBlue, size: 20),
+                      const Icon(Icons.people_alt_outlined, color: EnsiConnectApp.ensisaBlue, size: 20),
                       const SizedBox(width: 10),
                       const Text('Nombre de places :', style: TextStyle(fontSize: 14)),
                       const Spacer(),
@@ -330,7 +331,7 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: ensisaBlue,
+      backgroundColor: EnsiConnectApp.ensisaBlue,
       foregroundColor: Colors.white,
       elevation: 0,
       title: const Text(
@@ -363,7 +364,7 @@ class _PostSessionPageState extends State<PostSessionPage>
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, color: ensisaBlue, size: 20),
+        prefixIcon: Icon(icon, color: EnsiConnectApp.ensisaBlue, size: 20),
         labelStyle: const TextStyle(fontSize: 13),
         hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
         border: OutlineInputBorder(
@@ -375,14 +376,14 @@ class _PostSessionPageState extends State<PostSessionPage>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: ensisaBlue, width: 1.8),
+          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.red),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
     );
@@ -394,9 +395,9 @@ class _PostSessionPageState extends State<PostSessionPage>
       hint: const Text('Matière concernée', style: TextStyle(fontSize: 13)),
       style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
       dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: ensisaBlue),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: EnsiConnectApp.ensisaBlue),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.school_rounded, color: ensisaBlue, size: 20),
+        prefixIcon: const Icon(Icons.school_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -404,10 +405,10 @@ class _PostSessionPageState extends State<PostSessionPage>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: ensisaBlue, width: 1.8),
+          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
       items: _matieres
@@ -426,11 +427,11 @@ class _PostSessionPageState extends State<PostSessionPage>
         child: ElevatedButton(
           onPressed: _submitting ? null : _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: ensisaBlue,
+            backgroundColor: EnsiConnectApp.ensisaBlue,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             elevation: 4,
-            shadowColor: ensisaBlue.withValues(alpha: 0.4),
+            shadowColor: EnsiConnectApp.ensisaBlue.withValues(alpha: 0.4),
           ),
           child: _submitting
               ? const SizedBox(
