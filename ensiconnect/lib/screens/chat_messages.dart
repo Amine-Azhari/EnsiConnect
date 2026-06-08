@@ -239,7 +239,9 @@ class _ConversationPageState extends State<ConversationPage> {
     );
   }
 
-  void _scrollToBottom() {
+  void _scrollToBottom() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
