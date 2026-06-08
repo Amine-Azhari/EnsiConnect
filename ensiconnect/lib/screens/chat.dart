@@ -62,7 +62,7 @@ class _ChatPageState extends State<ChatPage> {
                     onPressed: () async {
                       final convoId = await chatService.getOrCreateConversation(
                         participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz", "jSP6nSgCrSeNLwfghni7"],
-                        name: "Conversation de groupe" // test
+                        // name: "Conversation de groupe" // test
                       );
 
                       Navigator.push(
@@ -248,7 +248,7 @@ String getInitials(String name) {
   if (parts.length == 1) {
     return parts[0][0].toUpperCase();
   }
-  
+
 
   return (parts[0][0] + parts[1][0]).toUpperCase();
 }

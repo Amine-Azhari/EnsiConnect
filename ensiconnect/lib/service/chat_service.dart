@@ -148,5 +148,4 @@ class ChatService {
       averageNote: (data['averageNote'] ?? 0.0),
     );
   }
-  
 }
