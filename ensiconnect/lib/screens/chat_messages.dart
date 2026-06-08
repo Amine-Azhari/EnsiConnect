@@ -6,6 +6,7 @@ import '../models/conversation.dart';
 import '../service/chat_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
+import 'profil.dart';
 
 class ConversationPage extends StatefulWidget {
   final Conversation conversation;
@@ -52,6 +53,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      
 
       appBar: AppBar(
         title: Text(
@@ -102,7 +104,7 @@ class _ConversationPageState extends State<ConversationPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    // Photo de profil
+                    // Photo de profil qui redirige vers le profil
                     if (isGroup && !isMe)
                       FutureBuilder<String>(
                         future: data['name'] != null
@@ -112,9 +114,21 @@ class _ConversationPageState extends State<ConversationPage> {
                         final name = snapshot.data ?? '?';
                         return Padding(
                           padding: const EdgeInsets.only(top: 15),
-                          child:CircleAvatar(
-                            child: Text(getInitials(name)),
-                          ),
+                          child :GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ProfilPage(
+                                    userId: msg.senderId,
+                                  ),
+                                ),
+                              );
+                            },
+                            child:CircleAvatar(
+                              child: Text(getInitials(name)),
+                            ), 
+                          ), 
                         );
                       },
                     ),
@@ -183,7 +197,12 @@ class _ConversationPageState extends State<ConversationPage> {
 
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(15.0),
+          padding: EdgeInsets.only(
+            left: 15,
+            right: 15,
+            top: 15,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 15,
+          ),
           child: Container(
             height: 61,
             decoration: BoxDecoration(

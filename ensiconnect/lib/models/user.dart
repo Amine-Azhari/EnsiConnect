@@ -28,4 +28,15 @@ class User {
   });
 
   String get fullName => '$firstName $lastName';
+
+  //  PHOTO USER
+  String get initials {
+    final f = firstName.trim();
+    final l = lastName.trim();
+
+    if (f.isEmpty && l.isEmpty) return '?';
+
+    return (f.isNotEmpty ? f[0] : '') +
+        (l.isNotEmpty ? l[0] : '');
+  }
 }
