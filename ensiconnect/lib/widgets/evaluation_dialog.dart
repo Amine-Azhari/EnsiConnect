@@ -3,11 +3,13 @@ import './ensiconnect_app.dart';
 import '../service/notification_evaluation_service.dart';
 
 class EvaluationDialog extends StatefulWidget {
-  final String sessionId;
+  final String tutorId;
+  // final String sessionId;
 
   const EvaluationDialog({
     super.key, 
-    required this.sessionId
+    required this.tutorId,
+    // required this.sessionId
   });
 
   @override
@@ -82,7 +84,7 @@ class _EvaluationDialogState extends State<EvaluationDialog> {
           onPressed: (_rating > 0) ? () async {
             try {
               await NotificationEvaluationService().submitEvaluation(
-                sessionId: widget.sessionId, 
+                tutorId: widget.tutorId, 
                 note: _rating, 
                 commentaire: _commentController.text);
 
@@ -97,7 +99,6 @@ class _EvaluationDialogState extends State<EvaluationDialog> {
             foregroundColor: Colors.white,
             disabledBackgroundColor: Colors.grey.shade300,
             // disabledForegroundColor: Colors.grey.shade500, 
-            // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: const Text('Envoyer',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

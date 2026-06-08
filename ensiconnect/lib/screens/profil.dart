@@ -154,195 +154,233 @@ class _ProfilPageState extends State<ProfilPage> {
       key: _scaffoldKey,
       drawer: const CustomDrawer(),
 
+      appBar: AppBar(
+        title: Text(isOwnProfile ? 'Mon profil' : 'Profil'),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor:
+            Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+
+        leading: isOwnProfile
+            ? IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+              )
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+      ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height - 150,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
 
-              CustomHeader(
-                onMenuPressed: () =>
-                    _scaffoldKey.currentState?.openDrawer(),
-              ),
+                const SizedBox(height: 20),
 
-              const SizedBox(height: 10),
+                Center(
+                  child: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.blue.shade600,
+                    child: Text(
+                      getInitials(fullName),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
 
-              Center(
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.blue,
+                const SizedBox(height: 10),
+
+                Center(
                   child: Text(
-                    getInitials(fullName),
+                    fullName,
                     style: const TextStyle(
-                      color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-              Center(
-                child: Text(
-                  fullName,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+                if (!isOwnProfile)
+                  Center(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.chat),
+                      label: const Text("Envoyer un message"),
+                      onPressed: () async {
+                        final convoId =
+                            await chatService.getOrCreateConversation(
+                          participants: [
+                            currentUserId,
+                            widget.userId!,
+                          ],
+                        );
 
-              const SizedBox(height: 10),
+                        if (!mounted) return;
 
-              if (!isOwnProfile)
-                Center(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.chat),
-                    label: const Text("Envoyer un message"),
-                    onPressed: () async {
-                      final convoId = await chatService.getOrCreateConversation(
-                        participants: [
-                          currentUserId,
-                          widget.userId!,
-                        ],
-                      );
-
-                      if (!mounted) return;
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ConversationPage(
-                            conversation: Conversation(
-                              id: convoId,
-                              participants: [
-                                currentUserId,
-                                widget.userId!,
-                              ],
-                              messages: const [],
-                              lastMessage: '',
-                              lastMessageAt: null,
-                              createdAt: null,
-                              name: null,
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ConversationPage(
+                              conversation: Conversation(
+                                id: convoId,
+                                participants: [
+                                  currentUserId,
+                                  widget.userId!,
+                                ],
+                                messages: const [],
+                                lastMessage: '',
+                                lastMessageAt: null,
+                                createdAt: null,
+                                name: null,
+                              ),
+                              currentUserId: currentUserId,
                             ),
-                            currentUserId: currentUserId,
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-              const SizedBox(height: 15),
-
-              // BOUTON MODIFIER 
-              if (isOwnProfile)
-                Center(
-                  child: ElevatedButton(
-                    onPressed: _toggleEdit,
-                    child: Text(
-                      isEditing ? "Sauvegarder" : "Modifier le profil",
+                        );
+                      },
                     ),
                   ),
-                ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 15),
 
-              Row(
-                children: [
-                  Expanded(child: _statCard("Sessions", "$sessions", isDark)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _statCard(
-                      "Note moyenne",
-                      averageNote.toStringAsFixed(1),
-                      isDark,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF111827)
-                      : Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Informations personnelles",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                if (isOwnProfile)
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _toggleEdit,
+                      child: Text(
+                        isEditing ? "Sauvegarder" : "Modifier le profil",
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text("Email: $email"),
-                    Text("Filière: $filiere"),
-                    Text("Promotion: $promotion"),
+                  ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Expanded(child: _statCard("Sessions", "$sessions", isDark)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _statCard(
+                        "Note moyenne",
+                        averageNote.toStringAsFixed(1),
+                        isDark,
+                      ),
+                    ),
                   ],
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              TextField(
-                controller: _descriptionController,
-                enabled: isEditing && isOwnProfile,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: "Décris-toi...",
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFF111827)
+                        : Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Informations personnelles",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text("Email: $email"),
+                      Text("Filière: $filiere"),
+                      Text("Promotion: $promotion"),
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButton<String>(
-                      value: (selectedSkill != null &&
-                              skillsOptions.contains(selectedSkill))
-                          ? selectedSkill
-                          : null,
-                      hint: const Text("Choisir"),
-                      isExpanded: true,
-                      items: skillsOptions
-                          .map(
-                            (e) => DropdownMenuItem(
-                              value: e,
-                              child: Text(e),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: isEditing && isOwnProfile
-                          ? (v) => setState(() => selectedSkill = v)
-                          : null,
+                TextField(
+                  controller: _descriptionController,
+                  enabled: isEditing && isOwnProfile,
+                  maxLines: 3,
+                  decoration: const InputDecoration(
+                    hintText: "Décris-toi...",
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButton<String>(
+                        value: (selectedSkill != null &&
+                                skillsOptions.contains(selectedSkill))
+                            ? selectedSkill
+                            : null,
+                        hint: const Text("Choisir"),
+                        isExpanded: true,
+                        items: skillsOptions
+                            .map(
+                              (e) => DropdownMenuItem(
+                                value: e,
+                                child: Text(e),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: isEditing && isOwnProfile
+                            ? (v) => setState(() => selectedSkill = v)
+                            : null,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: isEditing && isOwnProfile ? _addSkill : null,
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              ),
+                    IconButton(
+                      onPressed: isEditing && isOwnProfile ? _addSkill : null,
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
 
-              Wrap(
-                spacing: 8,
-                children: skills.isEmpty
-                    ? [const Text("Aucune compétence")]
-                    : skills.map((s) => Chip(label: Text(s))).toList(),
-              ),
-            ],
+                Wrap(
+                  spacing: 8,
+                  children: skills.isEmpty
+                      ? [const Text("Aucune compétence")]
+                      : skills.map((s) {
+                          return Chip(
+                            label: Text(s),
+                            deleteIcon: (isEditing && isOwnProfile)
+                                ? const Icon(Icons.close, size: 18)
+                                : null,
+                            onDeleted: (isEditing && isOwnProfile)
+                                ? () {
+                                    setState(() {
+                                      skills.remove(s);
+                                    });
+                                  }
+                                : null,
+                          );
+                        }).toList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
