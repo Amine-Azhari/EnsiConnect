@@ -7,6 +7,7 @@ class Conversation {
   final String lastMessage;
   final DateTime? lastMessageAt;
   final DateTime? createdAt;
+  final String? name;
 
   Conversation({
     required this.id,
@@ -15,5 +16,6 @@ class Conversation {
     required this.lastMessage,
     this.lastMessageAt,
     this.createdAt,
+    this.name,
   });
 }
