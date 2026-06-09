@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
 import 'profil.dart';
 import '../widgets/person_avatar.dart';
+import '../models/user.dart';
 
 class ConversationPage extends StatefulWidget {
   final Conversation conversation;
@@ -53,10 +54,111 @@ class _ConversationPageState extends State<ConversationPage> {
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
+
+      
+      
+
       appBar: AppBar(
-        title: Text(
-          otherUserName ?? '',
+        actions: [
+          if (isGroup)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'members') {
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      final participants = widget.conversation.participants;
+
+                      return ListView(
+                        padding: EdgeInsets.only(top:10),
+                        children: participants.map((id) {
+                          return FutureBuilder<User?>(
+                            future: chatService.getUserById(id),
+                            builder: (context, snapshot) {
+                              final user = snapshot.data;
+
+                              if (!snapshot.hasData) {
+                                return const ListTile(
+                                  title: Text("Chargement..."),
+                                );
+                              }
+                              if (user?.id != widget.currentUserId){
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ProfilPage(
+                                          userId: user!.id,                                
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: ListTile(
+                                    leading: PersonAvatar(
+                                      name: user?.fullName ?? id,
+                                    ),
+                                    title: Text(user?.fullName ?? id),
+                                  ),
+                                );
+                              }
+                              else { return SizedBox(height: 0,);}
+                            },
+                          );
+                        }).toList(),
+                      );
+                    },
+                  );
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'members',
+                  child: Text('Voir les membres'),
+                ),
+              ],
+            ),
+        ],
+        title: Row(
+          children: [
+
+            // Nom de la conversation
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    otherUserName ?? '',
+                  ),
+                ],
+              )
+            ),
+            
+
+            // Photo de profil si conversation normale
+            if(!isGroup) 
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProfilPage(
+                        userId: getOtherUser(widget.conversation.participants, widget.currentUserId),                                
+                      ),
+                    ),
+                  );
+                },
+                child:PersonAvatar(
+                  name: otherUserName ?? '?',
+                ),
+              ),
+
+            // Liste des personnes dans la conversation
+            
+          ],
         ),
+
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Theme.of(context).brightness == Brightness.dark

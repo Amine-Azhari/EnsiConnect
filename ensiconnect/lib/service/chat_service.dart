@@ -103,7 +103,7 @@ class ChatService {
     required String userId,
     required String conversationId
   }) async {
-    final query = await _db
+    await _db
         .collection('conversations')
         .doc(conversationId)
         .update({
@@ -115,7 +115,7 @@ class ChatService {
     required String userId,
     required String conversationId
   }) async {
-    final query = await _db
+    await _db
         .collection('conversations')
         .doc(conversationId)
         .update({
@@ -145,7 +145,7 @@ class ChatService {
       description: data['description'] ?? '',
       skills: List<String>.from(data['skills'] ?? []),
       sessions: (data['sessions'] ?? 0),
-      averageNote: (data['averageNote'] ?? 0.0),
+      averageNote: (data['averageNote'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
