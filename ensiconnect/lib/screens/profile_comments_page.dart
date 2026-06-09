@@ -13,6 +13,35 @@ class ProfileCommentsPage extends StatelessWidget {
   final String profileName;
   final double averageNote;
 
+  Future<List<String>> _loadComments() async {
+    final snapshots = await Future.wait([
+      FirebaseFirestore.instance
+          .collection('Evaluation')
+          .where('tutorId', isEqualTo: profileUserId)
+          .get(),
+      FirebaseFirestore.instance
+          .collection('Evaluation')
+          .where('tutorID', isEqualTo: profileUserId)
+          .get(),
+    ]);
+
+    final seenIds = <String>{};
+    final comments = <String>[];
+
+    for (final snapshot in snapshots) {
+      for (final doc in snapshot.docs) {
+        if (!seenIds.add(doc.id)) continue;
+
+        final comment = (doc.data()['Commentaire'] ?? '').toString().trim();
+        if (comment.isNotEmpty) {
+          comments.add(comment);
+        }
+      }
+    }
+
+    return comments;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -117,11 +146,8 @@ class ProfileCommentsPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                  stream: FirebaseFirestore.instance
-                      .collection('Evaluation')
-                      .where('tutorID', isEqualTo: profileUserId)
-                      .snapshots(),
+                child: FutureBuilder<List<String>>(
+                  future: _loadComments(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -141,11 +167,7 @@ class ProfileCommentsPage extends StatelessWidget {
                       );
                     }
 
-                    final comments = (snapshot.data?.docs ?? [])
-                        .map((doc) =>
-                            (doc.data()['Commentaire'] ?? '').toString().trim())
-                        .where((comment) => comment.isNotEmpty)
-                        .toList();
+                    final comments = snapshot.data ?? [];
 
                     if (comments.isEmpty) {
                       return Center(
