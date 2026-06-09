@@ -145,12 +145,13 @@ class _ChatPageState extends State<ChatPage> {
                           final lastMessageAt =
                               (data['lastMessageAt'] as Timestamp?)?.toDate();
 
-                          if(
-                            (selectedFilter=='Solo' && data['name'] ==null) ||
-                            (selectedFilter=='Groupe' && data['name'] !=null) ||
-                            selectedFilter=='Toutes'
-                          ){
+                          // if(
+                          //   (selectedFilter=='Solo' && data['name'] ==null) ||
+                          //   (selectedFilter=='Groupe' && data['name'] !=null) ||
+                          //   selectedFilter=='Toutes'
+                          // ){
                             return ListTile(
+                              
                               leading: FutureBuilder<String>(
                                 future: data['name'] != null
                                     ? Future.value(data['name'])
@@ -202,11 +203,12 @@ class _ChatPageState extends State<ChatPage> {
                                 );
                               },
                             );
-                          }
-                          else {return const SizedBox(height: 0);}                         
+                          // }
+                          // else {return const SizedBox(height: 0);}                         
                         },
                       );
-                    })
+                    }
+                  )
               ],
             ),
           );

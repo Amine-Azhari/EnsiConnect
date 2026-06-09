@@ -102,7 +102,14 @@ class _ConversationPageState extends State<ConversationPage> {
                                   ),
                                 );
                               }
-                              else { return SizedBox(height: 0,);}
+                              else { 
+                                return ListTile(
+                                  leading: PersonAvatar(
+                                    name: user?.fullName ?? id,
+                                  ),
+                                  title: Text('Vous ('+(user?.fullName ?? id)+')'),
+                                );
+                              }
                             },
                           );
                         }).toList(),
