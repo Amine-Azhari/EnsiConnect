@@ -120,7 +120,7 @@ class ProfileCommentsPage extends StatelessWidget {
                 child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                   stream: FirebaseFirestore.instance
                       .collection('Evaluation')
-                      .where('tutorID', isEqualTo: profileUserId)
+                      .where('tutorId', isEqualTo: profileUserId)
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {

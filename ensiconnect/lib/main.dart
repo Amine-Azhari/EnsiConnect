@@ -19,6 +19,7 @@ void main() async {
   final service = FirebaseDataService();
   await service.initialiserDonneesDeTest();
   await UserServices().normalizeAverageNoteTypes();
+  await UserServices().rebuildAverageNotesFromEvaluations();
 
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();
