@@ -5,6 +5,7 @@ import '../widgets/session_widgets.dart';
 import '../service/post_session_service.dart';
 import '../widgets/ensiconnect_app.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../service/user_service.dart';
 
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
@@ -79,9 +80,11 @@ class _PostSessionPageState extends State<PostSessionPage>
   late Animation<Offset> _slideAnim;
 
   bool _submitting = false;
+  String? _currentUserId;
 
   @override
   void initState() {
+    
     super.initState();
     _animCtrl = AnimationController(
       vsync: this,
@@ -94,6 +97,9 @@ class _PostSessionPageState extends State<PostSessionPage>
     ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));
     _animCtrl.forward();
     _chargerSalles();
+    UserServices().getCurrentUser().then((user) {
+      setState(() => _currentUserId = user?.id);
+    });
   }
 
   @override
@@ -230,6 +236,7 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   Future<void> _rechercherEtudiants(String query) async {
+    
     if (query.trim().isEmpty) {
       setState(() => _resultatsRecherche = []);
       return;
@@ -242,7 +249,8 @@ class _PostSessionPageState extends State<PostSessionPage>
           .where((doc) {
             final prenom = (doc['Prenom'] ?? '').toString().toLowerCase();
             final nom = (doc['Nom'] ?? '').toString().toLowerCase();
-            return prenom.contains(q) || nom.contains(q);
+            return (prenom.contains(q) || nom.contains(q))
+            && doc.id != _currentUserId;
           })
           .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();

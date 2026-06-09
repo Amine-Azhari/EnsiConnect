@@ -262,6 +262,14 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           );
         });
       } else {
+        // Empêche l'organisateur de s'inscrire à sa propre session
+        if (_currentStudentId == widget.session.organisateurId) {
+          setState(() {
+            _errorMessage = 'Vous ne pouvez pas vous inscrire à votre propre session.';
+            _isUpdating = false;
+          });
+          return;
+        }
         // Vérifie le nombre de places
         final sessionDoc = await _db.collection('Session').doc(sessionId).get();
         final nbPlaces = sessionDoc.data()?['NbPlaces'] ?? 0;
@@ -272,7 +280,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
             _isUpdating = false;
           });
           return;
-        }
+        } 
 
         final created = await _db.collection('RejoindreSession').add({
           'EtudiantID': _currentStudentId,
@@ -287,7 +295,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         });
 
         await _loadDetails();
-      }
+      } 
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -674,6 +682,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   }
 
   Widget _buildBottomButton() {
+  final isOrganisateur = _currentStudentId == widget.session.organisateurId;
   final buttonColor =
       _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
 
@@ -682,29 +691,30 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
     child: Row(
       children: [
-        Expanded(
-          child: SizedBox(
-            height: 54,
-            child: ElevatedButton(
-              onPressed: _isUpdating ? null : _toggleRegistration,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: buttonColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+        if (!isOrganisateur)
+          Expanded(
+            child: SizedBox(
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isUpdating ? null : _toggleRegistration,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
-              ),
-              child: Text(
-                _isUpdating
-                    ? 'Chargement...'
-                    : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: Text(
+                  _isUpdating
+                      ? 'Chargement...'
+                      : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ),
-        ),
-        if (_isRegistered) ...[
-          const SizedBox(width: 12),
+        if (!isOrganisateur && _isRegistered) const SizedBox(width: 12),
+        if (_isRegistered || isOrganisateur)
           Expanded(
             child: SizedBox(
               height: 54,
@@ -728,7 +738,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
               ),
             ),
           ),
-        ],
       ],
     ),
   );
