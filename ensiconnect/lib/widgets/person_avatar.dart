@@ -31,7 +31,7 @@ class PersonAvatar extends StatelessWidget {
 
     if (parts.isEmpty) return '?';
     if (parts.length == 1) return parts.first[0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+    return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }
 
   static Color colorForName(String fullName) {
