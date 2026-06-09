@@ -13,7 +13,7 @@ class ProfileCommentsPage extends StatelessWidget {
   final String profileName;
   final double averageNote;
 
-  Future<List<String>> _loadComments() async {
+  Future<List<_ReviewItem>> _loadReviews() async {
     final snapshots = await Future.wait([
       FirebaseFirestore.instance
           .collection('Evaluation')
@@ -26,20 +26,57 @@ class ProfileCommentsPage extends StatelessWidget {
     ]);
 
     final seenIds = <String>{};
-    final comments = <String>[];
+    final reviews = <_ReviewItem>[];
 
     for (final snapshot in snapshots) {
       for (final doc in snapshot.docs) {
-        if (!seenIds.add(doc.id)) continue;
-
-        final comment = (doc.data()['Commentaire'] ?? '').toString().trim();
-        if (comment.isNotEmpty) {
-          comments.add(comment);
+        if (!seenIds.add(doc.id)) {
+          continue;
         }
+
+        final data = doc.data();
+        final comment = (data['Commentaire'] ?? '').toString().trim();
+        if (comment.isEmpty) {
+          continue;
+        }
+
+        final authorId = (data['userId'] ?? data['EvaluateurID'] ?? '')
+            .toString()
+            .trim();
+        final note = data['Note'];
+        final authorName = await _loadAuthorName(authorId);
+
+        reviews.add(
+          _ReviewItem(
+            authorName: authorName,
+            comment: comment,
+            note: note is num ? note.toDouble() : 0.0,
+          ),
+        );
       }
     }
 
-    return comments;
+    return reviews;
+  }
+
+  Future<String> _loadAuthorName(String authorId) async {
+    if (authorId.isEmpty) {
+      return 'Utilisateur inconnu';
+    }
+
+    final doc = await FirebaseFirestore.instance
+        .collection('Etudiant')
+        .doc(authorId)
+        .get();
+    final data = doc.data();
+    if (data == null) {
+      return 'Utilisateur inconnu';
+    }
+
+    final prenom = (data['Prenom'] ?? '').toString().trim();
+    final nom = (data['Nom'] ?? '').toString().trim();
+    final fullName = '$prenom $nom'.trim();
+    return fullName.isEmpty ? 'Utilisateur inconnu' : fullName;
   }
 
   @override
@@ -123,8 +160,8 @@ class ProfileCommentsPage extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             profileName.isEmpty
-                                ? "Note moyenne"
-                                : "Note moyenne de $profileName",
+                                ? 'Note moyenne'
+                                : 'Note moyenne de $profileName',
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(color: mutedColor, fontSize: 15),
@@ -137,7 +174,7 @@ class ProfileCommentsPage extends StatelessWidget {
               ),
               const SizedBox(height: 22),
               Text(
-                "Commentaires",
+                'Commentaires',
                 style: TextStyle(
                   color: textColor,
                   fontSize: 22,
@@ -146,8 +183,8 @@ class ProfileCommentsPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: FutureBuilder<List<String>>(
-                  future: _loadComments(),
+                child: FutureBuilder<List<_ReviewItem>>(
+                  future: _loadReviews(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -156,7 +193,7 @@ class ProfileCommentsPage extends StatelessWidget {
                     if (snapshot.hasError) {
                       return Center(
                         child: Text(
-                          "Impossible de charger les commentaires.",
+                          'Impossible de charger les commentaires.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: mutedColor,
@@ -167,12 +204,12 @@ class ProfileCommentsPage extends StatelessWidget {
                       );
                     }
 
-                    final comments = snapshot.data ?? [];
+                    final reviews = snapshot.data ?? [];
 
-                    if (comments.isEmpty) {
+                    if (reviews.isEmpty) {
                       return Center(
                         child: Text(
-                          "Aucun commentaire pour le moment.",
+                          'Aucun commentaire pour le moment.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: mutedColor,
@@ -184,9 +221,11 @@ class ProfileCommentsPage extends StatelessWidget {
                     }
 
                     return ListView.separated(
-                      itemCount: comments.length,
+                      itemCount: reviews.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
+                        final review = reviews[index];
+
                         return Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
@@ -199,14 +238,67 @@ class ProfileCommentsPage extends StatelessWidget {
                                   : const Color(0xFFF1F4FA),
                             ),
                           ),
-                          child: Text(
-                            comments[index],
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 16,
-                              height: 1.35,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      review.authorName,
+                                      style: TextStyle(
+                                        color: mutedColor,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xFFE0A400,
+                                      ).withValues(alpha: isDark ? 0.18 : 0.12),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(
+                                          Icons.star_rounded,
+                                          color: Color(0xFFE0A400),
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          review.note.toStringAsFixed(1),
+                                          style: const TextStyle(
+                                            color: Color(0xFFE0A400),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                review.comment,
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 17,
+                                  height: 1.45,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -220,4 +312,16 @@ class ProfileCommentsPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ReviewItem {
+  const _ReviewItem({
+    required this.authorName,
+    required this.comment,
+    required this.note,
+  });
+
+  final String authorName;
+  final String comment;
+  final double note;
 }
