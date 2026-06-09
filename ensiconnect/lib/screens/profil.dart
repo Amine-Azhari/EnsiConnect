@@ -27,6 +27,7 @@ class _ProfilPageState extends State<ProfilPage> {
   String? selectedSkill;
 
   bool isEditing = false;
+  bool _isLoading = true;
 
   String currentUserId = "";
   String profileUserId = "";
@@ -75,6 +76,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
       skillsOptions =
           options.map<String>((e) => e['name'].toString()).toSet().toList();
+      _isLoading = false;
     });
   }
 
@@ -342,18 +344,56 @@ class _ProfilPageState extends State<ProfilPage> {
       key: _scaffoldKey,
       drawer: const CustomDrawer(),
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator()) 
+          : SafeArea(
         child: SizedBox(
           width: double.infinity,
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
             child: Column(
               children: [
-                CustomHeader(
+                if (isOwnProfile)
+                  CustomHeader(
                   onMenuPressed: () {
                     _scaffoldKey.currentState?.openDrawer();
                   },
-                ),
+                )
+                else Container(
+                    height: 56,
+                    margin: const EdgeInsets.only(bottom: 10), // Espace léger avant la photo
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF102033) : const Color(0xFFEAF4FF),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFF248BFF), width: 1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF248BFF).withValues(alpha: 0.08),
+                                blurRadius: 12,
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            padding: EdgeInsets.zero, // Centre l'icône parfaitement
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: Color(0xFF248BFF), // Ton bleu d'application
+                              size: 28,
+                            ),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(height: 20),
                 Container(
                   width: 144,
