@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../service/chat_service.dart';
 import '../models/conversation.dart';
@@ -21,6 +24,8 @@ class _ProfilPageState extends State<ProfilPage> {
   final UserServices _user = UserServices();
   final ChatService chatService = ChatService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>?
+      _profileSubscription;
 
   final TextEditingController _descriptionController = TextEditingController();
 
@@ -83,6 +88,27 @@ class _ProfilPageState extends State<ProfilPage> {
           options.map<String>((e) => e['name'].toString()).toSet().toList();
       _isLoading = false;
     });
+
+    _profileSubscription?.cancel();
+    _profileSubscription = FirebaseFirestore.instance
+        .collection('Etudiant')
+        .doc(profileUserId)
+        .snapshots()
+        .listen((doc) {
+      final data = doc.data();
+      if (!mounted || data == null) {
+        return;
+      }
+
+      setState(() {
+        sessions = (data['sessions'] is num)
+            ? (data['sessions'] as num).toInt()
+            : sessions;
+        averageNote = (data['averageNote'] is num)
+            ? (data['averageNote'] as num).toDouble()
+            : averageNote;
+      });
+    });
   }
 
   Future<void> _toggleEdit() async {
@@ -116,6 +142,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
   @override
   void dispose() {
+    _profileSubscription?.cancel();
     _descriptionController.dispose();
     super.dispose();
   }
