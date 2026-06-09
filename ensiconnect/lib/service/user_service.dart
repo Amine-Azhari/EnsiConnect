@@ -97,6 +97,27 @@ class UserServices {
     }, SetOptions(merge: true));
   }
 
+  Future<void> normalizeAverageNoteTypes() async {
+    final snapshot = await _etudiants.get();
+    final batch = _db.batch();
+    var hasChanges = false;
+
+    for (final doc in snapshot.docs) {
+      final averageNote = doc.data()['averageNote'];
+      if (averageNote is int) {
+        batch.update(doc.reference, {
+          'averageNote': averageNote.toDouble(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        hasChanges = true;
+      }
+    }
+
+    if (hasChanges) {
+      await batch.commit();
+    }
+  }
+
   //Calcule et met à jour averageNote
   Future<void> updateAverageNote(String userId) async {
     // Récupère toutes les évaluations de l'étudiant
@@ -119,10 +140,11 @@ class UserServices {
     if (notes.isEmpty) return;
 
     final average = notes.reduce((a, b) => a + b) / notes.length;
+    final normalizedAverage = average.toDouble();
 
     // Met à jour Etudiant
     await _etudiants.doc(userId).set({
-      'averageNote': double.parse(average.toStringAsFixed(2)),
+      'averageNote': double.parse(normalizedAverage.toStringAsFixed(2)),
       'sessions': notes.length,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));

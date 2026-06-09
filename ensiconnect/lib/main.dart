@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'service/firebase_options.dart';
 import 'service/data_insert.dart';
+import 'service/user_service.dart';
 import "widgets/ensiconnect_app.dart";
 
 void main() async {
@@ -17,6 +18,7 @@ void main() async {
   // On crée une instance du service et on lance l'insertion
   final service = FirebaseDataService();
   await service.initialiserDonneesDeTest();
+  await UserServices().normalizeAverageNoteTypes();
 
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();
