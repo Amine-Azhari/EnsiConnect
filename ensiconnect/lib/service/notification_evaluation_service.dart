@@ -21,7 +21,7 @@ class NotificationEvaluationService {
     await _db.collection('Evaluation').add({
       // 'SessionID': sessionId,
       'tutorId': tutorId,
-      'EleveId': userId,
+      'userId': userId,
       'Note': note,
       'Commentaire': commentaire,
       'DateDEnvoi': FieldValue.serverTimestamp(),
@@ -50,7 +50,7 @@ class NotificationEvaluationService {
 
     final notificationsResult = await _db
         .collection('Notification')
-        .where('receiverId', isEqualTo: studentId)
+        .where('userId', isEqualTo: studentId)
         .get();
 
     return notificationsResult.docs.map((doc) {
@@ -64,7 +64,7 @@ class NotificationEvaluationService {
   Stream<List<Map<String, dynamic>>> watchMyNotifications(String studentId) {
   return _db
     .collection('Notification')
-    .where('receiverId', isEqualTo: studentId)
+    .where('userId', isEqualTo: studentId)
     // .orderBy('createdAt', descending: true) // Les plus récentes en premier
     .snapshots()
     .map((snapshot) => snapshot.docs.map((doc) {

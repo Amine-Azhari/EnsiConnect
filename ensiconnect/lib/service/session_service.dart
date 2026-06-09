@@ -85,7 +85,7 @@ class SessionService {
               if (tutorId != null && tutorId.isNotEmpty) {            
                 DocumentReference notifRef = _db.collection('Notification').doc();
                 batch.set(notifRef, {
-                  'receiverId': tutorId,
+                  'userId': tutorId,
                   'tutorId': tutorId,
                   'sessionId': sessionId,
                   'title': 'Session terminée !',
@@ -102,8 +102,8 @@ class SessionService {
 
                   DocumentReference notifRef = _db.collection('Notification').doc();
                   batch.set(notifRef, {
-                    'receiverId': participantId,
-                    'tutorId': tutorId ?? '',
+                    'userId': participantId,
+                    'tutorId': tutorId,
                     'sessionId': sessionId,
                     'title': 'Évaluez votre tuteur',
                     'message': 'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
