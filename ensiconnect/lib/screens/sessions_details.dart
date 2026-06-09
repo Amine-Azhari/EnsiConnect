@@ -42,8 +42,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       final currentUser = await _userServices.getCurrentUser();
       final session = widget.session;
 
-      
-
       final matiereNom = await _getDocumentName('Matiere', session.matiereId);
       final salleNom = await _getDocumentName('Salle', session.salleId);
       final organisateurNom = await _getStudentName(session.organisateurId);
@@ -55,9 +53,11 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       // APRÈS
       if (session.id != null) {
         // Participants ajoutés à la création
-        final sessionDoc = await _db.collection('Session').doc(session.id).get();
+        final sessionDoc =
+            await _db.collection('Session').doc(session.id).get();
         final sessionData = sessionDoc.data();
-        final preInscrits = List<String>.from(sessionData?['Participants'] ?? []);
+        final preInscrits =
+            List<String>.from(sessionData?['Participants'] ?? []);
 
         final idsDejaAjoutes = <String>{};
 
@@ -78,7 +78,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
         for (final registration in registrations.docs) {
           final etudiantId = registration.data()['EtudiantID'] ?? '';
-          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)) continue;
+          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId))
+            continue;
 
           if (currentUser != null && etudiantId == currentUser.id) {
             isRegistered = true;
@@ -364,10 +365,20 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     Color subjectColor,
   ) {
     final session = widget.session;
+    final title = session.sujet.trim();
 
     return _SectionCard(
       child: Column(
         children: [
+          if (title.isNotEmpty)
+            _DetailRow(
+              icon: Icons.title_rounded,
+              label: 'Titre',
+              value: title,
+              textColor: textColor,
+              subtitleColor: subtitleColor,
+              subjectColor: subjectColor,
+            ),
           _DetailRow(
             icon: Icons.calendar_today_rounded,
             label: 'Date',
@@ -588,42 +599,44 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   Widget _buildBottomButton() {
     final buttonColor =
         _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: Row(
         children: [
-          Expanded(
-            child: SizedBox(
-              height: 54,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Discussion bientôt disponible')),
-                  );
-                },
-                icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
-                label: const Text(
-                  'Discussion',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: EnsiConnectApp.ensisaBlue,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+          if (_isRegistered) ...[
+            Expanded(
+              child: SizedBox(
+                height: 54,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Discussion bientôt disponible'),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
+                  label: const Text(
+                    'Discussion',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: EnsiConnectApp.ensisaBlue,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
+            const SizedBox(width: 12),
+          ],
           Expanded(
             child: SizedBox(
               height: 54,

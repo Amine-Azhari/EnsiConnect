@@ -84,7 +84,7 @@ class Session {
       salleId: map['SalleID'] ?? '',
       organisateurPrenom: map['OrganisateurPrenom'] ?? '',
       organisateurNom: map['OrganisateurNom'] ?? '',
-      sujet: map['Sujet'] ?? '',
+      sujet: map['Titre'] ?? map['Sujet'] ?? '',
       description: map['Description'] ?? '',
       participantsIds: List<String>.from(map['Participants'] ?? []),
     );
@@ -102,6 +102,7 @@ class Session {
       'SalleID': salleId,
       'OrganisateurPrenom': organisateurPrenom,
       'OrganisateurNom': organisateurNom,
+      'Titre': sujet,
       'Sujet': sujet,
       'Description': description,
       'Participants': participantsIds,
