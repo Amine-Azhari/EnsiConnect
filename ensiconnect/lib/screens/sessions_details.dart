@@ -262,6 +262,18 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           );
         });
       } else {
+        // Vérifie le nombre de places
+        final sessionDoc = await _db.collection('Session').doc(sessionId).get();
+        final nbPlaces = sessionDoc.data()?['NbPlaces'] ?? 0;
+        
+        if (_participants.length >= nbPlaces) {
+          setState(() {
+            _errorMessage = 'Cette session est complète.';
+            _isUpdating = false;
+          });
+          return;
+        }
+
         final created = await _db.collection('RejoindreSession').add({
           'EtudiantID': _currentStudentId,
           'SessionID': sessionId,
