@@ -525,3 +525,4 @@ class SessionEtudiantSearch extends StatelessWidget {
     );
   }
 }
+
