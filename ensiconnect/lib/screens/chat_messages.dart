@@ -96,7 +96,7 @@ class _ConversationPageState extends State<ConversationPage> {
                                   },
                                   child: ListTile(
                                     leading: PersonAvatar(
-                                      name: otherUserName ?? '?',
+                                      name: user?.fullName ?? id,
                                     ),
                                     title: Text(user?.fullName ?? id),
                                   ),
