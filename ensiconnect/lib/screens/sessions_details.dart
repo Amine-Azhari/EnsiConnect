@@ -157,7 +157,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   Future<void> _toggleRegistration() async {
     final sessionId = widget.session.id;
 
-
     if (_currentStudentId == null || sessionId == null) {
       setState(() {
         _errorMessage = 'Connecte-toi pour t inscrire a cette session.';
@@ -589,28 +588,65 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   Widget _buildBottomButton() {
     final buttonColor =
         _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      child: SizedBox(
-        height: 54,
-        child: ElevatedButton(
-          onPressed: _isUpdating ? null : _toggleRegistration,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: buttonColor,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 54,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Discussion bientôt disponible')),
+                  );
+                },
+                icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
+                label: const Text(
+                  'Discussion',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: EnsiConnectApp.ensisaBlue,
+                  foregroundColor:Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
             ),
           ),
-          child: Text(
-            _isUpdating
-                ? 'Chargement...'
-                : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          const SizedBox(width: 12),
+          Expanded(
+            child: SizedBox(
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isUpdating ? null : _toggleRegistration,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(
+                  _isUpdating
+                      ? '...'
+                      : (_isRegistered ? 'Se Désinscrire' : "S'inscrire"),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
