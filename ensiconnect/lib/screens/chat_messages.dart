@@ -69,14 +69,17 @@ class _ConversationPageState extends State<ConversationPage> {
                     builder: (context) {
                       final participants = widget.conversation.participants;
 
-                      return ListView(
+                      return ListView.separated(
+                        separatorBuilder: (context, index) => const Divider(height: 18),
                         padding: EdgeInsets.only(top:10),
-                        children: participants.map((id) {
+                        itemCount: participants.length,
+                        itemBuilder: (context, index){
+                           final id = participants[index];
+                          
                           return FutureBuilder<User?>(
                             future: chatService.getUserById(id),
                             builder: (context, snapshot) {
                               final user = snapshot.data;
-
                               if (!snapshot.hasData) {
                                 return const ListTile(
                                   title: Text("Chargement..."),
@@ -112,7 +115,7 @@ class _ConversationPageState extends State<ConversationPage> {
                               }
                             },
                           );
-                        }).toList(),
+                        }
                       );
                     },
                   );
