@@ -42,7 +42,6 @@ class _ChatPageState extends State<ChatPage> {
         child: FutureBuilder<User?>(
         future: _user.getCurrentUser(),
         builder: (context, userSnapshot) {
-          print("FutureBuilder rebuild");
           if (!userSnapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -97,14 +96,7 @@ class _ChatPageState extends State<ChatPage> {
                 StreamBuilder<QuerySnapshot>(
                   stream: chatService.getConversations(currentUserId),
                   builder: (context, snapshot) {
-                    // Debug
-                    print("state: ${snapshot.connectionState}");
-                    print("hasData: ${snapshot.hasData}");
-                    print("hasError: ${snapshot.hasError}");
-                    print("data: ${snapshot.data}");
-
-                    print("StreamBuilder rebuild");
-
+              
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
