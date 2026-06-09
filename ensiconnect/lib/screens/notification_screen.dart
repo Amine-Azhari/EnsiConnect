@@ -97,7 +97,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     context: context,
                     builder: (context) => EvaluationDialog(
                       tutorId: notif["tutorId"] ?? "",
-                      notificationId: notif["id"] ?? "", // 👈 On transmet l'ID ici !
+                      notificationId: notif["id"] ?? "",
                     ),
                   );
                 },

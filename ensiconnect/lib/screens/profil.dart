@@ -6,6 +6,7 @@ import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import '../widgets/person_avatar.dart';
+import 'profile_comments_page.dart';
 
 class ProfilPage extends StatefulWidget {
   final String? userId;
@@ -124,10 +125,11 @@ class _ProfilPageState extends State<ProfilPage> {
     required String value,
     required IconData icon,
     required Color accentColor,
+    VoidCallback? onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
+    final card = Container(
       constraints: const BoxConstraints(minHeight: 128),
       padding: const EdgeInsets.all(16),
       decoration: _cardDecoration(),
@@ -164,33 +166,50 @@ class _ProfilPageState extends State<ProfilPage> {
         ],
       ),
     );
+
+    if (onTap == null) {
+      return card;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: card,
+      ),
+    );
   }
 
   Widget _profileBadge({
     required IconData icon,
     required String label,
+    required Color color,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF121D2B) : Colors.white,
+        color: isDark
+            ? color.withValues(alpha: 0.22)
+            : color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(14),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+        border: Border.all(
+          color: color.withValues(alpha: isDark ? 0.35 : 0.20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: isDark ? 0.10 : 0.08),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFFE0A400)),
+          Icon(icon, size: 16, color: color),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
@@ -198,7 +217,7 @@ class _ProfilPageState extends State<ProfilPage> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isDark ? Colors.white : Colors.black87,
+                color: color,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
@@ -215,11 +234,12 @@ class _ProfilPageState extends State<ProfilPage> {
     required String value,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = _quickActionColorForIcon(icon);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _IconTile(icon: icon),
+        _IconTile(icon: icon, color: iconColor),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -315,12 +335,13 @@ class _ProfilPageState extends State<ProfilPage> {
     bool showDivider = true,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconColor = _quickActionColorForIcon(icon);
 
     return Column(
       children: [
         Row(
           children: [
-            _IconTile(icon: icon),
+            _IconTile(icon: icon, color: iconColor),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -358,6 +379,22 @@ class _ProfilPageState extends State<ProfilPage> {
         ],
       ],
     );
+  }
+
+  Color _quickActionColorForIcon(IconData icon) {
+    if (icon == Icons.person_rounded || icon == Icons.person_outline_rounded) {
+      return const Color(0xFF7E57C2);
+    }
+    if (icon == Icons.mail_rounded || icon == Icons.mail_outline_rounded) {
+      return const Color(0xFF42A5F5);
+    }
+    if (icon == Icons.school_rounded || icon == Icons.school_outlined) {
+      return const Color(0xFF66BB6A);
+    }
+    if (icon == Icons.groups_outlined || icon == Icons.badge_outlined) {
+      return const Color(0xFFEF5350);
+    }
+    return const Color(0xFF42A5F5);
   }
 
   Widget _profileActionButton() {
@@ -470,10 +507,12 @@ class _ProfilPageState extends State<ProfilPage> {
                       _profileBadge(
                         icon: Icons.computer_rounded,
                         label: filiere,
+                        color: const Color(0xFF42A5F5),
                       ),
                       _profileBadge(
                         icon: Icons.school_rounded,
                         label: promotion,
+                        color: const Color(0xFF66BB6A),
                       ),
                     ],
                   ),
@@ -551,7 +590,10 @@ class _ProfilPageState extends State<ProfilPage> {
         children: [
           Row(
             children: [
-              _IconTile(icon: Icons.badge_outlined),
+              _IconTile(
+                icon: Icons.badge_outlined,
+                color: _quickActionColorForIcon(Icons.badge_outlined),
+              ),
               const SizedBox(width: 14),
               Expanded(child: _sectionTitle("Informations personnelles")),
             ],
@@ -771,6 +813,18 @@ class _ProfilPageState extends State<ProfilPage> {
                               value: averageNote.toStringAsFixed(1),
                               icon: Icons.star_border_rounded,
                               accentColor: const Color(0xFFE0A400),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProfileCommentsPage(
+                                      profileUserId: profileUserId,
+                                      profileName: fullName,
+                                      averageNote: averageNote,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],

@@ -145,61 +145,116 @@ class _ChatPageState extends State<ChatPage> {
                         final participants =
                           List<String>.from(data['Participants']);
 
+                        final lastMessage = 
+                          data['LastMessage'] ?? '';
+
                         final lastMessageAt =
                           (data['LastMessageAt'] as Timestamp?)?.toDate();
 
-                        return ListTile(
-                              
-                          leading: FutureBuilder<String>(
-                            future: data['Name'] != null
-                                ? Future.value(data['Name'])
-                                : getUserName(getOtherUser(participants, currentUserId)),
-                            builder: (context, snapshot) {
-                              final name = snapshot.data ?? '?';
-                              return PersonAvatar(
-                                name: name,
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ConversationPage(
+                                    conversation: Conversation(
+                                      id: filteredDocs[index].id,
+                                      participants: participants,
+                                      messages: const [],
+                                      lastMessage: data['LastMessage'] ?? '',
+                                      lastMessageAt: lastMessageAt,
+                                      createdAt: null,
+                                      name: data['Name'],
+                                    ),
+                                    currentUserId: currentUserId,
+                                  ),
+                                ),
                               );
                             },
-                          ),
-                          title: FutureBuilder<String>(
-                            future: data['Name'] != null
-                                ? Future.value(data['Name'])
-                                : getUserName(getOtherUser(participants, currentUserId)),
-                            builder: (context, snapshot) {
-                              final name = snapshot.data ?? '...';
-
-                              return Text(name);
-                            },
-                          ),
-                          subtitle: Text(
-                            data['LastMessage'] ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,),
-                          trailing: Text(
-                            formatTimeAgo(lastMessageAt),
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                              
-                          // Ouvre la page de la conversation sélectionée
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => ConversationPage(
-                                  conversation:Conversation(
-                                    id:filteredDocs[index].id,
-                                    participants: participants,
-                                    messages: const[],
-                                    lastMessage: data['LastMessage'] ?? '',
-                                    lastMessageAt: lastMessageAt,
-                                    createdAt: null,
-                                    name: data['Name'],
+                          
+                          child:SizedBox(
+                            height: 80,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Row(
+                                children: [
+                                  FutureBuilder<String>(
+                                    future: data['Name'] != null
+                                        ? Future.value(data['Name'])
+                                        : getUserName(getOtherUser(participants, currentUserId)),
+                                    builder: (context, snapshot) {
+                                      final name = snapshot.data ?? '?';
+                                      return PersonAvatar(
+                                        name: name,
+                                      );
+                                    },
                                   ),
-                                  currentUserId: currentUserId,
-                                ),
-                              ),
-                            );
-                          },
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: FutureBuilder<String>(
+                                      future: data['Name'] != null
+                                          ? Future.value(data['Name'])
+                                          : getUserName(getOtherUser(participants, currentUserId)),
+                                      
+                                      builder: (context, snapshot) {
+                                        final name = snapshot.data ?? '...';
+
+                                        return Row(
+                                          children:[
+                                            Expanded(
+                                              child: Column(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    name,
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w600,
+                                                      fontSize: 16,
+                                                    ),
+                                                  ),
+                                                  if (lastMessage.isNotEmpty) ...[
+                                                    const SizedBox(height: 4),
+                                                    Text(
+                                                      lastMessage,
+                                                      maxLines: 1,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
+                                              ),
+                                            ),
+                                            Text(
+                                              formatTimeAgo(lastMessageAt),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey.shade500,
+                                              ),
+                                            ),
+                                          ]
+                                        );
+                                      },
+                                  )
+                        
+                            
+                                                                                 
+                          )
+                                ],
+                              )
+                            )
+                          )
+                          
+                          
+                          )
                         );                 
                       },
                     );
