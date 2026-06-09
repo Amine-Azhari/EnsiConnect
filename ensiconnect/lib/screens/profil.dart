@@ -4,13 +4,14 @@ import '../models/conversation.dart';
 import '../screens/chat_messages.dart';
 import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
+import '../widgets/custom_header.dart';
+import '../widgets/person_avatar.dart';
 
 class ProfilPage extends StatefulWidget {
-  final String? userId; // null = mon profil, non-null = profil public
+  final String? userId;
 
   const ProfilPage({super.key, this.userId});
 
-  // Getters sémantiques pour clarifier l'intention
   bool get isOwnProfile => userId == null;
 
   @override
@@ -27,13 +28,15 @@ class _ProfilPageState extends State<ProfilPage> {
   List<String> skills = [];
   String? selectedSkill;
   bool isEditing = false;
-  bool _loading = true;
+  bool _isLoading = true;
 
   String currentUserId = "";
   String fullName = "";
   String email = "";
   String filiere = "";
   String promotion = "";
+  String profilePictureUrl = '';
+
   int sessions = 0;
   double averageNote = 0.0;
 
@@ -46,7 +49,6 @@ class _ProfilPageState extends State<ProfilPage> {
   Future<void> _loadUser() async {
     final currentUser = await _user.getCurrentUser();
 
-    // Si userId fourni → profil public, sinon → mon profil
     final user = widget.isOwnProfile
         ? currentUser
         : await _user.getUserById(widget.userId!);
@@ -57,18 +59,18 @@ class _ProfilPageState extends State<ProfilPage> {
 
     setState(() {
       currentUserId = currentUser.id;
-
       fullName = user.fullName;
       email = user.email;
       filiere = user.filiere;
       promotion = user.promotion;
-      skills = List<String>.from(user.skills ?? []);
-      _descriptionController.text = user.description ?? "";
-      sessions = user.sessions ?? 0;
-      averageNote = (user.averageNote ?? 0).toDouble();
+      profilePictureUrl = user.profilePictureUrl;
+      skills = List<String>.from(user.skills);
+      _descriptionController.text = user.description;
+      sessions = user.sessions;
+      averageNote = user.averageNote;
       skillsOptions =
           options.map<String>((e) => e['name'].toString()).toSet().toList();
-      _loading = false;
+      _isLoading = false;
     });
   }
 
@@ -96,319 +98,581 @@ class _ProfilPageState extends State<ProfilPage> {
 
   void _removeSkill(String skill) => setState(() => skills.remove(skill));
 
-  String getInitials(String name) {
-    if (name.trim().isEmpty) return "?";
-    final parts = name.trim().split(" ");
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-
   @override
   void dispose() {
     _descriptionController.dispose();
     super.dispose();
   }
 
-  Widget _statCard(String title, String value, bool isDark) {
+  Widget _statCard({required String title, required String value}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.blue.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      constraints: const BoxConstraints(minHeight: 112),
+      padding: const EdgeInsets.all(18),
+      decoration: _cardDecoration(),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             value,
+            textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black,
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 34,
+              fontWeight: FontWeight.w800,
             ),
           ),
-          const SizedBox(height: 5),
-          Text(title),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isDark ? const Color(0xFFACB1BC) : Colors.black54,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  // ─── AppBar ────────────────────────────────────────────────────────────────
+  BoxDecoration _cardDecoration() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-  PreferredSizeWidget _buildAppBar(bool isDark) {
-    if (widget.isOwnProfile) {
-      // Mon profil : burger pour ouvrir le drawer
-      return AppBar(
-        title: const Text('Mon profil'),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+    return BoxDecoration(
+      color: isDark ? const Color(0xD90A111C) : Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      border: Border.all(color: const Color(0xFF248BFF), width: 1),
+      boxShadow: [
+        BoxShadow(
+          color: const Color(0xFF248BFF).withValues(alpha: 0.08),
+          blurRadius: 26,
+          spreadRadius: 1,
         ),
-      );
-    } else {
-      // Profil public : flèche retour, pas de drawer
-      return AppBar(
-        title: Text(fullName.isNotEmpty ? fullName : 'Profil'),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      );
-    }
+      ],
+    );
   }
 
-  // ─── Actions selon le type de profil ──────────────────────────────────────
-
-  Widget _buildProfileActions() {
-    if (widget.isOwnProfile) {
-      return ElevatedButton(
-        onPressed: _toggleEdit,
-        child: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
-      );
-    } else {
-      return ElevatedButton.icon(
-        icon: const Icon(Icons.chat),
-        label: const Text("Envoyer un message"),
-        onPressed: () async {
-          final convoId = await chatService.getOrCreateConversation(
-            participants: [currentUserId, widget.userId!],
-          );
-          if (!mounted) return;
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ConversationPage(
-                conversation: Conversation(
-                  id: convoId,
-                  participants: [currentUserId, widget.userId!],
-                  messages: const [],
-                  lastMessage: '',
-                  lastMessageAt: null,
-                  createdAt: null,
-                  name: null,
-                ),
-                currentUserId: currentUserId,
-              ),
-            ),
-          );
-        },
-      );
-    }
-  }
-
-  // ─── Description ──────────────────────────────────────────────────────────
-
-  Widget _buildDescription(bool isDark) {
-    if (widget.isOwnProfile) {
-      // Champ éditable
-      return TextField(
-        controller: _descriptionController,
-        enabled: isEditing,
-        maxLines: 3,
-        decoration: const InputDecoration(
-          hintText: "Décris-toi...",
-          border: OutlineInputBorder(),
-        ),
-      );
-    } else {
-      // Texte en lecture seule, caché si vide
-      final desc = _descriptionController.text.trim();
-      if (desc.isEmpty) return const SizedBox.shrink();
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "À propos",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(desc),
-          ],
-        ),
-      );
-    }
-  }
-
-  // ─── Skills ───────────────────────────────────────────────────────────────
-
-  Widget _buildSkills(bool isDark) {
-    if (skills.isEmpty && !widget.isOwnProfile) return const SizedBox.shrink();
-
+  Widget _profileCard({required Widget child}) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Compétences",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: skills.map((skill) {
-              return Chip(
-                label: Text(skill),
-                // Suppression uniquement sur mon profil en mode édition
-                onDeleted: (widget.isOwnProfile && isEditing)
-                    ? () => _removeSkill(skill)
-                    : null,
-              );
-            }).toList(),
-          ),
-          // Ajout de compétence uniquement sur mon profil en mode édition
-          if (widget.isOwnProfile && isEditing) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: selectedSkill,
-                    hint: const Text("Ajouter une compétence"),
-                    items: skillsOptions
-                        .where((s) => !skills.contains(s))
-                        .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                        .toList(),
-                    onChanged: (v) => setState(() => selectedSkill = v),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.add_circle),
-                  onPressed: _addSkill,
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
+      padding: const EdgeInsets.all(20),
+      decoration: _cardDecoration(),
+      child: child,
     );
   }
 
-  // ─── Build ─────────────────────────────────────────────────────────────────
+  Widget _sectionTitle(String title, {Widget? trailing}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                width: 46,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF248BFF),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (trailing != null) trailing,
+      ],
+    );
+  }
+
+  Widget _infoRow({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool showDivider = true,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      children: [
+        Row(
+          children: [
+            _IconTile(icon: icon),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFACB1BC) : Colors.black54,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    value.isEmpty ? '-' : value,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (showDivider) ...[
+          const SizedBox(height: 16),
+          Divider(
+            color: isDark ? const Color(0xFF243142) : const Color(0xFFE2E8F0),
+            height: 1,
+          ),
+          const SizedBox(height: 16),
+        ],
+      ],
+    );
+  }
+
+  Widget _profileActionButton() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (widget.isOwnProfile) {
+      return OutlinedButton.icon(
+        onPressed: _toggleEdit,
+        icon: Icon(
+          isEditing ? Icons.save_outlined : Icons.edit_outlined,
+          color: const Color(0xFF248BFF),
+        ),
+        label: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
+        style: _outlinedActionStyle(),
+      );
+    }
+
+    return OutlinedButton.icon(
+      onPressed: () async {
+        final convoId = await chatService.getOrCreateConversation(
+          participants: [currentUserId, widget.userId!],
+        );
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ConversationPage(
+              conversation: Conversation(
+                id: convoId,
+                participants: [currentUserId, widget.userId!],
+                messages: const [],
+                lastMessage: '',
+                lastMessageAt: null,
+                createdAt: null,
+                name: null,
+              ),
+              currentUserId: currentUserId,
+            ),
+          ),
+        );
+      },
+      icon: const Icon(Icons.chat_bubble_outline_rounded),
+      label: const Text("Envoyer un message"),
+      style: _outlinedActionStyle(),
+    );
+  }
+
+  ButtonStyle _outlinedActionStyle() {
+    return OutlinedButton.styleFrom(
+      foregroundColor: const Color(0xFF248BFF),
+      side: const BorderSide(color: Color(0xFF248BFF)),
+      minimumSize: const Size(248, 56),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
       key: _scaffoldKey,
-      // Drawer uniquement sur mon profil
+      // ✅ Drawer uniquement sur "mon profil"
       drawer: widget.isOwnProfile ? const CustomDrawer() : null,
-      appBar: _buildAppBar(isDark),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.blue,
-                child: Text(
-                  getInitials(fullName),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Text(
-                fullName,
-                style: const TextStyle(
-                    fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 15),
-
-              _buildProfileActions(),
-
-              const SizedBox(height: 20),
-
-              Row(
-                children: [
-                  Expanded(
-                      child: _statCard("Sessions", "$sessions", isDark)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _statCard(
-                      "Note moyenne",
-                      averageNote.toStringAsFixed(1),
-                      isDark,
+        child: SizedBox(
+          width: double.infinity,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+            child: Column(
+              children: [
+                // ✅ Header conditionné proprement
+                if (widget.isOwnProfile)
+                  CustomHeader(
+                    onMenuPressed: () =>
+                        _scaffoldKey.currentState?.openDrawer(),
+                  )
+                else
+                  Container(
+                    height: 56,
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF102033)
+                                : const Color(0xFFEAF4FF),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                                color: const Color(0xFF248BFF), width: 1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF248BFF)
+                                    .withValues(alpha: 0.08),
+                                blurRadius: 12,
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(
+                              Icons.arrow_back_rounded,
+                              color: Color(0xFF248BFF),
+                              size: 28,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF111827)
-                      : Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(16),
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            const Color(0xFF248BFF).withValues(alpha: 0.35),
+                        blurRadius: 28,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: PersonAvatar(
+                    name: fullName.isEmpty ? 'Profil' : fullName,
+                    imageUrl: profilePictureUrl,
+                    radius: 64,
+                    fontSize: 44,
+                  ),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                const SizedBox(height: 18),
+
+                Text(
+                  fullName.isEmpty ? 'Profil' : fullName,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                _profileActionButton(),
+
+                const SizedBox(height: 30),
+
+                // ✅ Row des stats sans les Text orphelins
+                Row(
                   children: [
-                    const Text(
-                      "Informations personnelles",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                    Expanded(
+                      child: _statCard(
+                        title: "Sessions",
+                        value: "$sessions",
+                      ),
                     ),
-                    const SizedBox(height: 10),
-                    Text("Email: $email"),
-                    Text("Filière: $filiere"),
-                    Text("Promotion: $promotion"),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: _statCard(
+                        title: "Note moyenne",
+                        value: averageNote.toStringAsFixed(1),
+                      ),
+                    ),
                   ],
                 ),
-              ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-              _buildDescription(isDark),
+                _profileCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle("Informations personnelles"),
+                      const SizedBox(height: 24),
+                      _infoRow(
+                        icon: Icons.mail_outline_rounded,
+                        label: "Email",
+                        value: email,
+                      ),
+                      _infoRow(
+                        icon: Icons.school_outlined,
+                        label: "Filière",
+                        value: filiere,
+                      ),
+                      _infoRow(
+                        icon: Icons.groups_outlined,
+                        label: "Promotion",
+                        value: promotion,
+                        showDivider: false,
+                      ),
+                    ],
+                  ),
+                ),
 
-              const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
-              _buildSkills(isDark),
+                _profileCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle("À propos de moi"),
+                      const SizedBox(height: 22),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.format_quote_rounded,
+                            color: Color(0xFF248BFF),
+                            size: 34,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _descriptionController,
+                              // ✅ widget.isOwnProfile au lieu de isOwnProfile
+                              enabled: isEditing && widget.isOwnProfile,
+                              maxLines: 4,
+                              minLines: 2,
+                              style: TextStyle(
+                                color:
+                                    isDark ? Colors.white : Colors.black87,
+                                fontSize: 16,
+                              ),
+                              decoration: InputDecoration(
+                                hintText: "Décris-toi en quelques mots...",
+                                hintStyle: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFFACB1BC)
+                                      : Colors.black45,
+                                  fontSize: 16,
+                                ),
+                                border: InputBorder.none,
+                                isCollapsed: true,
+                                contentPadding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
 
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 18),
+
+                _profileCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _sectionTitle(
+                        "Compétences",
+                        // ✅ widget.isOwnProfile au lieu de isOwnProfile
+                        trailing: isEditing && widget.isOwnProfile
+                            ? TextButton.icon(
+                                onPressed: _addSkill,
+                                icon: const Icon(Icons.add_rounded, size: 24),
+                                label: const Text("Ajouter"),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: const Color(0xFF248BFF),
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              )
+                            : null,
+                      ),
+                      // ✅ widget.isOwnProfile au lieu de isOwnProfile
+                      if (isEditing && widget.isOwnProfile) ...[
+                        const SizedBox(height: 18),
+                        Container(
+                          width: double.infinity,
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF07101C)
+                                : const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF243142)
+                                  : const Color(0xFFE2E8F0),
+                            ),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String>(
+                              value: (selectedSkill != null &&
+                                      skillsOptions.contains(selectedSkill))
+                                  ? selectedSkill
+                                  : null,
+                              hint: Text(
+                                skills.isEmpty
+                                    ? "Aucune compétence"
+                                    : "Choisir une compétence",
+                                style: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFFACB1BC)
+                                      : Colors.black54,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              dropdownColor: isDark
+                                  ? const Color(0xFF07101C)
+                                  : Colors.white,
+                              icon: const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                color: Color(0xFF248BFF),
+                              ),
+                              isExpanded: true,
+                              items: skillsOptions
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(
+                                        e,
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) =>
+                                  setState(() => selectedSkill = v),
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (skills.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: skills
+                              .map(
+                                (skill) => Chip(
+                                  label: Text(skill),
+                                  labelStyle: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                  ),
+                                  backgroundColor: isDark
+                                      ? const Color(0xFF10243A)
+                                      : const Color(0xFFEAF4FF),
+                                  side: const BorderSide(
+                                      color: Color(0xFF248BFF)),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ] else if (!isEditing) ...[
+                        const SizedBox(height: 14),
+                        Text(
+                          "Aucune compétence",
+                          style: TextStyle(
+                            color: isDark
+                                ? const Color(0xFFACB1BC)
+                                : Colors.black54,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _IconTile extends StatelessWidget {
+  const _IconTile({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: BoxDecoration(
+        color: isDark
+            ? const Color(0xFF102033)
+            : const Color(0xFFEAF4FF),
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF248BFF).withValues(
+              alpha: isDark ? 0.10 : 0.08,
+            ),
+            blurRadius: 18,
+          ),
+        ],
+      ),
+      child: Icon(icon, color: const Color(0xFF248BFF), size: 30),
     );
   }
 }

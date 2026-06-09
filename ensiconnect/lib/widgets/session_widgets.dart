@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'person_avatar.dart';
+
 const Color _ensisaBlue = Color(0xFF0055A5);
 
 // ─── 1. Section card ──────────────────────────────────────────────────────────
@@ -88,10 +90,14 @@ class SessionPickerTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: hasValue
               ? _ensisaBlue.withValues(alpha: 0.08)
-              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50),
+              : (isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.grey.shade50),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: hasValue ? _ensisaBlue : (isDark ? Colors.white24 : Colors.grey.shade300),
+            color: hasValue
+                ? _ensisaBlue
+                : (isDark ? Colors.white24 : Colors.grey.shade300),
             width: hasValue ? 1.6 : 1,
           ),
         ),
@@ -218,7 +224,9 @@ class SessionTagsGrid extends StatelessWidget {
               color: selected ? _ensisaBlue : Colors.transparent,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: selected ? _ensisaBlue : (isDark ? Colors.white30 : Colors.grey.shade300),
+                color: selected
+                    ? _ensisaBlue
+                    : (isDark ? Colors.white30 : Colors.grey.shade300),
               ),
             ),
             child: Text(
@@ -263,7 +271,8 @@ class SessionHeader extends StatelessWidget {
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.groups_rounded, color: Colors.white, size: 28),
+            child:
+                const Icon(Icons.groups_rounded, color: Colors.white, size: 28),
           ),
           const SizedBox(width: 14),
           const Expanded(
@@ -322,7 +331,8 @@ class SessionPublicBadge extends StatelessWidget {
             color: Colors.green.shade50,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(Icons.public_rounded, color: Colors.green.shade700, size: 20),
+          child: Icon(Icons.public_rounded,
+              color: Colors.green.shade700, size: 20),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -376,27 +386,33 @@ class SessionSalleDropdown extends StatelessWidget {
     return DropdownButtonFormField<String>(
       value: value,
       hint: const Text('Choisir une salle', style: TextStyle(fontSize: 13)),
-      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+      style: TextStyle(
+          fontSize: 14, color: isDark ? Colors.white : Colors.black87),
       dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: _ensisaBlue),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.place_rounded, color: _ensisaBlue, size: 20),
+        prefixIcon:
+            const Icon(Icons.place_rounded, color: _ensisaBlue, size: 20),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+          borderSide:
+              BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: _ensisaBlue, width: 1.8),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+        fillColor:
+            isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
       validator: (v) => (v == null || v.isEmpty) ? 'Champ requis' : null,
       items: salles
-          .map((s) => DropdownMenuItem(value: s, child: Text(s, style: const TextStyle(fontSize: 14))))
+          .map((s) => DropdownMenuItem(
+              value: s, child: Text(s, style: const TextStyle(fontSize: 14))))
           .toList(),
       onChanged: onChanged,
     );
@@ -441,22 +457,27 @@ class SessionEtudiantSearch extends StatelessWidget {
                 ? const Padding(
                     padding: EdgeInsets.all(12),
                     child: SizedBox(
-                      width: 16, height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: _ensisaBlue),
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: _ensisaBlue),
                     ))
                 : null,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+              borderSide: BorderSide(
+                  color: isDark ? Colors.white24 : Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: _ensisaBlue, width: 1.8),
             ),
             filled: true,
-            fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+            fillColor:
+                isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
           ),
         ),
         if (resultats.isNotEmpty) ...[
@@ -465,25 +486,28 @@ class SessionEtudiantSearch extends StatelessWidget {
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+              border: Border.all(
+                  color: isDark ? Colors.white12 : Colors.grey.shade200),
             ),
             child: Column(
               children: resultats.map((e) {
-                final dejaAjoute = etudiantsAjoutes.any((a) => a['id'] == e['id']);
+                final dejaAjoute =
+                    etudiantsAjoutes.any((a) => a['id'] == e['id']);
                 return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: _ensisaBlue.withOpacity(0.15),
-                    child: Text(
-                      (e['Prenom'] ?? '?')[0].toUpperCase(),
-                      style: const TextStyle(color: _ensisaBlue, fontWeight: FontWeight.bold),
-                    ),
+                  leading: PersonAvatar(
+                    name: '${e['Prenom'] ?? ''} ${e['Nom'] ?? ''}',
                   ),
-                  title: Text('${e['Prenom']} ${e['Nom']}', style: const TextStyle(fontSize: 14)),
-                  subtitle: Text(e['eMail'] ?? '', style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  title: Text('${e['Prenom']} ${e['Nom']}',
+                      style: const TextStyle(fontSize: 14)),
+                  subtitle: Text(e['eMail'] ?? '',
+                      style:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                   trailing: dejaAjoute
-                      ? const Icon(Icons.check_circle_rounded, color: Colors.green)
+                      ? const Icon(Icons.check_circle_rounded,
+                          color: Colors.green)
                       : IconButton(
-                          icon: const Icon(Icons.add_circle_outline_rounded, color: _ensisaBlue),
+                          icon: const Icon(Icons.add_circle_outline_rounded,
+                              color: _ensisaBlue),
                           onPressed: () => onAjouter(e),
                         ),
                 );
@@ -496,20 +520,23 @@ class SessionEtudiantSearch extends StatelessWidget {
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: etudiantsAjoutes.map((e) => Chip(
-              avatar: CircleAvatar(
-                backgroundColor: _ensisaBlue,
-                child: Text(
-                  (e['Prenom'] ?? '?')[0].toUpperCase(),
-                  style: const TextStyle(color: Colors.white, fontSize: 11),
-                ),
-              ),
-              label: Text('${e['Prenom']} ${e['Nom']}', style: const TextStyle(fontSize: 12)),
-              deleteIcon: const Icon(Icons.close, size: 16),
-              onDeleted: () => onRetirer(e),
-              backgroundColor: isDark ? Colors.white12 : _ensisaBlue.withOpacity(0.08),
-              side: BorderSide(color: _ensisaBlue.withOpacity(0.3)),
-            )).toList(),
+            children: etudiantsAjoutes
+                .map((e) => Chip(
+                      avatar: PersonAvatar(
+                        name: '${e['Prenom'] ?? ''} ${e['Nom'] ?? ''}',
+                        radius: 12,
+                        fontSize: 11,
+                      ),
+                      label: Text('${e['Prenom']} ${e['Nom']}',
+                          style: const TextStyle(fontSize: 12)),
+                      deleteIcon: const Icon(Icons.close, size: 16),
+                      onDeleted: () => onRetirer(e),
+                      backgroundColor: isDark
+                          ? Colors.white12
+                          : _ensisaBlue.withOpacity(0.08),
+                      side: BorderSide(color: _ensisaBlue.withOpacity(0.3)),
+                    ))
+                .toList(),
           ),
         ],
       ],
