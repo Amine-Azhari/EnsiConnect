@@ -204,101 +204,101 @@ class _ConversationPageState extends State<ConversationPage> {
               final isMe = msg.senderId == widget.currentUserId;
 
               return Align(
-                  alignment:
-                      isMe ? Alignment.centerRight : Alignment.centerLeft,
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Photo de profil qui redirige vers le profil
-                        if (isGroup && !isMe)
-                          FutureBuilder<String>(
-                            future: data['Name'] != null
-                                ? Future.value(data['Name'])
-                                : getUserName(msg.senderId),
-                            builder: (context, snapshot) {
-                              final name = snapshot.data ?? '?';
-                              return Padding(
-                                padding: const EdgeInsets.only(top: 15),
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => ProfilPage(
-                                          userId: msg.senderId,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: PersonAvatar(
-                                    name: name,
+                alignment:
+                  isMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Photo de profil qui redirige vers le profil
+                    if (isGroup && !isMe)
+                      FutureBuilder<String>(
+                        future: data['Name'] != null
+                          ? Future.value(data['Name'])
+                          : getUserName(msg.senderId),
+                        builder: (context, snapshot) {
+                          final name = snapshot.data ?? '?';
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 15),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilPage(
+                                      userId: msg.senderId,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          ),
-                        if (isGroup && !isMe)
-                          const Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 5)),
+                                );
+                              },
+                              child: PersonAvatar(
+                                name: name,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    if (isGroup && !isMe)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 5)),
 
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.7,
-                          ),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: isMe
-                                  ? Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? EnsiConnectApp.ensisaBlue
-                                      : EnsiConnectApp.ensisaLightBlue
-                                  : Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? const Color.fromARGB(255, 72, 72, 72)
-                                      : const Color.fromARGB(
-                                          255, 209, 209, 209),
-                              borderRadius: BorderRadius.circular(12),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.7,
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isMe
+                            ? Theme.of(context).brightness ==
+                                Brightness.dark
+                                ? EnsiConnectApp.ensisaBlue
+                                : EnsiConnectApp.ensisaLightBlue
+                                : Theme.of(context).brightness ==
+                                Brightness.dark
+                                ? const Color.fromARGB(255, 72, 72, 72)
+                                : const Color.fromARGB(255, 209, 209, 209),
+                            borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: isMe
+                            ? CrossAxisAlignment.end
+                            : CrossAxisAlignment.start,
+                          children: [
+                            if (isGroup && !isMe)
+                              FutureBuilder<String>(
+                                future: data['Name'] != null
+                                  ? Future.value(data['Name'])
+                                  : getUserName(msg.senderId),
+                                builder: (context, snapshot) {
+                                  final name = snapshot.data ?? '?';
+                                  return Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                },
+                              ),
+                            if (isGroup && !isMe) const SizedBox(height: 4),
+                            Text(msg.content),
+                            const SizedBox(height: 6),
+                            Text(
+                              msg.createdAt != null
+                                ? DateFormat('HH:mm').format(msg.createdAt!)
+                                : '',
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                            child: Column(
-                              crossAxisAlignment: isMe
-                                  ? CrossAxisAlignment.end
-                                  : CrossAxisAlignment.start,
-                              children: [
-                                if (isGroup && !isMe)
-                                  FutureBuilder<String>(
-                                    future: data['Name'] != null
-                                        ? Future.value(data['Name'])
-                                        : getUserName(msg.senderId),
-                                    builder: (context, snapshot) {
-                                      final name = snapshot.data ?? '?';
-                                      return Text(
-                                        name,
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                if (isGroup && !isMe) const SizedBox(height: 4),
-                                Text(msg.content),
-                                const SizedBox(height: 6),
-                                Text(
-                                  msg.createdAt != null
-                                      ? DateFormat('HH:mm')
-                                          .format(msg.createdAt!)
-                                      : '',
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      ]));
+                          ],
+                        ),
+                      ),
+                    )
+                  ]
+                )
+              );
             },
           );
         },
