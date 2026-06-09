@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../models/session.dart';
 
 class SessionService {
@@ -77,15 +78,16 @@ class SessionService {
               final sessionName = data['nom'] ?? data['matiere'] ?? 'Session';
               final sessionId = doc.id;
 
-              if (tutorId != null &&
-                  participants != null &&
-                  participants.isNotEmpty) {
+              if (participants != null && participants.isNotEmpty) {            
                 WriteBatch batch = _db.batch();
 
                 for (var participant in participants) {
                   final participantId = participant.toString();
+                  if (participantId.isEmpty) continue;
 
                   if (participantId == tutorId) continue;
+
+                  bool isTutor = (participantId == tutorId);
 
                   // Création d'un document de notification unique
                   DocumentReference notifRef =
@@ -95,10 +97,11 @@ class SessionService {
                     'receiverId': participantId,
                     'tutorId': tutorId,
                     'sessionId': sessionId,
-                    'title': 'Session terminée',
-                    'message':
-                        'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
-                    'type': 'evaluation',
+                    'title': isTutor ? 'Session terminée !' : 'Évaluez votre tuteur',
+                    'message': isTutor
+                      ? 'Votre session de "$sessionName" est finie. Vos élèves ont été invités à vous laisser une note.'
+                      : 'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
+                    'type': isTutor ? 'info' : 'evaluation',
                     'isRead': false,
                     'createdAt': FieldValue.serverTimestamp(),
                   });
@@ -109,13 +112,16 @@ class SessionService {
               }
               await doc.reference.delete();
             }
-          } catch (e) {
+          } catch (e, stack) {
             // Ignorer les erreurs de parsing pour ne pas bloquer la boucle
+            debugPrint("❌ Erreur de parsing sur le document ${doc.id} : $e");
+            debugPrint(stack.toString());
           }
         }
       }
     } catch (e) {
       // Gérer l'erreur silencieusement
+      debugPrint("❌ Erreur globale cleanupOldSessions : $e");
     }
   }
 }
