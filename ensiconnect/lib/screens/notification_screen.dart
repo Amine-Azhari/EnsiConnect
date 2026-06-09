@@ -5,10 +5,7 @@ import '../service/notification_evaluation_service.dart';
 
 class NotificationScreen extends StatefulWidget {
 
-  const NotificationScreen({
-    super.key,
-    // required this.sessionId
-  });
+  const NotificationScreen({super.key});
 
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
@@ -16,7 +13,13 @@ class NotificationScreen extends StatefulWidget {
 
 class _NotificationScreenState extends State<NotificationScreen> {
 
-  // final List<Map<String, dynamic>> _notifications = NotificationEvaluationService().getNotificationsCurrentUser();
+  late Future<List<Map<String, dynamic>>?> _notificationsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationsFuture = NotificationEvaluationService().getNotificationsCurrentUser();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +36,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         elevation: 0,
       ),
       body: FutureBuilder<List<Map<String, dynamic>>?>(
-        future: NotificationEvaluationService().getNotificationsCurrentUser(),
+        future: _notificationsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -41,9 +44,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
             );
           }
 
-          if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text("BUG : ${snapshot.error}"),
+            );
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
             return const Center(
-              child: Text("Une erreur est survenue lors du chargement."),
+              child: Text("Impossible de charger vos données (Profil introuvable ou déconnecté)."),
             );
           }
 
@@ -67,12 +76,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
                 trailing: const Icon(Icons.star_border, color: Colors.amber),
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => EvaluationDialog(
-                      tutorId: notif["tutorId"] ?? "",
-                    ),
-                  );
+                showDialog(
+                  context: context,
+                  builder: (context) => EvaluationDialog(
+                    tutorId: notif["tutorId"] ?? "",
+                  ),
+                );
                 },
               );
             },
