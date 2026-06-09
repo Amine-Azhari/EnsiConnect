@@ -2,9 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/ensiconnect_app.dart';
-import '../widgets/person_avatar.dart';
 import '../models/session.dart';
+import '../service/auth_service.dart';
 import 'profil.dart';
+import '../service/chat_service.dart';
+import '../models/conversation.dart';
+import 'chat_messages.dart';
 
 class SessionsDetailsPage extends StatefulWidget {
   const SessionsDetailsPage({super.key, required this.session});
@@ -31,6 +34,36 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String _salleNom = 'Salle inconnue';
   String _organisateurNom = 'Organisateur inconnu';
 
+  Future<void> _ouvrirChat() async {
+    final currentUser = await UserServices().getCurrentUser();
+    if (currentUser == null || widget.session.id == null) return;
+
+    final chatService = ChatService();
+    final convoId = await chatService.getOrCreateConversation(
+      participants: [...widget.session.participantsIds, currentUser.id],
+      name: widget.session.sujet,
+    );
+
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConversationPage(
+          conversation: Conversation(
+            id: convoId,
+            participants: widget.session.participantsIds,
+            messages: const [],
+            lastMessage: '',
+            lastMessageAt: null,
+            createdAt: null,
+            name: widget.session.sujet,
+          ),
+          currentUserId: currentUser.id,
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +74,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     try {
       final currentUser = await _userServices.getCurrentUser();
       final session = widget.session;
+
+      
 
       final matiereNom = await _getDocumentName('Matiere', session.matiereId);
       final salleNom = await _getDocumentName('Salle', session.salleId);
@@ -53,11 +88,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       // APRÈS
       if (session.id != null) {
         // Participants ajoutés à la création
-        final sessionDoc =
-            await _db.collection('Session').doc(session.id).get();
+        final sessionDoc = await _db.collection('Session').doc(session.id).get();
         final sessionData = sessionDoc.data();
-        final preInscrits =
-            List<String>.from(sessionData?['Participants'] ?? []);
+        final preInscrits = List<String>.from(sessionData?['Participants'] ?? []);
 
         final idsDejaAjoutes = <String>{};
 
@@ -78,8 +111,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
         for (final registration in registrations.docs) {
           final etudiantId = registration.data()['EtudiantID'] ?? '';
-          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId))
-            continue;
+          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)) continue;
 
           if (currentUser != null && etudiantId == currentUser.id) {
             isRegistered = true;
@@ -111,6 +143,49 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       });
     }
   }
+
+  Future<String?> _getChatId() async {
+    final sessionId = widget.session.id;
+    if (sessionId == null) return null;
+
+    final snap = await FirebaseFirestore.instance
+        .collection('Chats')
+        .where('sessionId', isEqualTo: sessionId)
+        .limit(1)
+        .get();
+
+    if (snap.docs.isEmpty) return null;
+    return snap.docs.first.id;
+  }
+
+  void _openChat() async {
+    final chatId = await _getChatId();
+
+    if (chatId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Chat introuvable")),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text("Chat")),
+        body: const Center(child: Text("Chat pas encore créé")),
+      ),
+      ),
+    );
+  }
+
+  bool _canAccessChat() {
+    final currentUserId = _currentStudentId;
+    if (currentUserId == null) return false;
+
+    return widget.session.participantsIds.contains(currentUserId);
+  }
+
 
   Future<String> _getDocumentName(String collection, String id) async {
     final fallback =
@@ -187,6 +262,18 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           );
         });
       } else {
+        // Vérifie le nombre de places
+        final sessionDoc = await _db.collection('Session').doc(sessionId).get();
+        final nbPlaces = sessionDoc.data()?['NbPlaces'] ?? 0;
+        
+        if (_participants.length >= nbPlaces) {
+          setState(() {
+            _errorMessage = 'Cette session est complète.';
+            _isUpdating = false;
+          });
+          return;
+        }
+
         final created = await _db.collection('RejoindreSession').add({
           'EtudiantID': _currentStudentId,
           'SessionID': sessionId,
@@ -365,20 +452,10 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     Color subjectColor,
   ) {
     final session = widget.session;
-    final title = session.sujet.trim();
 
     return _SectionCard(
       child: Column(
         children: [
-          if (title.isNotEmpty)
-            _DetailRow(
-              icon: Icons.title_rounded,
-              label: 'Titre',
-              value: title,
-              textColor: textColor,
-              subtitleColor: subtitleColor,
-              subjectColor: subjectColor,
-            ),
           _DetailRow(
             icon: Icons.calendar_today_rounded,
             label: 'Date',
@@ -597,74 +674,66 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   }
 
   Widget _buildBottomButton() {
-    final buttonColor =
-        _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
+  final buttonColor =
+      _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      child: Row(
-        children: [
-          if (_isRegistered) ...[
-            Expanded(
-              child: SizedBox(
-                height: 54,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Discussion bientôt disponible'),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
-                  label: const Text(
-                    'Discussion',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: EnsiConnectApp.ensisaBlue,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+    child: Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _isUpdating ? null : _toggleRegistration,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: buttonColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
+              child: Text(
+                _isUpdating
+                    ? 'Chargement...'
+                    : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
-            const SizedBox(width: 12),
-          ],
+          ),
+        ),
+        if (_isRegistered) ...[
+          const SizedBox(width: 12),
           Expanded(
             child: SizedBox(
               height: 54,
               child: ElevatedButton(
-                onPressed: _isUpdating ? null : _toggleRegistration,
+                onPressed: _ouvrirChat,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
+                  backgroundColor: EnsiConnectApp.ensisaBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: Text(
-                  _isUpdating
-                      ? '...'
-                      : (_isRegistered ? 'Se Désinscrire' : "S'inscrire"),
-                  style: const TextStyle(
-                      fontSize: 15, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.chat_bubble_outline_rounded),
+                    SizedBox(width: 8),
+                    Text('Chat', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ],
                 ),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
+      ],
+    ),
+  );
+}
+  
 
   String _formatDate(String rawDate) {
     try {
@@ -703,7 +772,10 @@ class _SessionParticipant {
   final String? imageUrl;
 
   String get initials {
-    return PersonAvatar.initialsForName(name);
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return '?';
+    if (parts.length == 1) return parts.first[0].toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 }
 
@@ -718,10 +790,22 @@ class _ParticipantAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PersonAvatar(
-      name: participant.name,
-      imageUrl: participant.imageUrl,
+    final imageUrl = participant.imageUrl;
+
+    return CircleAvatar(
       radius: 24,
+      backgroundColor: color.withValues(alpha: 0.18),
+      backgroundImage:
+          imageUrl == null || imageUrl.isEmpty ? null : NetworkImage(imageUrl),
+      child: imageUrl == null || imageUrl.isEmpty
+          ? Text(
+              participant.initials,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          : null,
     );
   }
 }

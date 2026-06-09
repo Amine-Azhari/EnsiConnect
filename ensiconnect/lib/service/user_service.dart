@@ -134,7 +134,7 @@ class UserServices {
     // Récupère toutes les évaluations de l'étudiant
     final snapshot = await _db
         .collection('Evaluation')
-        .where('tutorID', isEqualTo: userId)
+        .where('tutorId', isEqualTo: userId)
         .get();
 
     if (snapshot.docs.isEmpty) return;

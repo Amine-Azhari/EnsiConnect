@@ -19,8 +19,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkSession() async {
     // Nettoyer les sessions expirées en arrière-plan
-    SessionService().cleanupOldSessions();
-
+    await SessionService().cleanupOldSessions();
+    
     // On attend 3 secondes pour l'animation
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;

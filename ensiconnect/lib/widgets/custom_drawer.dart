@@ -1,3 +1,4 @@
+import 'package:ensiconnect/screens/credit_page.dart';
 import 'package:flutter/material.dart';
 import "./ensiconnect_app.dart";
 import '../models/user.dart'; // Pour le modèle User
@@ -90,6 +91,18 @@ class CustomDrawer extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const HelpSupportPage()),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.info_outlined),
+                  title: const Text('À propos'),
+                  onTap: () {
+                    Navigator.pop(context); // Ferme le Drawer
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const CreditPage()),
                     );
                   },
                 ),

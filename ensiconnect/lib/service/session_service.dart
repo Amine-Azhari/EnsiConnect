@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import '../models/session.dart';
 
 class SessionService {
@@ -72,56 +71,61 @@ class SessionService {
             }
 
             if (isExpired) {
-              final tutorId =
-                  data['tutorId'] ?? data['organisateurId'] as String?;
-              final participants = data['participants'] as List<dynamic>?;
-              final sessionName = data['nom'] ?? data['matiere'] ?? 'Session';
+              final tutorId = data['OrganisateurID'] as String?;
+              final participantsRaw = data['participants'] as List<dynamic>?;
+
+              List<dynamic> participants = [];
+              if (participantsRaw is List) participants = participantsRaw;
+
+              final sessionName = data['Titre'] as String? ?? 'Session';
               final sessionId = doc.id;
 
-              if (participants != null && participants.isNotEmpty) {            
-                WriteBatch batch = _db.batch();
+              WriteBatch batch = _db.batch();
+
+              if (tutorId != null && tutorId.isNotEmpty) {            
+                DocumentReference notifRef = _db.collection('Notification').doc();
+                batch.set(notifRef, {
+                  'userId': tutorId,
+                  'tutorId': tutorId,
+                  'sessionId': sessionId,
+                  'title': 'Session terminée !',
+                  'message': 'Votre session de "$sessionName" est finie. Vos élèves ont été invités à vous laisser une note.',
+                  'type': 'info',
+                  'isRead': false,
+                  'createdAt': FieldValue.serverTimestamp(),
+                }); 
+              }
 
                 for (var participant in participants) {
-                  final participantId = participant.toString();
-                  if (participantId.isEmpty) continue;
+                  final participantId = participant.toString().trim();
+                  if (participantId.isEmpty || participantId == tutorId) continue;
 
-                  if (participantId == tutorId) continue;
-
-                  bool isTutor = (participantId == tutorId);
-
-                  // Création d'un document de notification unique
-                  DocumentReference notifRef =
-                      _db.collection('Notification').doc();
-
+                  DocumentReference notifRef = _db.collection('Notification').doc();
                   batch.set(notifRef, {
-                    'receiverId': participantId,
+                    'userId': participantId,
                     'tutorId': tutorId,
                     'sessionId': sessionId,
-                    'title': isTutor ? 'Session terminée !' : 'Évaluez votre tuteur',
-                    'message': isTutor
-                      ? 'Votre session de "$sessionName" est finie. Vos élèves ont été invités à vous laisser une note.'
-                      : 'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
-                    'type': isTutor ? 'info' : 'evaluation',
+                    'title': 'Évaluez votre tuteur',
+                    'message': 'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
+                    'type': 'evaluation',
                     'isRead': false,
                     'createdAt': FieldValue.serverTimestamp(),
                   });
                 }
 
-                // On exécute toutes les créations de notifications d'un coup
+                // await doc.reference.delete();
+
+                batch.delete(doc.reference);
+
                 await batch.commit();
-              }
-              await doc.reference.delete();
             }
-          } catch (e, stack) {
+          } catch (e) {
             // Ignorer les erreurs de parsing pour ne pas bloquer la boucle
-            debugPrint("❌ Erreur de parsing sur le document ${doc.id} : $e");
-            debugPrint(stack.toString());
           }
         }
       }
     } catch (e) {
       // Gérer l'erreur silencieusement
-      debugPrint("❌ Erreur globale cleanupOldSessions : $e");
     }
   }
 }
