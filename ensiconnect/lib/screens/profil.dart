@@ -189,12 +189,12 @@ class _ProfilPageState extends State<ProfilPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
       decoration: BoxDecoration(
         color: isDark
             ? color.withValues(alpha: 0.22)
             : color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: color.withValues(alpha: isDark ? 0.35 : 0.20),
         ),
@@ -209,8 +209,8 @@ class _ProfilPageState extends State<ProfilPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 8),
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
           Flexible(
             child: Text(
               label.isEmpty ? '-' : label,
@@ -218,7 +218,7 @@ class _ProfilPageState extends State<ProfilPage> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: color,
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -234,7 +234,7 @@ class _ProfilPageState extends State<ProfilPage> {
     required String value,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = _quickActionColorForIcon(icon);
+    const iconColor = Color(0xFF0B77E3);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,19 +500,20 @@ class _ProfilPageState extends State<ProfilPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
+                  Row(
                     children: [
-                      _profileBadge(
-                        icon: Icons.computer_rounded,
-                        label: filiere,
-                        color: const Color(0xFF42A5F5),
+                      Flexible(
+                        child: _profileBadge(
+                          icon: Icons.computer_rounded,
+                          label: filiere,
+                          color: const Color(0xFFE0A400),
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       _profileBadge(
                         icon: Icons.school_rounded,
                         label: promotion,
-                        color: const Color(0xFF66BB6A),
+                        color: const Color(0xFFE0A400),
                       ),
                     ],
                   ),
@@ -592,7 +593,7 @@ class _ProfilPageState extends State<ProfilPage> {
             children: [
               _IconTile(
                 icon: Icons.badge_outlined,
-                color: _quickActionColorForIcon(Icons.badge_outlined),
+                color: const Color(0xFF0B77E3),
               ),
               const SizedBox(width: 14),
               Expanded(child: _sectionTitle("Informations personnelles")),
