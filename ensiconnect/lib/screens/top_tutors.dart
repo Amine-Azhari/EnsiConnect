@@ -49,6 +49,14 @@ class _TopTutorsPageState extends State<TopTutorsPage> {
     _loadTopTutors();
   }
 
+  double _readAverageNote(Map<String, dynamic> data) {
+    final value = data['averageNote'];
+    if (value is num) {
+      return value.toDouble();
+    }
+    return double.tryParse(value?.toString() ?? '') ?? 0.0;
+  }
+
   Future<void> _loadTopTutors() async {
     try {
       final user = await UserServices().getCurrentUser();
@@ -63,20 +71,22 @@ class _TopTutorsPageState extends State<TopTutorsPage> {
             ? List<String>.from(data["skills"])
             : <String>[];
 
-        final double note = (data["averageNote"] ?? 0.0).toDouble();
+        final double averageNote = _readAverageNote(data);
 
         return {
           "id": doc.id,
           "nom": data["Nom"] ?? '',
           "prenom": data["Prenom"] ?? '',
           "matieres": skills,
-          "note": note,
+          "averageNote": averageNote,
           "imageUrl": data["imageUrl"]
         };
       }).toList();
 
-      liste
-          .sort((a, b) => (b["note"] as double).compareTo(a["note"] as double));
+      liste.sort(
+        (a, b) =>
+            (b["averageNote"] as double).compareTo(a["averageNote"] as double),
+      );
 
       final limitedListe = liste.take(10).toList();
 
@@ -295,7 +305,7 @@ class _TopTutorsPageState extends State<TopTutorsPage> {
                     color: Colors.amber, size: rank == 1 ? 16 : 14),
                 const SizedBox(width: 4),
                 Text(
-                  (tuteur["note"] as double).toStringAsFixed(1),
+                  (tuteur["averageNote"] as double).toStringAsFixed(1),
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: textColor,
@@ -439,7 +449,7 @@ class _TopTutorsPageState extends State<TopTutorsPage> {
                 const Icon(Icons.star_rounded, color: Colors.amber, size: 18),
                 const SizedBox(width: 4),
                 Text(
-                  (tuteur["note"] as double).toStringAsFixed(1),
+                  (tuteur["averageNote"] as double).toStringAsFixed(1),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: textColor,
