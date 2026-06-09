@@ -18,9 +18,6 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkSession() async {
-    // Nettoyer les sessions expirées en arrière-plan
-    SessionService().cleanupOldSessions();
-
     // On attend 3 secondes pour l'animation
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
@@ -30,7 +27,10 @@ class _SplashScreenState extends State<SplashScreen> {
     
     if (mounted) {
       if (user != null) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        // Nettoyer les sessions expirées en arrière-plan
+        await SessionService().cleanupOldSessions();
+
+        if (mounted) Navigator.of(context).pushReplacementNamed('/home');
       } else {
         Navigator.of(context).pushReplacementNamed('/auth');
       }
