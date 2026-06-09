@@ -334,8 +334,12 @@ class _ConversationPageState extends State<ConversationPage> {
                         color: EnsiConnectApp.ensisaBlue,
                       ),
                       border: InputBorder.none,
+                      contentPadding: const EdgeInsets.only(left: 15),
                     ),
+                    
+                    
                   ),
+                  
                 ),
                 // Bouton d'envoi d'un message
                 IconButton(
