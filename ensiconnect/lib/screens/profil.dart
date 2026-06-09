@@ -28,6 +28,7 @@ class _ProfilPageState extends State<ProfilPage> {
   String? selectedSkill;
 
   bool isEditing = false;
+  bool _isLoading = true;
 
   String currentUserId = "";
   String profileUserId = "";
@@ -78,6 +79,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
       skillsOptions =
           options.map<String>((e) => e['name'].toString()).toSet().toList();
+      _isLoading = false;
     });
   }
 
@@ -336,20 +338,30 @@ class _ProfilPageState extends State<ProfilPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const CustomDrawer(),
+      drawer: widget.userId == null ? const CustomDrawer() : null,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: SizedBox(
-          width: double.infinity,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
-            child: Column(
-              children: [
-                CustomHeader(
-                  onMenuPressed: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                ),
+      appBar: widget.userId == null
+          ? null
+          : AppBar(
+              centerTitle: true,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator()) 
+          : SafeArea(
+              child: SizedBox(
+                width: double.infinity,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
+                  child: Column(
+                    children: [
+                      if (isOwnProfile)
+                        CustomHeader(
+                          onMenuPressed: () {
+                            _scaffoldKey.currentState?.openDrawer();
+                          },
+                        ),
                 const SizedBox(height: 20),
                 Container(
                   decoration: BoxDecoration(

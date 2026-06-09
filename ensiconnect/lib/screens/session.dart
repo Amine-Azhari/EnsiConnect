@@ -439,7 +439,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                           borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
                         ),
                         filled: true,
-                        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
                         contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
                       ),
                     ),
@@ -590,7 +590,7 @@ class _PostSessionPageState extends State<PostSessionPage>
           borderSide: const BorderSide(color: Colors.red),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
     );
@@ -598,7 +598,7 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   Widget _buildDropdown(bool isDark) {
     return DropdownButtonFormField<String>(
-      value: _data.matiere,
+      initialValue: _data.matiere,
       hint: const Text('Matière concernée', style: TextStyle(fontSize: 13)),
       style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
       dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
