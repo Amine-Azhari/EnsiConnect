@@ -33,6 +33,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String _matiereNom = 'Matière inconnue';
   String _salleNom = 'Salle inconnue';
   String _organisateurNom = 'Organisateur inconnu';
+  bool _sessionComplete = false;
 
   Future<void> _ouvrirChat() async {
     final currentUser = await UserServices().getCurrentUser();
@@ -120,6 +121,13 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
           participants.add(await _getParticipant(etudiantId));
         }
+
+
+        final nbPlaces = sessionDoc.data()?['NbPlaces'] ?? 0;
+        setState(() {
+          _sessionComplete = _participants.length >= nbPlaces;
+        });
+
       }
 
       if (!mounted) return;
@@ -696,7 +704,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
             child: SizedBox(
               height: 54,
               child: ElevatedButton(
-                onPressed: _isUpdating ? null : _toggleRegistration,
+                onPressed: (_isUpdating || (_sessionComplete && !_isRegistered)) ? null : _toggleRegistration,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: buttonColor,
                   foregroundColor: Colors.white,
@@ -707,7 +715,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                 child: Text(
                   _isUpdating
                       ? 'Chargement...'
-                      : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
+                      : (_isRegistered
+                          ? 'Se désinscrire'
+                          : (_sessionComplete ? 'Session complète' : "S'inscrire")),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
