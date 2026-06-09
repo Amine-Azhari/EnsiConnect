@@ -18,10 +18,8 @@ class UserServices {
 
     if (email == null) return null;
 
-    final result = await _etudiants
-        .where('eMail', isEqualTo: email)
-        .limit(1)
-        .get();
+    final result =
+        await _etudiants.where('eMail', isEqualTo: email).limit(1).get();
 
     if (result.docs.isEmpty) return null;
 
@@ -55,14 +53,16 @@ class UserServices {
       skills: List<String>.from(data['skills'] ?? []),
 
       //  SAFE CAST SESSIONS
-      sessions: (data['sessions'] is num)
-          ? (data['sessions'] as num).toInt()
-          : 0,
+      sessions:
+          (data['sessions'] is num) ? (data['sessions'] as num).toInt() : 0,
 
       //  SAFE CAST AVERAGE NOTE (FIX IMPORTANT)
       averageNote: (data['averageNote'] is num)
           ? (data['averageNote'] as num).toDouble()
           : 0.0,
+      profilePictureUrl:
+          (data['ProfilePictureUrl'] ?? data['profilePictureUrl'] ?? '')
+              .toString(),
     );
   }
 
@@ -93,6 +93,59 @@ class UserServices {
       'skills': skills,
       'Filiere': filiere,
       'Promotion': promotion,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> normalizeAverageNoteTypes() async {
+    final snapshot = await _etudiants.get();
+    final batch = _db.batch();
+    var hasChanges = false;
+
+    for (final doc in snapshot.docs) {
+      final averageNote = doc.data()['averageNote'];
+      if (averageNote is int) {
+        batch.update(doc.reference, {
+          'averageNote': averageNote.toDouble(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        hasChanges = true;
+      }
+    }
+
+    if (hasChanges) {
+      await batch.commit();
+    }
+  }
+
+  //Calcule et met à jour averageNote
+  Future<void> updateAverageNote(String userId) async {
+    // Récupère toutes les évaluations de l'étudiant
+    final snapshot = await _db
+        .collection('Evaluation')
+        .where('tutorID', isEqualTo: userId)
+        .get();
+
+    if (snapshot.docs.isEmpty) return;
+
+    // Calcule la moyenne
+    final notes = snapshot.docs
+        .map((doc) {
+          final note = doc.data()['Note'];
+          return (note is num) ? note.toDouble() : null;
+        })
+        .whereType<double>()
+        .toList();
+
+    if (notes.isEmpty) return;
+
+    final average = notes.reduce((a, b) => a + b) / notes.length;
+    final normalizedAverage = average.toDouble();
+
+    // Met à jour Etudiant
+    await _etudiants.doc(userId).set({
+      'averageNote': double.parse(normalizedAverage.toStringAsFixed(2)),
+      'sessions': notes.length,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }

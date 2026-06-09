@@ -7,8 +7,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
 import 'chat_messages.dart';
 import '../models/user.dart';
+import '../widgets/person_avatar.dart';
+import "../widgets/ensiconnect_app.dart";
 
-class ChatPage extends StatefulWidget{
+class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
   @override
@@ -24,74 +26,77 @@ class _ChatPageState extends State<ChatPage> {
 
   final Map<String, String> _userNamesCache = {};
 
+  final filters = ['Toutes', 'Solo' ,'Groupe'];
+
+  var selectedFilter='Toutes';
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
 
     return Scaffold(
-      key: _scaffoldKey, 
+      key: _scaffoldKey,
       drawer: const CustomDrawer(),
       body: SafeArea(
-        child: FutureBuilder<User?>(
-          future: _user.getCurrentUser(),
-          builder: (context, userSnapshot) {
+          child: FutureBuilder<User?>(
+        future: _user.getCurrentUser(),
+        builder: (context, userSnapshot) {
+          if (!userSnapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            if (!userSnapshot.hasData) {
-              return const Center(child: CircularProgressIndicator());
-            }
+          final currentUserId = userSnapshot.data!.id;
 
-            final currentUserId = userSnapshot.data!.id;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomHeader(
-                    onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    "Vos messages",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
-                  ),
-
-                  // Boutton de test
-                  FloatingActionButton(
-                    onPressed: () async {
-                      final convoId = await chatService.getOrCreateConversation(
-                        participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz", "jSP6nSgCrSeNLwfghni7"],
-                        // name: "Conversation de groupe" // test
-                      );
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ConversationPage(
-                            conversation: Conversation(
-                              id: convoId,
-                              participants: [currentUserId, "dbRdmrjdq7xyLQfTQ4Qz"],
-                              messages: const [],
-                              lastMessage: '',
-                              lastMessageAt: null,
-                              createdAt: null,
-                              name: null,
-                            ),
-                            currentUserId: currentUserId,
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Icon(Icons.add),
-                  ),
-                  // Boutton de test
+          return SingleChildScrollView(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomHeader(
+                  onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  "Vos messages",
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: textColor),
+                ),
 
                   const SizedBox(height: 10),
 
-                  StreamBuilder<QuerySnapshot>(
+                  //Filtres
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: filters.map((filter) {
+                        final selected = selectedFilter.contains(filter);
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: Text(filter),
+                            selected: selected,
+                            selectedColor: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
+                            onSelected: (value) {
+                              setState(() {
+                                selectedFilter=filter;                                
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+
+                const SizedBox(height: 10),
+
+                StreamBuilder<QuerySnapshot>(
                     stream: chatService.getConversations(currentUserId),
                     builder: (context, snapshot) {
+                      // Debug
                       print("state: ${snapshot.connectionState}");
                       print("hasData: ${snapshot.hasData}");
                       print("hasError: ${snapshot.hasError}");
@@ -100,9 +105,10 @@ class _ChatPageState extends State<ChatPage> {
                       if (!snapshot.hasData) {
                         return const Center(child: CircularProgressIndicator());
                       }
-                      
+
                       if (snapshot.hasError) {
-                        return const Center(child: Text("Erreur de chargement"));
+                        return const Center(
+                            child: Text("Erreur de chargement"));
                       }
 
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -111,89 +117,101 @@ class _ChatPageState extends State<ChatPage> {
 
                       final docs = snapshot.data!.docs;
 
-                      if (docs.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            "Aucune conversation",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        );
-                      }
+                      final filteredDocs = docs.where((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        if (selectedFilter == 'Solo') {
+                          return data['name'] == null;
+                        }
+
+                        if (selectedFilter == 'Groupe') {
+                          return data['name'] != null;
+                        }
+
+                        return true; 
+                      }).toList();
 
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: docs.length,                        
-
+                        itemCount: filteredDocs.length,
                         itemBuilder: (context, index) {
-                          final data = docs[index].data() as Map<String, dynamic>;
+                          final data =
+                              filteredDocs[index].data() as Map<String, dynamic>;
 
-                          final participants = List<String>.from(data['participants']);
+                          final participants =
+                              List<String>.from(data['participants']);
 
-                          final lastMessageAt = (data['lastMessageAt'] as Timestamp?)?.toDate();      
+                          final lastMessageAt =
+                              (data['lastMessageAt'] as Timestamp?)?.toDate();
 
-                          return ListTile(
-                            leading: FutureBuilder<String>(
-                              future: data['name'] != null
-                                  ? Future.value(data['name'])
-                                  : getUserName(getOtherUser(participants, currentUserId)),
-                              builder: (context, snapshot) {
-                                final name = snapshot.data ?? '?';
-                                return CircleAvatar(
-                                  child: Text(getInitials(name)),
+                          if(
+                            (selectedFilter=='Solo' && data['name'] ==null) ||
+                            (selectedFilter=='Groupe' && data['name'] !=null) ||
+                            selectedFilter=='Toutes'
+                          ){
+                            return ListTile(
+                              leading: FutureBuilder<String>(
+                                future: data['name'] != null
+                                    ? Future.value(data['name'])
+                                    : getUserName(getOtherUser(participants, currentUserId)),
+                                builder: (context, snapshot) {
+                                  final name = snapshot.data ?? '?';
+                                  return PersonAvatar(
+                                    name: name,
+                                  );
+                                },
+                              ),
+                              title: FutureBuilder<String>(
+                                future: data['name'] != null
+                                    ? Future.value(data['name'])
+                                    : getUserName(getOtherUser(participants, currentUserId)),
+                                builder: (context, snapshot) {
+                                  final name = snapshot.data ?? '...';
+
+                                  return Text(name);
+                                },
+                              ),
+                              subtitle: Text(
+                                data['lastMessage'] ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,),
+                              trailing: Text(
+                                formatTimeAgo(lastMessageAt),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              
+                              // Ouvre la page de la conversation sélectionée
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ConversationPage(
+                                      conversation:Conversation(
+                                        id:filteredDocs[index].id,
+                                        participants: participants,
+                                        messages: const[],
+                                        lastMessage: data['lastMessage'] ?? '',
+                                        lastMessageAt: lastMessageAt,
+                                        createdAt: null,
+                                        name: data['name'],
+                                      ),
+                                      currentUserId: currentUserId,
+                                    ),
+                                  ),
                                 );
                               },
-                            ),
-                            title: FutureBuilder<String>(
-                              future: data['name'] != null
-                                  ? Future.value(data['name'])
-                                  : getUserName(getOtherUser(participants, currentUserId)),
-                              builder: (context, snapshot) {
-                                final name = snapshot.data ?? '...';
-
-                                return Text(name);
-                              },
-                            ),
-                            subtitle: Text(
-                              data['lastMessage'] ?? '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,),
-                            trailing: Text(
-                              formatTimeAgo(lastMessageAt),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            
-                            // Ouvre la page de la conversation sélectionée
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ConversationPage(
-                                    conversation:Conversation(
-                                      id:docs[index].id,
-                                      participants: participants,
-                                      messages: const[],
-                                      lastMessage: data['lastMessage'] ?? '',
-                                      lastMessageAt: lastMessageAt,
-                                      createdAt: null,
-                                      name: data['name'],
-                                    ),
-                                    currentUserId: currentUserId,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
+                            );
+                          }
+                          else {return const SizedBox(height: 0);}                         
                         },
                       );
-                    }
-                  )
-                ],
-              ),
-            );
-          },
-        )
-      ),
+                    })
+              ],
+            ),
+          );
+        },
+      )),
     );
   }
 
@@ -210,7 +228,6 @@ class _ChatPageState extends State<ChatPage> {
 
     return name;
   }
-
 }
 
 String getOtherUser(List<String> participants, String currentUserId) {
@@ -238,17 +255,4 @@ String formatTimeAgo(DateTime? date) {
   }
 
   return "Il y a ${difference.inDays} j";
-}
-
-String getInitials(String name) {
-  if (name.trim().isEmpty) return "?";
-
-  final parts = name.trim().split(" ");
-
-  if (parts.length == 1) {
-    return parts[0][0].toUpperCase();
-  }
-
-
-  return (parts[0][0] + parts[1][0]).toUpperCase();
 }

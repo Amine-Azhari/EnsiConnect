@@ -3,6 +3,7 @@ import "../widgets/ensiconnect_app.dart";
 import '../models/help_request.dart';
 import '../service/user_service.dart';
 import '../service/help_request_service.dart';
+import '../widgets/person_avatar.dart';
 
 class DemandeAidePage extends StatefulWidget {
   const DemandeAidePage({super.key});
@@ -215,25 +216,10 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
                         children: [
                           Row(
                             children: [
-                              CircleAvatar(
-                                backgroundColor: isDark
-                                    ? Colors.grey.shade800
-                                    : EnsiConnectApp.ensisaLightBlue,
-                                backgroundImage: req.isMe && currentUser?.profilePictureUrl != null && currentUser!.profilePictureUrl.isNotEmpty
-                                    ? NetworkImage(currentUser.profilePictureUrl)
-                                    : null,
-                                child: (!req.isMe || currentUser?.profilePictureUrl == null || currentUser!.profilePictureUrl.isEmpty)
-                                    ? Text(
-                                        req.authorName.isNotEmpty
-                                            ? req.authorName[0]
-                                            : '?',
-                                        style: TextStyle(
-                                          color: isDark
-                                              ? Colors.white
-                                              : EnsiConnectApp.ensisaBlue,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      )
+                              PersonAvatar(
+                                name: req.authorName,
+                                imageUrl: req.isMe
+                                    ? currentUser?.profilePictureUrl
                                     : null,
                               ),
                               const SizedBox(width: 12),
@@ -348,8 +334,7 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
                                 ),
                                 label: const Text(
                                   "Contacter",
-                                  style:
-                                      TextStyle(fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: isDark
