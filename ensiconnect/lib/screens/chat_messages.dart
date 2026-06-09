@@ -196,9 +196,9 @@ class _ConversationPageState extends State<ConversationPage> {
               final data = docs[index].data() as Map<String, dynamic>;
 
               final msg = Message(
-                senderId: data['senderId'],
-                content: data['content'],
-                createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+                senderId: data['SenderId'],
+                content: data['Content'],
+                createdAt: (data['CreatedAt'] as Timestamp?)?.toDate(),
               );
 
               final isMe = msg.senderId == widget.currentUserId;
@@ -213,8 +213,8 @@ class _ConversationPageState extends State<ConversationPage> {
                         // Photo de profil qui redirige vers le profil
                         if (isGroup && !isMe)
                           FutureBuilder<String>(
-                            future: data['name'] != null
-                                ? Future.value(data['name'])
+                            future: data['Name'] != null
+                                ? Future.value(data['Name'])
                                 : getUserName(msg.senderId),
                             builder: (context, snapshot) {
                               final name = snapshot.data ?? '?';
@@ -270,8 +270,8 @@ class _ConversationPageState extends State<ConversationPage> {
                               children: [
                                 if (isGroup && !isMe)
                                   FutureBuilder<String>(
-                                    future: data['name'] != null
-                                        ? Future.value(data['name'])
+                                    future: data['Name'] != null
+                                        ? Future.value(data['Name'])
                                         : getUserName(msg.senderId),
                                     builder: (context, snapshot) {
                                       final name = snapshot.data ?? '?';

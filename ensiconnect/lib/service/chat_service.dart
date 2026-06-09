@@ -10,19 +10,19 @@ class ChatService {
     // Trouver les conversations d'un utilisateur
     Stream<QuerySnapshot> getConversations(String userId) {
       return _db
-          .collection('conversations')
-          .where('participants', arrayContains: userId)
-          .orderBy('lastMessageAt', descending: true)
+          .collection('Conversations')
+          .where('Participants', arrayContains: userId)
+          .orderBy('LastMessageAt', descending: true)
           .snapshots();
     }
 
     // Trouver les messages dans une conversation
     Stream<QuerySnapshot> getMessages(String conversationId) {
       return _db
-        .collection('conversations')
+        .collection('Conversations')
         .doc(conversationId)
-        .collection('messages')
-        .orderBy('createdAt', descending: false)
+        .collection('Messages')
+        .orderBy('CreatedAt', descending: false)
         .snapshots();
     }
 
@@ -33,19 +33,19 @@ class ChatService {
       required String content,
     }) async {
       final messageRef = _db
-          .collection('conversations')
+          .collection('Conversations')
           .doc(conversationId)
-          .collection('messages');
+          .collection('Messages');
 
       await messageRef.add({
-        'senderId': senderId,
-        'content': content,
-        'createdAt': FieldValue.serverTimestamp(),
+        'SenderId': senderId,
+        'Content': content,
+        'CreatedAt': FieldValue.serverTimestamp(),
       });
 
-      await _db.collection('conversations').doc(conversationId).update({
-      'lastMessage': content,
-      'lastMessageAt': FieldValue.serverTimestamp(),
+      await _db.collection('Conversations').doc(conversationId).update({
+      'LastMessage': content,
+      'LastMessageAt': FieldValue.serverTimestamp(),
     });
   }
 
@@ -54,12 +54,12 @@ class ChatService {
     required List<String> participants,
     String? name,
   }) async {
-    final doc = await _db.collection('conversations').add({
-      'participants': participants,
-      'name': name,
-      'lastMessage': '',
-      'lastMessageAt': FieldValue.serverTimestamp(),
-      'createdAt': FieldValue.serverTimestamp(),
+    final doc = await _db.collection('Conversations').add({
+      'Participants': participants,
+      'Name': name,
+      'LastMessage': '',
+      'LastMessageAt': FieldValue.serverTimestamp(),
+      'CreatedAt': FieldValue.serverTimestamp(),
     });
 
     return doc.id;
@@ -71,15 +71,15 @@ class ChatService {
     String? name,
   }) async {
     final query = await _db
-        .collection('conversations')
-        .where('participants', arrayContainsAny: participants)
+        .collection('Conversations')
+        .where('Participants', arrayContainsAny: participants)
         .get();
 
     for (final doc in query.docs) {
       final data = doc.data();
 
-      final existingParticipants = List<String>.from(data['participants']);
-      final existingName = data['name'];
+      final existingParticipants = List<String>.from(data['Participants']);
+      final existingName = data['Name'];
 
       final sameParticipants =
         Set.from(existingParticipants).containsAll(participants) &&
@@ -104,10 +104,10 @@ class ChatService {
     required String conversationId
   }) async {
     await _db
-        .collection('conversations')
+        .collection('Conversations')
         .doc(conversationId)
         .update({
-          'participants': FieldValue.arrayUnion([userId]),
+          'Participants': FieldValue.arrayUnion([userId]),
         });  
   }
 
@@ -116,10 +116,10 @@ class ChatService {
     required String conversationId
   }) async {
     await _db
-        .collection('conversations')
+        .collection('Conversations')
         .doc(conversationId)
         .update({
-          'participants': FieldValue.arrayRemove([userId]),
+          'Participants': FieldValue.arrayRemove([userId]),
         });
   }
 
