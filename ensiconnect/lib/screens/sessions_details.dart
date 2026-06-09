@@ -42,6 +42,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       final currentUser = await _userServices.getCurrentUser();
       final session = widget.session;
 
+      
+
       final matiereNom = await _getDocumentName('Matiere', session.matiereId);
       final salleNom = await _getDocumentName('Salle', session.salleId);
       final organisateurNom = await _getStudentName(session.organisateurId);
@@ -50,7 +52,25 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       var isRegistered = false;
       final participants = <_SessionParticipant>[];
 
+      // APRÈS
       if (session.id != null) {
+        // Participants ajoutés à la création
+        final sessionDoc = await _db.collection('Session').doc(session.id).get();
+        final sessionData = sessionDoc.data();
+        final preInscrits = List<String>.from(sessionData?['Participants'] ?? []);
+
+        final idsDejaAjoutes = <String>{};
+
+        for (final etudiantId in preInscrits) {
+          if (etudiantId.isEmpty) continue;
+          idsDejaAjoutes.add(etudiantId);
+          if (currentUser != null && etudiantId == currentUser.id) {
+            isRegistered = true;
+          }
+          participants.add(await _getParticipant(etudiantId));
+        }
+
+        // Participants inscrits via RejoindreSession
         final registrations = await _db
             .collection('RejoindreSession')
             .where('SessionID', isEqualTo: session.id)
@@ -58,7 +78,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
         for (final registration in registrations.docs) {
           final etudiantId = registration.data()['EtudiantID'] ?? '';
-          if (etudiantId.isEmpty) continue;
+          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)) continue;
 
           if (currentUser != null && etudiantId == currentUser.id) {
             isRegistered = true;
@@ -136,6 +156,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
   Future<void> _toggleRegistration() async {
     final sessionId = widget.session.id;
+
 
     if (_currentStudentId == null || sessionId == null) {
       setState(() {
