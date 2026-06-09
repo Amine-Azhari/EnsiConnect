@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/session_widgets.dart';
@@ -6,7 +5,6 @@ import '../service/post_session_service.dart';
 import '../widgets/ensiconnect_app.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
-
 
 // ─── Modèle léger ────────────────────────────────────────────────────────────
 
@@ -55,11 +53,16 @@ class _PostSessionPageState extends State<PostSessionPage>
   final _titreCtrl = TextEditingController();
   final _lieuCtrl = TextEditingController();
 
-
   final List<String> _matieres = [
-    'Algorithme et systèmes de données', 'Programmation', 'Physique',
-    'Automatique', 'Électronique', 'Réseau & Télécoms',
-    'Mathématiques', 'Chimie', 'Autre',
+    'Algorithme et systèmes de données',
+    'Programmation',
+    'Physique',
+    'Automatique',
+    'Électronique',
+    'Réseau & Télécoms',
+    'Mathématiques',
+    'Chimie',
+    'Autre',
   ];
 
   final Set<String> _tagsSelectionnes = {};
@@ -85,7 +88,6 @@ class _PostSessionPageState extends State<PostSessionPage>
 
   @override
   void initState() {
-    
     super.initState();
     _animCtrl = AnimationController(
       vsync: this,
@@ -132,7 +134,8 @@ class _PostSessionPageState extends State<PostSessionPage>
       lastDate: now.add(const Duration(days: 365)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor:EnsiConnectApp.ensisaBlue),
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
         ),
         child: child!,
       ),
@@ -146,7 +149,8 @@ class _PostSessionPageState extends State<PostSessionPage>
       initialTime: _data.heure ?? TimeOfDay.now(),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor:EnsiConnectApp.ensisaBlue),
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
         ),
         child: child!,
       ),
@@ -160,7 +164,8 @@ class _PostSessionPageState extends State<PostSessionPage>
       initialTime: _data.heureFin ?? TimeOfDay.now(),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
+          colorScheme:
+              ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
         ),
         child: child!,
       ),
@@ -175,15 +180,23 @@ class _PostSessionPageState extends State<PostSessionPage>
       return;
     }
 
-    if (_data.heureFin != null) {
-  final startMinutes = _data.heure!.hour * 60 + _data.heure!.minute;
-  final endMinutes = _data.heureFin!.hour * 60 + _data.heureFin!.minute;
+    final maxOtherParticipants = _data.nbPlaces - 1;
+    if (_etudiantsAjoutes.length > maxOtherParticipants) {
+      _showError(
+        'Avec ${_data.nbPlaces} place(s), vous pouvez ajouter au maximum $maxOtherParticipants autre(s) participant(s).',
+      );
+      return;
+    }
 
-  if (endMinutes <= startMinutes) {
-    _showError("L'heure de fin doit être après l'heure de début.");
-    return;
-  }
-}
+    if (_data.heureFin != null) {
+      final startMinutes = _data.heure!.hour * 60 + _data.heure!.minute;
+      final endMinutes = _data.heureFin!.hour * 60 + _data.heureFin!.minute;
+
+      if (endMinutes <= startMinutes) {
+        _showError("L'heure de fin doit être après l'heure de début.");
+        return;
+      }
+    }
 
     _formKey.currentState!.save();
     _data.tags = _tagsSelectionnes.toList();
@@ -237,7 +250,6 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   Future<void> _rechercherEtudiants(String query) async {
-    
     if (query.trim().isEmpty) {
       setState(() => _resultatsRecherche = []);
       return;
@@ -250,8 +262,8 @@ class _PostSessionPageState extends State<PostSessionPage>
           .where((doc) {
             final prenom = (doc['Prenom'] ?? '').toString().toLowerCase();
             final nom = (doc['Nom'] ?? '').toString().toLowerCase();
-            return (prenom.contains(q) || nom.contains(q))
-            && doc.id != _currentUserId;
+            return (prenom.contains(q) || nom.contains(q)) &&
+                doc.id != _currentUserId;
           })
           .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
@@ -271,18 +283,18 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   void _filtrerSalles(String query) {
-  setState(() {
-    _salleSelectionnee = false;
-    _data.lieu = '';
-    if (query.trim().isEmpty) {
-      _sallesFiltrees = [];
-    } else {
-      _sallesFiltrees = _salles
-          .where((s) => s.toLowerCase().contains(query.toLowerCase()))
-          .toList();
-    }
-  });
-}
+    setState(() {
+      _salleSelectionnee = false;
+      _data.lieu = '';
+      if (query.trim().isEmpty) {
+        _sallesFiltrees = [];
+      } else {
+        _sallesFiltrees = _salles
+            .where((s) => s.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -311,17 +323,16 @@ class _PostSessionPageState extends State<PostSessionPage>
                       hint: 'ex. Révisions TD Algo',
                       icon: Icons.title,
                       isDark: isDark,
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Champ requis' : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Champ requis'
+                          : null,
                       onSaved: (v) => _data.titre = v!.trim(),
                     ),
                     const SizedBox(height: 14),
                     _buildDropdown(isDark),
                   ],
                 ),
-
                 const SizedBox(height: 12),
-
                 SessionFormSection(
                   cardColor: cardColor,
                   children: [
@@ -330,38 +341,50 @@ class _PostSessionPageState extends State<PostSessionPage>
                       maxLength: 200,
                       maxLines: 3,
                       onSaved: (v) => _data.description = v?.trim() ?? '',
-                      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white : Colors.black87),
                       decoration: InputDecoration(
                         hintText: 'Décris le contenu de la session...',
-                        hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-                        counterStyle: TextStyle(color: isDark ? Colors.white54 : Colors.black45),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade300)),
+                        hintStyle: TextStyle(
+                            fontSize: 13, color: Colors.grey.shade400),
+                        counterStyle: TextStyle(
+                            color: isDark ? Colors.white54 : Colors.black45),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                BorderSide(color: Colors.grey.shade300)),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                          borderSide: BorderSide(
+                              color: isDark
+                                  ? Colors.white24
+                                  : Colors.grey.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
+                          borderSide: const BorderSide(
+                              color: EnsiConnectApp.ensisaBlue, width: 1.8),
                         ),
                         filled: true,
-                        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                        fillColor: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.shade50,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 14),
                       ),
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 12),
-
                 SessionFormSection(
                   cardColor: cardColor,
                   children: [
                     SessionPickerTile(
                       icon: Icons.event,
                       title: 'Date',
-                      value: _data.date != null ? _formatDate(_data.date!) : null,
+                      value:
+                          _data.date != null ? _formatDate(_data.date!) : null,
                       placeholder: 'Choisir',
                       onTap: _pickDate,
                       isDark: isDark,
@@ -372,7 +395,9 @@ class _PostSessionPageState extends State<PostSessionPage>
                         child: SessionPickerTile(
                           icon: Icons.access_time_rounded,
                           title: 'Heure de début',
-                          value: _data.heure != null ? _formatTime(_data.heure!) : null,
+                          value: _data.heure != null
+                              ? _formatTime(_data.heure!)
+                              : null,
                           placeholder: 'Choisir',
                           onTap: _pickTime,
                           isDark: isDark,
@@ -383,7 +408,9 @@ class _PostSessionPageState extends State<PostSessionPage>
                         child: SessionPickerTile(
                           icon: Icons.access_time_filled_rounded,
                           title: 'Heure de fin',
-                          value: _data.heureFin != null ? _formatTime(_data.heureFin!) : null,
+                          value: _data.heureFin != null
+                              ? _formatTime(_data.heureFin!)
+                              : null,
                           placeholder: 'Choisir',
                           onTap: _pickTimeFin,
                           isDark: isDark,
@@ -393,24 +420,31 @@ class _PostSessionPageState extends State<PostSessionPage>
                   ],
                 ),
                 const SizedBox(height: 12),
-
                 SessionFormSection(
                   cardColor: cardColor,
                   children: [
                     TextFormField(
                       controller: _salleCtrl,
                       onChanged: _filtrerSalles,
-                      validator: (v) => _data.lieu.isEmpty ? 'Champ requis' : null,
-                      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+                      validator: (v) =>
+                          _data.lieu.isEmpty ? 'Champ requis' : null,
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white : Colors.black87),
                       decoration: InputDecoration(
                         hintText: 'Rechercher une salle...',
-                        hintStyle: TextStyle(fontSize: 13, color: Colors.grey.shade400),
-                        prefixIcon: const Icon(Icons.place_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
+                        hintStyle: TextStyle(
+                            fontSize: 13, color: Colors.grey.shade400),
+                        prefixIcon: const Icon(Icons.place_rounded,
+                            color: EnsiConnectApp.ensisaBlue, size: 20),
                         suffixIcon: _sallesLoading
                             ? const Padding(
                                 padding: EdgeInsets.all(12),
-                                child: SizedBox(width: 16, height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2)))
+                                child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2)))
                             : _salleSelectionnee
                                 ? IconButton(
                                     icon: const Icon(Icons.close, size: 18),
@@ -422,40 +456,60 @@ class _PostSessionPageState extends State<PostSessionPage>
                                     }),
                                   )
                                 : null,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade300)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide:
+                                BorderSide(color: Colors.grey.shade300)),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+                          borderSide: BorderSide(
+                              color: isDark
+                                  ? Colors.white24
+                                  : Colors.grey.shade300),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
+                          borderSide: const BorderSide(
+                              color: EnsiConnectApp.ensisaBlue, width: 1.8),
                         ),
                         filled: true,
-                        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                        fillColor: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.shade50,
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 14),
                       ),
                     ),
                     if (_sallesFiltrees.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade50,
+                          color: isDark
+                              ? const Color(0xFF2A2A2A)
+                              : Colors.grey.shade50,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: isDark ? Colors.white12 : Colors.grey.shade200),
+                          border: Border.all(
+                              color: isDark
+                                  ? Colors.white12
+                                  : Colors.grey.shade200),
                         ),
                         child: Column(
-                          children: _sallesFiltrees.map((salle) => ListTile(
-                            leading: const Icon(Icons.meeting_room_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
-                            title: Text(salle, style: const TextStyle(fontSize: 14)),
-                            onTap: () => setState(() {
-                              _data.lieu = salle;
-                              _salleCtrl.text = salle;
-                              _sallesFiltrees = [];
-                              _salleSelectionnee = true;
-                            }),
-                          )).toList(),
+                          children: _sallesFiltrees
+                              .map((salle) => ListTile(
+                                    leading: const Icon(
+                                        Icons.meeting_room_rounded,
+                                        color: EnsiConnectApp.ensisaBlue,
+                                        size: 20),
+                                    title: Text(salle,
+                                        style: const TextStyle(fontSize: 14)),
+                                    onTap: () => setState(() {
+                                      _data.lieu = salle;
+                                      _salleCtrl.text = salle;
+                                      _sallesFiltrees = [];
+                                      _salleSelectionnee = true;
+                                    }),
+                                  ))
+                              .toList(),
                         ),
                       ),
                     ],
@@ -463,22 +517,26 @@ class _PostSessionPageState extends State<PostSessionPage>
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: Row(children: [
-                          const Icon(Icons.check_circle_rounded, color: Colors.green, size: 16),
+                          const Icon(Icons.check_circle_rounded,
+                              color: Colors.green, size: 16),
                           const SizedBox(width: 6),
-                          Text('Salle sélectionnée', style: TextStyle(fontSize: 12, color: Colors.green.shade700)),
+                          Text('Salle sélectionnée',
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.green.shade700)),
                         ]),
                       ),
                   ],
                 ),
                 const SizedBox(height: 12),
-
                 SessionFormSection(
                   cardColor: cardColor,
                   children: [
                     Row(children: [
-                      const Icon(Icons.people_alt_outlined, color: EnsiConnectApp.ensisaBlue, size: 20),
+                      const Icon(Icons.people_alt_outlined,
+                          color: EnsiConnectApp.ensisaBlue, size: 20),
                       const SizedBox(width: 8),
-                      const Text('Nombre de places :', style: TextStyle(fontSize: 13)),
+                      const Text('Nombre de places :',
+                          style: TextStyle(fontSize: 13)),
                       const Spacer(),
                       SessionPlacesCounter(
                         value: _data.nbPlaces,
@@ -489,28 +547,36 @@ class _PostSessionPageState extends State<PostSessionPage>
                   ],
                 ),
                 const SizedBox(height: 12),
-
                 SessionFormSection(
                   cardColor: cardColor,
-                  children: [SessionEtudiantSearch(
-                  searchCtrl: _searchCtrl,
-                  resultats: _resultatsRecherche,
-                  etudiantsAjoutes: _etudiantsAjoutes,
-                  searching: _searching,
-                  isDark: isDark,
-                  onSearch: _rechercherEtudiants,
-                  onAjouter: (e) => setState(() {
-                    _etudiantsAjoutes.add(e);
-                    _resultatsRecherche = [];
-                    _searchCtrl.clear();
-                  }),
-                  onRetirer: (e) => setState(() => _etudiantsAjoutes.remove(e)),
-                ),],
+                  children: [
+                    SessionEtudiantSearch(
+                      searchCtrl: _searchCtrl,
+                      resultats: _resultatsRecherche,
+                      etudiantsAjoutes: _etudiantsAjoutes,
+                      searching: _searching,
+                      isDark: isDark,
+                      onSearch: _rechercherEtudiants,
+                      onAjouter: (e) {
+                        final maxOtherParticipants = _data.nbPlaces - 1;
+                        if (_etudiantsAjoutes.length >= maxOtherParticipants) {
+                          _showError(
+                            'Cette session a ${_data.nbPlaces} place(s) au total, vous compris.',
+                          );
+                          return;
+                        }
+                        setState(() {
+                          _etudiantsAjoutes.add(e);
+                          _resultatsRecherche = [];
+                          _searchCtrl.clear();
+                        });
+                      },
+                      onRetirer: (e) =>
+                          setState(() => _etudiantsAjoutes.remove(e)),
+                    ),
+                  ],
                 ),
-                
                 const SizedBox(height: 16),
-
-                
               ],
             ),
           ),
@@ -522,25 +588,21 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   PreferredSizeWidget _buildAppBar() {
-
-    
     return AppBar(
       backgroundColor: EnsiConnectApp.ensisaBlue,
       foregroundColor: Colors.white,
       elevation: 0,
-      title: const Text(                                    // ← ici
+      title: const Text(
+        // ← ici
         'Créer une session',
         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
       ),
-      
       centerTitle: true,
       systemOverlayStyle: SystemUiOverlayStyle.light,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_rounded),
         onPressed: () => Navigator.of(context).pop(),
       ),
-
-      
     );
   }
 
@@ -557,7 +619,8 @@ class _PostSessionPageState extends State<PostSessionPage>
       controller: controller,
       validator: validator,
       onSaved: onSaved,
-      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+      style: TextStyle(
+          fontSize: 14, color: isDark ? Colors.white : Colors.black87),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
@@ -569,19 +632,23 @@ class _PostSessionPageState extends State<PostSessionPage>
             borderSide: BorderSide(color: Colors.grey.shade300)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+          borderSide:
+              BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
+          borderSide:
+              const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.red),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+        fillColor:
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
     );
   }
@@ -590,26 +657,34 @@ class _PostSessionPageState extends State<PostSessionPage>
     return DropdownButtonFormField<String>(
       initialValue: _data.matiere,
       hint: const Text('Matière concernée', style: TextStyle(fontSize: 13)),
-      style: TextStyle(fontSize: 14, color: isDark ? Colors.white : Colors.black87),
+      style: TextStyle(
+          fontSize: 14, color: isDark ? Colors.white : Colors.black87),
       dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded, color: EnsiConnectApp.ensisaBlue),
+      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+          color: EnsiConnectApp.ensisaBlue),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.school_rounded, color: EnsiConnectApp.ensisaBlue, size: 20),
+        prefixIcon: const Icon(Icons.school_rounded,
+            color: EnsiConnectApp.ensisaBlue, size: 20),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
+          borderSide:
+              BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
+          borderSide:
+              const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
         ),
         filled: true,
-        fillColor: isDark ? Colors.white.withValues(alpha :0.05) : Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+        fillColor:
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
       items: _matieres
-          .map((m) => DropdownMenuItem(value: m, child: Text(m, style: const TextStyle(fontSize: 14))))
+          .map((m) => DropdownMenuItem(
+              value: m, child: Text(m, style: const TextStyle(fontSize: 14))))
           .toList(),
       onChanged: (v) => setState(() => _data.matiere = v),
     );
@@ -626,7 +701,8 @@ class _PostSessionPageState extends State<PostSessionPage>
           style: ElevatedButton.styleFrom(
             backgroundColor: EnsiConnectApp.ensisaBlue,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             elevation: 4,
             shadowColor: EnsiConnectApp.ensisaBlue.withValues(alpha: 0.4),
           ),
@@ -634,7 +710,8 @@ class _PostSessionPageState extends State<PostSessionPage>
               ? const SizedBox(
                   height: 22,
                   width: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2.5, color: Colors.white),
                 )
               : const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -642,7 +719,8 @@ class _PostSessionPageState extends State<PostSessionPage>
                     Icon(Icons.add_circle_outline_rounded, size: 20),
                     SizedBox(width: 10),
                     Text('Créer la session',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                        style: TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700)),
                   ],
                 ),
         ),
