@@ -95,10 +95,8 @@ class _ConversationPageState extends State<ConversationPage> {
                                     );
                                   },
                                   child: ListTile(
-                                    leading: CircleAvatar(
-                                      child: Text(
-                                        getInitials(user?.fullName ?? '?'),
-                                      ),
+                                    leading: PersonAvatar(
+                                      name: otherUserName ?? '?',
                                     ),
                                     title: Text(user?.fullName ?? id),
                                   ),
@@ -151,9 +149,9 @@ class _ConversationPageState extends State<ConversationPage> {
                     ),
                   );
                 },
-                child:CircleAvatar(
-                  child: Text(getInitials(otherUserName ?? '?')),
-                ), 
+                child:PersonAvatar(
+                  name: otherUserName ?? '?',
+                ),
               ),
 
             // Liste des personnes dans la conversation
