@@ -53,7 +53,7 @@ class PostSessionService {
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
     // 4. Insère la session
-    await _db.collection('Session').add({
+    final sessionRef = await _db.collection('Session').add({
       'Titre': titre,
       'MatiereID': matiereId,
       'SalleID': salleId,
@@ -68,6 +68,15 @@ class PostSessionService {
       'Public': true,
       'participants': participants,
     });
+
+    //Ajout des participants à la nase de donnée
+    
+      for (final participantId in participants) {
+    await _db.collection('RejoindreSession').add({
+      'SessionID': sessionRef.id,
+      'EtudiantID': participantId,
+    });
+  }
 
     // 5. Crée le salon de discussion associé
     final chatService = ChatService();
