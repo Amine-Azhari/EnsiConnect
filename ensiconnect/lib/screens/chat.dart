@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
 import 'chat_messages.dart';
 import '../models/user.dart';
+import "../widgets/ensiconnect_app.dart";
 
 class ChatPage extends StatefulWidget{
   const ChatPage({super.key});
@@ -23,6 +24,10 @@ class _ChatPageState extends State<ChatPage> {
   final UserServices _user = UserServices();
 
   final Map<String, String> _userNamesCache = {};
+
+  final filters = ['Toutes', 'Solo' ,'Groupe'];
+
+  var selectedFilter='Toutes';
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +60,31 @@ class _ChatPageState extends State<ChatPage> {
                   Text(
                     "Vos messages",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: textColor),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  //Filtres
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: filters.map((filter) {
+                        final selected = selectedFilter.contains(filter);
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: FilterChip(
+                            label: Text(filter),
+                            selected: selected,
+                            selectedColor: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
+                            onSelected: (value) {
+                              setState(() {
+                                selectedFilter=filter;                                
+                              });
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
 
                   const SizedBox(height: 10),
