@@ -10,7 +10,7 @@ class FirebaseDataService {
     
     // // Si la collection n'est pas vide, on arrête tout
     // if (snap.docs.isNotEmpty) {
-    //   print("⚠️ Données déjà présentes, pas besoin d'insérer.");
+    //   print(" Données déjà présentes, pas besoin d'insérer.");
     //   return; 
     // }
     

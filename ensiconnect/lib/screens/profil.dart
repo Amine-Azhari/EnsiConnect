@@ -4,12 +4,14 @@ import '../models/conversation.dart';
 import '../screens/chat_messages.dart';
 import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
-import '../widgets/custom_header.dart';
 
 class ProfilPage extends StatefulWidget {
-  final String? userId;
+  final String? userId; // null = mon profil, non-null = profil public
 
   const ProfilPage({super.key, this.userId});
+
+  // Getters sémantiques pour clarifier l'intention
+  bool get isOwnProfile => userId == null;
 
   @override
   State<ProfilPage> createState() => _ProfilPageState();
@@ -19,27 +21,21 @@ class _ProfilPageState extends State<ProfilPage> {
   final UserServices _user = UserServices();
   final ChatService chatService = ChatService();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   final TextEditingController _descriptionController = TextEditingController();
 
   List<String> skillsOptions = [];
   List<String> skills = [];
   String? selectedSkill;
-
   bool isEditing = false;
+  bool _loading = true;
 
   String currentUserId = "";
-  String profileUserId = "";
-
   String fullName = "";
   String email = "";
   String filiere = "";
   String promotion = "";
-
   int sessions = 0;
   double averageNote = 0.0;
-
-  bool get isOwnProfile => currentUserId == profileUserId;
 
   @override
   void initState() {
@@ -50,9 +46,10 @@ class _ProfilPageState extends State<ProfilPage> {
   Future<void> _loadUser() async {
     final currentUser = await _user.getCurrentUser();
 
-    final user = widget.userId != null
-        ? await _user.getUserById(widget.userId!)
-        : currentUser;
+    // Si userId fourni → profil public, sinon → mon profil
+    final user = widget.isOwnProfile
+        ? currentUser
+        : await _user.getUserById(widget.userId!);
 
     final options = await _user.getAllSkillsOptions();
 
@@ -60,29 +57,22 @@ class _ProfilPageState extends State<ProfilPage> {
 
     setState(() {
       currentUserId = currentUser.id;
-      profileUserId = user.id;
 
       fullName = user.fullName;
       email = user.email;
       filiere = user.filiere;
       promotion = user.promotion;
-
       skills = List<String>.from(user.skills ?? []);
       _descriptionController.text = user.description ?? "";
-
       sessions = user.sessions ?? 0;
       averageNote = (user.averageNote ?? 0).toDouble();
-
-      skillsOptions = options
-          .map<String>((e) => e['name'].toString())
-          .toSet()
-          .toList();
+      skillsOptions =
+          options.map<String>((e) => e['name'].toString()).toSet().toList();
+      _loading = false;
     });
   }
 
   Future<void> _toggleEdit() async {
-    if (!isOwnProfile) return;
-
     if (isEditing) {
       await _user.updateUserProfile(
         userId: currentUserId,
@@ -92,15 +82,10 @@ class _ProfilPageState extends State<ProfilPage> {
         promotion: promotion,
       );
     }
-
-    setState(() {
-      isEditing = !isEditing;
-    });
+    setState(() => isEditing = !isEditing);
   }
 
   void _addSkill() {
-    if (!isOwnProfile) return;
-
     if (selectedSkill != null && !skills.contains(selectedSkill)) {
       setState(() {
         skills.add(selectedSkill!);
@@ -109,12 +94,7 @@ class _ProfilPageState extends State<ProfilPage> {
     }
   }
 
-  void _removeSkill(String skill) {
-    if (!isOwnProfile) return;
-    setState(() {
-      skills.remove(skill);
-    });
-  }
+  void _removeSkill(String skill) => setState(() => skills.remove(skill));
 
   String getInitials(String name) {
     if (name.trim().isEmpty) return "?";
@@ -153,46 +133,198 @@ class _ProfilPageState extends State<ProfilPage> {
     );
   }
 
-  // ⚡ NAVIGATION SANS ANIMATION
-  PageRouteBuilder _noAnimationRoute(Widget page) {
-    return PageRouteBuilder(
-      pageBuilder: (_, __, ___) => page,
-      transitionDuration: Duration.zero,
-      reverseTransitionDuration: Duration.zero,
+  // ─── AppBar ────────────────────────────────────────────────────────────────
+
+  PreferredSizeWidget _buildAppBar(bool isDark) {
+    if (widget.isOwnProfile) {
+      // Mon profil : burger pour ouvrir le drawer
+      return AppBar(
+        title: const Text('Mon profil'),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: isDark ? Colors.white : Colors.black87,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
+      );
+    } else {
+      // Profil public : flèche retour, pas de drawer
+      return AppBar(
+        title: Text(fullName.isNotEmpty ? fullName : 'Profil'),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: isDark ? Colors.white : Colors.black87,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      );
+    }
+  }
+
+  // ─── Actions selon le type de profil ──────────────────────────────────────
+
+  Widget _buildProfileActions() {
+    if (widget.isOwnProfile) {
+      return ElevatedButton(
+        onPressed: _toggleEdit,
+        child: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
+      );
+    } else {
+      return ElevatedButton.icon(
+        icon: const Icon(Icons.chat),
+        label: const Text("Envoyer un message"),
+        onPressed: () async {
+          final convoId = await chatService.getOrCreateConversation(
+            participants: [currentUserId, widget.userId!],
+          );
+          if (!mounted) return;
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ConversationPage(
+                conversation: Conversation(
+                  id: convoId,
+                  participants: [currentUserId, widget.userId!],
+                  messages: const [],
+                  lastMessage: '',
+                  lastMessageAt: null,
+                  createdAt: null,
+                  name: null,
+                ),
+                currentUserId: currentUserId,
+              ),
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  // ─── Description ──────────────────────────────────────────────────────────
+
+  Widget _buildDescription(bool isDark) {
+    if (widget.isOwnProfile) {
+      // Champ éditable
+      return TextField(
+        controller: _descriptionController,
+        enabled: isEditing,
+        maxLines: 3,
+        decoration: const InputDecoration(
+          hintText: "Décris-toi...",
+          border: OutlineInputBorder(),
+        ),
+      );
+    } else {
+      // Texte en lecture seule, caché si vide
+      final desc = _descriptionController.text.trim();
+      if (desc.isEmpty) return const SizedBox.shrink();
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "À propos",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(desc),
+          ],
+        ),
+      );
+    }
+  }
+
+  // ─── Skills ───────────────────────────────────────────────────────────────
+
+  Widget _buildSkills(bool isDark) {
+    if (skills.isEmpty && !widget.isOwnProfile) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Compétences",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: skills.map((skill) {
+              return Chip(
+                label: Text(skill),
+                // Suppression uniquement sur mon profil en mode édition
+                onDeleted: (widget.isOwnProfile && isEditing)
+                    ? () => _removeSkill(skill)
+                    : null,
+              );
+            }).toList(),
+          ),
+          // Ajout de compétence uniquement sur mon profil en mode édition
+          if (widget.isOwnProfile && isEditing) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: selectedSkill,
+                    hint: const Text("Ajouter une compétence"),
+                    items: skillsOptions
+                        .where((s) => !skills.contains(s))
+                        .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                        .toList(),
+                    onChanged: (v) => setState(() => selectedSkill = v),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.add_circle),
+                  onPressed: _addSkill,
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
+
+  // ─── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       key: _scaffoldKey,
-      drawer: const CustomDrawer(),
-
-      appBar: AppBar(
-        title: Text(isOwnProfile ? 'Mon profil' : 'Profil'),
-        elevation: 0,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: isDark ? Colors.white : Colors.black87,
-        leading: isOwnProfile
-            ? IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-              )
-            : IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              ),
-      ),
-
+      // Drawer uniquement sur mon profil
+      drawer: widget.isOwnProfile ? const CustomDrawer() : null,
+      appBar: _buildAppBar(isDark),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-
               const SizedBox(height: 20),
 
               CircleAvatar(
@@ -213,57 +345,19 @@ class _ProfilPageState extends State<ProfilPage> {
               Text(
                 fullName,
                 style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                    fontSize: 22, fontWeight: FontWeight.bold),
               ),
-
-              const SizedBox(height: 10),
-
-              if (!isOwnProfile)
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.chat),
-                  label: const Text("Envoyer un message"),
-                  onPressed: () async {
-                    final convoId =
-                        await chatService.getOrCreateConversation(
-                      participants: [currentUserId, widget.userId!],
-                    );
-
-                    if (!mounted) return;
-
-                    Navigator.of(context).push(
-                      _noAnimationRoute(
-                        ConversationPage(
-                          conversation: Conversation(
-                            id: convoId,
-                            participants: [currentUserId, widget.userId!],
-                            messages: const [],
-                            lastMessage: '',
-                            lastMessageAt: null,
-                            createdAt: null,
-                            name: null,
-                          ),
-                          currentUserId: currentUserId,
-                        ),
-                      ),
-                    );
-                  },
-                ),
 
               const SizedBox(height: 15),
 
-              if (isOwnProfile)
-                ElevatedButton(
-                  onPressed: _toggleEdit,
-                  child: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
-                ),
+              _buildProfileActions(),
 
               const SizedBox(height: 20),
 
               Row(
                 children: [
-                  Expanded(child: _statCard("Sessions", "$sessions", isDark)),
+                  Expanded(
+                      child: _statCard("Sessions", "$sessions", isDark)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: _statCard(
@@ -278,9 +372,12 @@ class _ProfilPageState extends State<ProfilPage> {
               const SizedBox(height: 20),
 
               Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF111827) : Colors.blue.shade50,
+                  color: isDark
+                      ? const Color(0xFF111827)
+                      : Colors.blue.shade50,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
@@ -289,9 +386,7 @@ class _ProfilPageState extends State<ProfilPage> {
                     const Text(
                       "Informations personnelles",
                       style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
                     Text("Email: $email"),
@@ -303,61 +398,13 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 20),
 
-              TextField(
-                controller: _descriptionController,
-                enabled: isEditing && isOwnProfile,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: "Décris-toi...",
-                ),
-              ),
+              _buildDescription(isDark),
 
               const SizedBox(height: 20),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButton<String>(
-                      value: (selectedSkill != null &&
-                              skillsOptions.contains(selectedSkill))
-                          ? selectedSkill
-                          : null,
-                      hint: const Text("Choisir"),
-                      isExpanded: true,
-                      items: skillsOptions
-                          .map((e) => DropdownMenuItem(
-                                value: e,
-                                child: Text(e),
-                              ))
-                          .toList(),
-                      onChanged: isEditing && isOwnProfile
-                          ? (v) => setState(() => selectedSkill = v)
-                          : null,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: isEditing && isOwnProfile ? _addSkill : null,
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              ),
+              _buildSkills(isDark),
 
-              Wrap(
-                spacing: 8,
-                children: skills.isEmpty
-                    ? [const Text("Aucune compétence")]
-                    : skills.map((s) {
-                        return Chip(
-                          label: Text(s),
-                          deleteIcon: isEditing && isOwnProfile
-                              ? const Icon(Icons.close, size: 18)
-                              : null,
-                          onDeleted: isEditing && isOwnProfile
-                              ? () => _removeSkill(s)
-                              : null,
-                        );
-                      }).toList(),
-              ),
+              const SizedBox(height: 20),
             ],
           ),
         ),

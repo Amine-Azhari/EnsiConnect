@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'custom_notification_button.dart';
 
-
 class CustomHeader extends StatelessWidget {
   final VoidCallback onMenuPressed;
 
@@ -24,6 +23,7 @@ class CustomHeader extends StatelessWidget {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
+
         const CustomNotificationButton(),
       ],
     );

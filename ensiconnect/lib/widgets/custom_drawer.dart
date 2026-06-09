@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import "./ensiconnect_app.dart";
-import '../models/user.dart'; // Pour le modèle User
-import '../screens/setting_page.dart'; // Pour la navigation vers les paramètres
-import '../service/user_service.dart'; // Pour le service d'authentification
+import '../models/user.dart';
+import '../screens/setting_page.dart';
+import '../service/user_service.dart';
 import '../service/auth_service.dart';
 import '../screens/profil.dart';
 
 class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({super.key});
+  final String? currentUserId; 
+
+  const CustomDrawer({
+    super.key,
+    this.currentUserId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +26,13 @@ class CustomDrawer extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final currentUser = snapshot.data ?? const User(
-            id: 'unknown',
-            firstName: 'Invité',
-            lastName: '',
-            email: '',
-          );
+          final currentUser = snapshot.data ??
+              const User(
+                id: 'unknown',
+                firstName: 'Invité',
+                lastName: '',
+                email: '',
+              );
 
           return ListView(
             padding: EdgeInsets.zero,
@@ -51,8 +57,14 @@ class CustomDrawer extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      currentUser.fullName.trim().isEmpty ? 'Utilisateur' : currentUser.fullName,
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      currentUser.fullName.trim().isEmpty
+                          ? 'Utilisateur'
+                          : currentUser.fullName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       currentUser.email,
@@ -61,37 +73,53 @@ class CustomDrawer extends StatelessWidget {
                   ],
                 ),
               ),
+
               ListTile(
                 leading: const Icon(Icons.settings),
                 title: const Text('Paramètres'),
                 onTap: () {
-                  Navigator.pop(context); // Ferme le Drawer
-                  Navigator.of(context).push(PageRouteBuilder(
-                    pageBuilder: (_, __, ___) => ProfilPage(userId: null),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero,
-                  ));
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProfilPage(
+                        userId: currentUserId ?? currentUser.id,
+                      ),
+                    ),
+                  );
                 },
               ),
+
               ListTile(
                 leading: const Icon(Icons.help_outline),
                 title: const Text('Aide & Support'),
                 onTap: () => Navigator.pop(context),
               ),
-              Divider(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
+
+              Divider(
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+              ),
+
               ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Déconnexion', style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  'Déconnexion',
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () async {
                   await AuthServices().logout();
                   if (context.mounted) {
-                    Navigator.pushNamedAndRemoveUntil(context, '/auth', (route) => false);
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/auth',
+                      (route) => false,
+                    );
                   }
                 },
               ),
             ],
           );
-        }
+        },
       ),
     );
   }

@@ -3,11 +3,8 @@ import '../screens/profil.dart';
 import '../screens/notification_screen.dart';
 
 class CustomNotificationButton extends StatelessWidget {
-  final String userId;
-
   const CustomNotificationButton({
     super.key,
-    required this.userId,
   });
 
   @override
@@ -34,12 +31,10 @@ class CustomNotificationButton extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: () {
-          Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (_, __, ___) =>
-                  ProfilPage(userId: userId),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const NotificationScreen(),
             ),
           );
         },
