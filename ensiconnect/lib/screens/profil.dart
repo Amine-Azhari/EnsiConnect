@@ -43,6 +43,7 @@ class _ProfilPageState extends State<ProfilPage> {
   double averageNote = 0.0;
 
   bool get isOwnProfile => currentUserId == profileUserId;
+  bool get _showLegacyProfileCards => false;
 
   @override
   void initState() {
@@ -121,37 +122,133 @@ class _ProfilPageState extends State<ProfilPage> {
   Widget _statCard({
     required String title,
     required String value,
+    required IconData icon,
+    required Color accentColor,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      constraints: const BoxConstraints(minHeight: 112),
-      padding: const EdgeInsets.all(18),
+      constraints: const BoxConstraints(minHeight: 128),
+      padding: const EdgeInsets.all(16),
       decoration: _cardDecoration(),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Text(
-            value,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontSize: 34,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isDark ? const Color(0xFFACB1BC) : Colors.black54,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          _IconTile(icon: icon, color: accentColor),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isDark ? const Color(0xFFACB1BC) : Colors.black87,
+                    fontSize: 15,
+                    height: 1.2,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _profileBadge({
+    required IconData icon,
+    required String label,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF121D2B) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 14,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFFE0A400)),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label.isEmpty ? '-' : label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoGridTile({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _IconTile(icon: icon),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value.isEmpty ? '-' : value,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isDark ? const Color(0xFFACB1BC) : Colors.black87,
+                  fontSize: 14,
+                  height: 1.25,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -160,13 +257,17 @@ class _ProfilPageState extends State<ProfilPage> {
 
     return BoxDecoration(
       color: isDark ? const Color(0xD90A111C) : Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: const Color(0xFF248BFF), width: 1),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(
+        color: isDark ? const Color(0xFF203047) : const Color(0xFFF1F4FA),
+      ),
       boxShadow: [
         BoxShadow(
-          color: const Color(0xFF248BFF).withValues(alpha: 0.08),
-          blurRadius: 26,
-          spreadRadius: 1,
+          color: isDark
+              ? Colors.black.withValues(alpha: 0.18)
+              : const Color(0xFF8FA5C7).withValues(alpha: 0.18),
+          blurRadius: 24,
+          offset: const Offset(0, 10),
         ),
       ],
     );
@@ -195,17 +296,8 @@ class _ProfilPageState extends State<ProfilPage> {
                 title,
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                width: 46,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF248BFF),
-                  borderRadius: BorderRadius.circular(99),
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ],
@@ -274,7 +366,7 @@ class _ProfilPageState extends State<ProfilPage> {
         onPressed: _toggleEdit,
         icon: Icon(
           isEditing ? Icons.save_outlined : Icons.edit_outlined,
-          color: const Color(0xFF248BFF),
+          color: Colors.white,
         ),
         label: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
         style: _outlinedActionStyle(),
@@ -319,15 +411,310 @@ class _ProfilPageState extends State<ProfilPage> {
     );
   }
 
+  Widget _profileHero() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDark ? const Color(0xFF101A28) : Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF248BFF).withValues(alpha: 0.20),
+                      blurRadius: 22,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: PersonAvatar(
+                  name: fullName.isEmpty ? 'Profil' : fullName,
+                  imageUrl: profilePictureUrl,
+                  radius: 58,
+                  fontSize: 40,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fullName.isEmpty ? 'Profil' : fullName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 25,
+                      height: 1.05,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    children: [
+                      _profileBadge(
+                        icon: Icons.computer_rounded,
+                        label: filiere,
+                      ),
+                      _profileBadge(
+                        icon: Icons.school_rounded,
+                        label: promotion,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  _profileActionButton(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   ButtonStyle _outlinedActionStyle() {
     return OutlinedButton.styleFrom(
-      foregroundColor: const Color(0xFF248BFF),
-      side: const BorderSide(color: Color(0xFF248BFF)),
-      minimumSize: const Size(248, 56),
+      foregroundColor: isOwnProfile ? Colors.white : const Color(0xFF0B77E3),
+      backgroundColor:
+          isOwnProfile ? const Color(0xFF0B77E3) : Colors.transparent,
+      side: const BorderSide(color: Color(0xFF0B77E3)),
+      minimumSize: const Size(0, 46),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       textStyle: const TextStyle(
-        fontSize: 18,
+        fontSize: 15,
         fontWeight: FontWeight.w700,
+      ),
+    );
+  }
+
+  Widget _aboutCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return _profileCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _IconTile(icon: Icons.person_outline_rounded),
+              const SizedBox(width: 14),
+              Expanded(child: _sectionTitle("À propos")),
+            ],
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _descriptionController,
+            enabled: isEditing && isOwnProfile,
+            maxLines: 3,
+            minLines: 1,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 16,
+            ),
+            decoration: InputDecoration(
+              hintText: "Décris-toi en quelques mots...",
+              hintStyle: TextStyle(
+                color: isDark ? const Color(0xFFACB1BC) : Colors.black45,
+                fontSize: 16,
+              ),
+              border: InputBorder.none,
+              isCollapsed: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _personalInfoCard() {
+    return _profileCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _IconTile(icon: Icons.badge_outlined),
+              const SizedBox(width: 14),
+              Expanded(child: _sectionTitle("Informations personnelles")),
+            ],
+          ),
+          const SizedBox(height: 22),
+          _infoGridTile(
+            icon: Icons.person_rounded,
+            label: "Nom",
+            value: fullName,
+          ),
+          const SizedBox(height: 18),
+          _infoGridTile(
+            icon: Icons.mail_rounded,
+            label: "Email",
+            value: email,
+          ),
+          const SizedBox(height: 18),
+          _infoGridTile(
+            icon: Icons.school_rounded,
+            label: "Filière",
+            value: filiere,
+          ),
+          const SizedBox(height: 18),
+          _infoGridTile(
+            icon: Icons.menu_book_rounded,
+            label: "Promotion",
+            value: promotion,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _skillsCard() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return _profileCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _IconTile(
+                icon: Icons.lightbulb_outline_rounded,
+                color: const Color(0xFFE0A400),
+              ),
+              const SizedBox(width: 14),
+              Expanded(child: _sectionTitle("Compétences")),
+            ],
+          ),
+          if (isEditing && isOwnProfile) ...[
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: const Color(0xFFE0A400).withValues(alpha: 0.45),
+                ),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: (selectedSkill != null &&
+                          skillsOptions.contains(selectedSkill))
+                      ? selectedSkill
+                      : null,
+                  hint: Text(
+                    skills.isEmpty
+                        ? "Aucune compétence"
+                        : "Choisir une compétence",
+                    style: const TextStyle(
+                      color: Color(0xFFE0A400),
+                      fontSize: 16,
+                    ),
+                  ),
+                  dropdownColor:
+                      isDark ? const Color(0xFF07101C) : Colors.white,
+                  icon: const Icon(
+                    Icons.add_circle_rounded,
+                    color: Color(0xFFE0A400),
+                  ),
+                  isExpanded: true,
+                  items: skillsOptions
+                      .map(
+                        (e) => DropdownMenuItem(
+                          value: e,
+                          child: Text(
+                            e,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (v) => setState(() => selectedSkill = v),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _addSkill,
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFFE0A400),
+                ),
+                child: const Text("Ajouter"),
+              ),
+            ),
+          ],
+          if (skills.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: skills
+                  .map(
+                    (skill) => Chip(
+                      label: Text(skill),
+                      labelStyle: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      backgroundColor: isDark
+                          ? const Color(0xFF2B2512)
+                          : const Color(0xFFFFF4C7),
+                      side: const BorderSide(color: Color(0xFFFFD35A)),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ] else if (!isEditing) ...[
+            const SizedBox(height: 14),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color:
+                    isDark ? const Color(0xFF2B2512) : const Color(0xFFFFF4C7),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.school_outlined,
+                    color: Color(0xFFE0A400),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Aucune compétence",
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFFFE9A8) : Colors.black54,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -339,7 +726,9 @@ class _ProfilPageState extends State<ProfilPage> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: widget.userId == null ? const CustomDrawer() : null,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: isDark
+          ? Theme.of(context).scaffoldBackgroundColor
+          : const Color(0xFFF6F9FE),
       appBar: widget.userId == null
           ? null
           : AppBar(
@@ -348,7 +737,7 @@ class _ProfilPageState extends State<ProfilPage> {
               backgroundColor: Colors.transparent,
             ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator()) 
+          ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: SizedBox(
                 width: double.infinity,
@@ -362,262 +751,257 @@ class _ProfilPageState extends State<ProfilPage> {
                             _scaffoldKey.currentState?.openDrawer();
                           },
                         ),
-                const SizedBox(height: 20),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF248BFF).withValues(alpha: 0.35),
-                        blurRadius: 28,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: PersonAvatar(
-                    name: fullName.isEmpty ? 'Profil' : fullName,
-                    imageUrl: profilePictureUrl,
-                    radius: 64,
-                    fontSize: 44,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  fullName.isEmpty ? 'Profil' : fullName,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                _profileActionButton(),
-                const SizedBox(height: 30),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _statCard(
-                        title: "Sessions",
-                        value: "$sessions",
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: _statCard(
-                        title: "Note moyenne",
-                        value: averageNote.toStringAsFixed(1),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                _profileCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _sectionTitle("Informations personnelles"),
-                      const SizedBox(height: 24),
-                      _infoRow(
-                        icon: Icons.mail_outline_rounded,
-                        label: "Email",
-                        value: email,
-                      ),
-                      _infoRow(
-                        icon: Icons.school_outlined,
-                        label: "Filière",
-                        value: filiere,
-                      ),
-                      _infoRow(
-                        icon: Icons.groups_outlined,
-                        label: "Promotion",
-                        value: promotion,
-                        showDivider: false,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _profileCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _sectionTitle("À propos de moi"),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 18),
+                      _profileHero(),
+                      const SizedBox(height: 18),
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
-                            Icons.format_quote_rounded,
-                            color: Color(0xFF248BFF),
-                            size: 34,
-                          ),
-                          const SizedBox(width: 12),
                           Expanded(
-                            child: TextField(
-                              controller: _descriptionController,
-                              enabled: isEditing && isOwnProfile,
-                              maxLines: 4,
-                              minLines: 2,
-                              style: TextStyle(
-                                color: isDark ? Colors.white : Colors.black87,
-                                fontSize: 16,
-                              ),
-                              decoration: InputDecoration(
-                                hintText: "Décris-toi en quelques mots...",
-                                hintStyle: TextStyle(
-                                  color: isDark
-                                      ? const Color(0xFFACB1BC)
-                                      : Colors.black45,
-                                  fontSize: 16,
-                                ),
-                                border: InputBorder.none,
-                                isCollapsed: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
+                            child: _statCard(
+                              title: "Sessions\nréalisées",
+                              value: "$sessions",
+                              icon: Icons.calendar_month_rounded,
+                              accentColor: const Color(0xFF0B77E3),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _statCard(
+                              title: "Note moyenne",
+                              value: averageNote.toStringAsFixed(1),
+                              icon: Icons.star_border_rounded,
+                              accentColor: const Color(0xFFE0A400),
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _profileCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _sectionTitle(
-                        "Compétences",
-                        trailing: isEditing && isOwnProfile
-                            ? TextButton.icon(
-                                onPressed: _addSkill,
-                                icon: const Icon(Icons.add_rounded, size: 24),
-                                label: const Text("Ajouter"),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: const Color(0xFF248BFF),
-                                  textStyle: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              )
-                            : null,
-                      ),
-                      if (isEditing && isOwnProfile) ...[
+                      const SizedBox(height: 18),
+                      _aboutCard(),
+                      const SizedBox(height: 18),
+                      _personalInfoCard(),
+                      const SizedBox(height: 18),
+                      _skillsCard(),
+                      if (_showLegacyProfileCards) ...[
                         const SizedBox(height: 18),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF07101C)
-                                : const Color(0xFFF8FAFC),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF243142)
-                                  : const Color(0xFFE2E8F0),
-                            ),
+                        _profileCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _sectionTitle("Informations personnelles"),
+                              const SizedBox(height: 24),
+                              _infoRow(
+                                icon: Icons.mail_outline_rounded,
+                                label: "Email",
+                                value: email,
+                              ),
+                              _infoRow(
+                                icon: Icons.school_outlined,
+                                label: "Filière",
+                                value: filiere,
+                              ),
+                              _infoRow(
+                                icon: Icons.groups_outlined,
+                                label: "Promotion",
+                                value: promotion,
+                                showDivider: false,
+                              ),
+                            ],
                           ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              value: (selectedSkill != null &&
-                                      skillsOptions.contains(selectedSkill))
-                                  ? selectedSkill
-                                  : null,
-                              hint: Text(
-                                skills.isEmpty
-                                    ? "Aucune compétence"
-                                    : "Choisir une compétence",
-                                style: TextStyle(
-                                  color: isDark
-                                      ? const Color(0xFFACB1BC)
-                                      : Colors.black54,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              dropdownColor: isDark
-                                  ? const Color(0xFF07101C)
-                                  : Colors.white,
-                              icon: const Icon(
-                                Icons.keyboard_arrow_down_rounded,
-                                color: Color(0xFF248BFF),
-                              ),
-                              isExpanded: true,
-                              items: skillsOptions
-                                  .map(
-                                    (e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(
-                                        e,
-                                        style: TextStyle(
+                        ),
+                        const SizedBox(height: 18),
+                        _profileCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _sectionTitle("À propos de moi"),
+                              const SizedBox(height: 22),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.format_quote_rounded,
+                                    color: Color(0xFF248BFF),
+                                    size: 34,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _descriptionController,
+                                      enabled: isEditing && isOwnProfile,
+                                      maxLines: 4,
+                                      minLines: 2,
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white
+                                            : Colors.black87,
+                                        fontSize: 16,
+                                      ),
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            "Décris-toi en quelques mots...",
+                                        hintStyle: TextStyle(
                                           color: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
+                                              ? const Color(0xFFACB1BC)
+                                              : Colors.black45,
+                                          fontSize: 16,
                                         ),
+                                        border: InputBorder.none,
+                                        isCollapsed: true,
+                                        contentPadding: EdgeInsets.zero,
                                       ),
                                     ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) =>
-                                  setState(() => selectedSkill = v),
-                            ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                      if (skills.isNotEmpty) ...[
-                        const SizedBox(height: 14),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: skills
-                              .map(
-                                (skill) => Chip(
-                                  label: Text(skill),
-                                  labelStyle: TextStyle(
-                                    color:
-                                        isDark ? Colors.white : Colors.black87,
+                        const SizedBox(height: 18),
+                        _profileCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _sectionTitle(
+                                "Compétences",
+                                trailing: isEditing && isOwnProfile
+                                    ? TextButton.icon(
+                                        onPressed: _addSkill,
+                                        icon: const Icon(Icons.add_rounded,
+                                            size: 24),
+                                        label: const Text("Ajouter"),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor:
+                                              const Color(0xFF248BFF),
+                                          textStyle: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              if (isEditing && isOwnProfile) ...[
+                                const SizedBox(height: 18),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? const Color(0xFF07101C)
+                                        : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? const Color(0xFF243142)
+                                          : const Color(0xFFE2E8F0),
+                                    ),
                                   ),
-                                  backgroundColor: isDark
-                                      ? const Color(0xFF10243A)
-                                      : const Color(0xFFEAF4FF),
-                                  side: const BorderSide(
-                                    color: Color(0xFF248BFF),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: (selectedSkill != null &&
+                                              skillsOptions
+                                                  .contains(selectedSkill))
+                                          ? selectedSkill
+                                          : null,
+                                      hint: Text(
+                                        skills.isEmpty
+                                            ? "Aucune compétence"
+                                            : "Choisir une compétence",
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? const Color(0xFFACB1BC)
+                                              : Colors.black54,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      dropdownColor: isDark
+                                          ? const Color(0xFF07101C)
+                                          : Colors.white,
+                                      icon: const Icon(
+                                        Icons.keyboard_arrow_down_rounded,
+                                        color: Color(0xFF248BFF),
+                                      ),
+                                      isExpanded: true,
+                                      items: skillsOptions
+                                          .map(
+                                            (e) => DropdownMenuItem(
+                                              value: e,
+                                              child: Text(
+                                                e,
+                                                style: TextStyle(
+                                                  color: isDark
+                                                      ? Colors.white
+                                                      : Colors.black87,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                          .toList(),
+                                      onChanged: (v) =>
+                                          setState(() => selectedSkill = v),
+                                    ),
                                   ),
                                 ),
-                              )
-                              .toList(),
-                        ),
-                      ] else if (!isEditing) ...[
-                        const SizedBox(height: 14),
-                        Text(
-                          "Aucune compétence",
-                          style: TextStyle(
-                            color: isDark
-                                ? const Color(0xFFACB1BC)
-                                : Colors.black54,
-                            fontSize: 16,
+                              ],
+                              if (skills.isNotEmpty) ...[
+                                const SizedBox(height: 14),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: skills
+                                      .map(
+                                        (skill) => Chip(
+                                          label: Text(skill),
+                                          labelStyle: TextStyle(
+                                            color: isDark
+                                                ? Colors.white
+                                                : Colors.black87,
+                                          ),
+                                          backgroundColor: isDark
+                                              ? const Color(0xFF10243A)
+                                              : const Color(0xFFEAF4FF),
+                                          side: const BorderSide(
+                                            color: Color(0xFF248BFF),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ] else if (!isEditing) ...[
+                                const SizedBox(height: 14),
+                                Text(
+                                  "Aucune compétence",
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? const Color(0xFFACB1BC)
+                                        : Colors.black54,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ),
                       ],
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
 
 class _IconTile extends StatelessWidget {
-  const _IconTile({required this.icon});
+  const _IconTile({
+    required this.icon,
+    this.color = const Color(0xFF0B77E3),
+  });
 
   final IconData icon;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
@@ -627,18 +1011,20 @@ class _IconTile extends StatelessWidget {
       width: 58,
       height: 58,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF102033) : const Color(0xFFEAF4FF),
+        color: isDark
+            ? color.withValues(alpha: 0.18)
+            : color.withValues(alpha: 0.10),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF248BFF).withValues(
+            color: color.withValues(
               alpha: isDark ? 0.10 : 0.08,
             ),
             blurRadius: 18,
           ),
         ],
       ),
-      child: Icon(icon, color: const Color(0xFF248BFF), size: 30),
+      child: Icon(icon, color: color, size: 30),
     );
   }
 }
