@@ -315,9 +315,35 @@ class _SearchPageState extends State<SearchPage> {
                                         "${tuteursFiltres[index]["note"]}/5",
                                         style: const TextStyle(fontSize: 12),
                                       ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            //Affichage des étoiles
+                            Row(
+                              children: [
+                                StarRating(note: tuteursFiltres[index]["note"] as double),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "${(tuteursFiltres[index]["note"]as double).toStringAsFixed(1)}/5",
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+
+                        //redirection profil tuteur
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfilPage(
+                                userId: tuteursFiltres[index]["id"] as String,
                               ),
                               trailing:
                                   const Icon(Icons.arrow_forward_ios, size: 16),
