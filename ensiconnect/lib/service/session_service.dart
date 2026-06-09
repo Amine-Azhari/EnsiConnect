@@ -85,7 +85,7 @@ class SessionService {
             continue;
           }
 
-          final tutorId = (data['OrganisateurID'] ?? '').toString().trim();
+          final tutorId = (data['OrganisateurId'] ?? '').toString().trim();
           if (tutorId.isEmpty) {
             continue;
           }
@@ -99,7 +99,7 @@ class SessionService {
             sessionData: data,
           );
           final registrations = await _registrations
-              .where('SessionID', isEqualTo: sessionId)
+              .where('SessionId', isEqualTo: sessionId)
               .get();
 
           final batch = _db.batch();
@@ -169,10 +169,10 @@ class SessionService {
     }
 
     final registrations =
-        await _registrations.where('SessionID', isEqualTo: sessionId).get();
+        await _registrations.where('SessionId', isEqualTo: sessionId).get();
 
     for (final registration in registrations.docs) {
-      addCandidate(registration.data()['EtudiantID']);
+      addCandidate(registration.data()['EtudiantId']);
     }
 
     return participantIds;

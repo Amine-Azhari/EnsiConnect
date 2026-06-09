@@ -41,7 +41,7 @@ class HelpRequest {
 
     return HelpRequest(
       id: id,
-      authorId: map['OrganisateurID'] ?? '',
+      authorId: map['OrganisateurId'] ?? '',
       authorFirstName: map['OrganisateurPrenom'] ?? '',
       authorLastName: map['OrganisateurNom'] ?? '',
       subject: map['Sujet'] ?? '',
@@ -53,7 +53,7 @@ class HelpRequest {
 
   Map<String, dynamic> toMap() {
     return {
-      'OrganisateurID': authorId,
+      'OrganisateurId': authorId,
       'OrganisateurPrenom': authorFirstName,
       'OrganisateurNom': authorLastName,
       'Sujet': subject,

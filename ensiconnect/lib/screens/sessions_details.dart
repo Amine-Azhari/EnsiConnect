@@ -106,11 +106,11 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         // Participants inscrits via RejoindreSession
         final registrations = await _db
             .collection('RejoindreSession')
-            .where('SessionID', isEqualTo: session.id)
+            .where('SessionId', isEqualTo: session.id)
             .get();
 
         for (final registration in registrations.docs) {
-          final etudiantId = registration.data()['EtudiantID'] ?? '';
+          final etudiantId = registration.data()['EtudiantId'] ?? '';
           if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)) continue;
 
           if (currentUser != null && etudiantId == currentUser.id) {
@@ -275,8 +275,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         }
 
         final created = await _db.collection('RejoindreSession').add({
-          'EtudiantID': _currentStudentId,
-          'SessionID': sessionId,
+          'EtudiantId': _currentStudentId,
+          'SessionId': sessionId,
         });
 
         if (!mounted) return;

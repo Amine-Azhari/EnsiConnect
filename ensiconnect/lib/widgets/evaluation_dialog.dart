@@ -57,7 +57,7 @@ class _EvaluationDialogState extends State<EvaluationDialog> {
                   onPressed: () => setState(() => _rating = i + 1),
                   icon: Icon(
                     _rating >= (i + 1) ? Icons.star : Icons.star_rate_outlined,
-                    color: EnsiConnectApp.ensisaBlue,
+                    color: Colors.amber,
                     size: 32,
                   ),
                 ),
