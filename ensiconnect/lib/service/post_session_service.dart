@@ -72,7 +72,6 @@ class PostSessionService {
       'Description': description,
       'Public': true,
       'participants': participants,
-      'participants': allParticipants,
     });
 
     await _db.collection('Chats').add({
