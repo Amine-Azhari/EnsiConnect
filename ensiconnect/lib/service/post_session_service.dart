@@ -69,18 +69,23 @@ class PostSessionService {
       'participants': participants,
     });
 
-    //Ajout des participants à la nase de donnée
-    
-      for (final participantId in participants) {
     await _db.collection('RejoindreSession').add({
       'SessionID': sessionRef.id,
-      'EtudiantID': participantId,
+      'EtudiantID': user?.id,
     });
-  }
+
+    //Ajout des participants à la base de donnée
+
+    for (final participantId in participants ) {
+      await _db.collection('RejoindreSession').add({
+        'SessionID': sessionRef.id,
+        'EtudiantID': participantId,
+      });
+    }
 
     // 5. Crée le salon de discussion associé
     final chatService = ChatService();
-    await chatService.getOrCreateConversation(
+    await chatService.createConversation(
       participants: [user?.id ?? 'inconnu', ...participants],
       name: titre,
     );
