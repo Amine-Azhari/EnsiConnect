@@ -543,3 +543,4 @@ class SessionEtudiantSearch extends StatelessWidget {
     );
   }
 }
+

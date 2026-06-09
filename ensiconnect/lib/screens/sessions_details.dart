@@ -674,57 +674,65 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   }
 
   Widget _buildBottomButton() {
-    
   final buttonColor =
       _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
 
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Row(
-          children: [
-            Expanded(
-              child: SizedBox(
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: _isUpdating ? null : _toggleRegistration,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: buttonColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                    _isUpdating
-                        ? 'Chargement...'
-                        : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+    child: Row(
+      children: [
+        Expanded(
+          child: SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              onPressed: _isUpdating ? null : _toggleRegistration,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: buttonColor,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
+              child: Text(
+                _isUpdating
+                    ? 'Chargement...'
+                    : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
-            const SizedBox(width: 12),
-            SizedBox(
+          ),
+        ),
+        if (_isRegistered) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: SizedBox(
               height: 54,
-              width: 54,
               child: ElevatedButton(
-                onPressed: _isRegistered ? _ouvrirChat : null,
+                onPressed: _ouvrirChat,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: EnsiConnectApp.ensisaBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  padding: EdgeInsets.zero,
                 ),
-                child: const Icon(Icons.chat_bubble_outline_rounded),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.chat_bubble_outline_rounded),
+                    SizedBox(width: 8),
+                    Text('Chat', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-      );
-    }
+          ),
+        ],
+      ],
+    ),
+  );
+}
   
 
   String _formatDate(String rawDate) {
