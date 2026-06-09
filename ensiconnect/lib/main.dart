@@ -14,7 +14,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  
   // On crée une instance du service et on lance l'insertion
   final service = FirebaseDataService();
   await service.initialiserDonneesDeTest();
