@@ -60,9 +60,9 @@ class PostSessionService {
     // 4. Insère la session
     final sessionRef = await _db.collection('Session').add({
       'Sujet': titre,
-      'MatiereID': matiereId,
-      'SalleID': salleId,
-      'OrganisateurID': user?.id ?? 'inconnu',
+      'MatiereId': matiereId,
+      'SalleId': salleId,
+      'OrganisateurId': user?.id ?? 'inconnu',
       'OrganisateurNom': user != null ? '${user.firstName} ${user.lastName}' : 'Inconnu',
       'Date': dateStr,
       'Heure_Debut': heureDebut,
@@ -82,16 +82,16 @@ class PostSessionService {
     });
 
     await _db.collection('RejoindreSession').add({
-      'SessionID': sessionRef.id,
-      'EtudiantID': user?.id,
+      'SessionId': sessionRef.id,
+      'EtudiantId': user?.id,
     });
 
     //Ajout des participants à la base de donnée
 
     for (final participantId in participants ) {
       await _db.collection('RejoindreSession').add({
-        'SessionID': sessionRef.id,
-        'EtudiantID': participantId,
+        'SessionId': sessionRef.id,
+        'EtudiantId': participantId,
       });
     }
 

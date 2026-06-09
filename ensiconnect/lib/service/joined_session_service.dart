@@ -61,7 +61,7 @@ class JoinedSessionService {
     }
 
     final joinSnapshot =
-        await _joins.where('EtudiantID', isEqualTo: currentUser.id).get();
+        await _joins.where('EtudiantId', isEqualTo: currentUser.id).get();
 
     if (joinSnapshot.docs.isEmpty) {
       return const [];
@@ -69,7 +69,7 @@ class JoinedSessionService {
 
     final sessionIds = <String>{};
     for (final doc in joinSnapshot.docs) {
-      final sessionId = doc.data()['SessionID'] as String? ?? '';
+      final sessionId = doc.data()['SessionId'] as String? ?? '';
       if (sessionId.isNotEmpty) {
         sessionIds.add(sessionId);
       }
@@ -100,7 +100,7 @@ class JoinedSessionService {
     final joinedSessions = <JoinedSessionDetails>[];
     for (final doc in joinSnapshot.docs) {
       final data = doc.data();
-      final sessionId = data['SessionID'] as String? ?? '';
+      final sessionId = data['SessionId'] as String? ?? '';
       final session = sessionsById[sessionId];
       if (session == null) {
         continue;
