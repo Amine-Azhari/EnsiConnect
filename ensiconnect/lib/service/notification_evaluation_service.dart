@@ -26,6 +26,9 @@ class NotificationEvaluationService {
       'Commentaire': commentaire,
       'DateDEnvoi': FieldValue.serverTimestamp(),
     });
+
+    //Met à jour la moyenne du tuteur
+    await UserServices().updateAverageNote(tutorId);
   }
 
   Future<List<Map<String, dynamic>>?> getNotificationsCurrentUser() async {

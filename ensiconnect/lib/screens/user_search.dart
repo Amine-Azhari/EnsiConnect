@@ -123,8 +123,6 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-
-
   
   List<Map<String, dynamic>> get tuteursFiltres {
 
@@ -305,7 +303,7 @@ class _SearchPageState extends State<SearchPage> {
                                 StarRating(note: tuteursFiltres[index]["note"] as double),
                                 const SizedBox(width: 8),
                                 Text(
-                                  "${tuteursFiltres[index]["note"]}/5",
+                                  "${(tuteursFiltres[index]["note"]as double).toStringAsFixed(1)}/5",
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ],
