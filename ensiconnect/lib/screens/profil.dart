@@ -190,6 +190,14 @@ class _ProfilPageState extends State<ProfilPage> {
               ],
             ),
           ),
+          if (onTap != null) ...[
+            const SizedBox(width: 10),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 16,
+              color: isDark ? const Color(0xFFACB1BC) : Colors.black45,
+            ),
+          ],
         ],
       ),
     );
@@ -837,7 +845,7 @@ class _ProfilPageState extends State<ProfilPage> {
                           const SizedBox(width: 14),
                           Expanded(
                             child: _statCard(
-                              title: "Note moyenne",
+                              title: "Note",
                               value: averageNote.toStringAsFixed(1),
                               icon: Icons.star_border_rounded,
                               accentColor: const Color(0xFFE0A400),
