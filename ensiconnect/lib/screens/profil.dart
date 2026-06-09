@@ -6,6 +6,7 @@ import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
 import '../widgets/person_avatar.dart';
+import 'profile_comments_page.dart';
 
 class ProfilPage extends StatefulWidget {
   final String? userId;
@@ -124,10 +125,11 @@ class _ProfilPageState extends State<ProfilPage> {
     required String value,
     required IconData icon,
     required Color accentColor,
+    VoidCallback? onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
+    final card = Container(
       constraints: const BoxConstraints(minHeight: 128),
       padding: const EdgeInsets.all(16),
       decoration: _cardDecoration(),
@@ -162,6 +164,19 @@ class _ProfilPageState extends State<ProfilPage> {
             ),
           ),
         ],
+      ),
+    );
+
+    if (onTap == null) {
+      return card;
+    }
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: card,
       ),
     );
   }
@@ -798,6 +813,18 @@ class _ProfilPageState extends State<ProfilPage> {
                               value: averageNote.toStringAsFixed(1),
                               icon: Icons.star_border_rounded,
                               accentColor: const Color(0xFFE0A400),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProfileCommentsPage(
+                                      profileUserId: profileUserId,
+                                      profileName: fullName,
+                                      averageNote: averageNote,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],
