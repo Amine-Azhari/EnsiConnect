@@ -334,7 +334,7 @@ class _ConversationPageState extends State<ConversationPage> {
                         color: EnsiConnectApp.ensisaBlue,
                       ),
                       border: InputBorder.none,
-                      contentPadding: const EdgeInsets.only(left: 15),
+                      contentPadding: const EdgeInsets.only(left: 20),
                     ),
                     
                     
