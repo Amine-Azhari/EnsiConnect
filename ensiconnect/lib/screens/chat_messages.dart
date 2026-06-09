@@ -51,12 +51,10 @@ class _ConversationPageState extends State<ConversationPage> {
   Widget build(BuildContext context) {
     //Savoir si la conversation est une conversation de groupe
     final bool isGroup = widget.conversation.name != null;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      resizeToAvoidBottomInset: true,
-
-      
-      
+      resizeToAvoidBottomInset: true,     
 
       appBar: AppBar(
         actions: [
@@ -171,7 +169,7 @@ class _ConversationPageState extends State<ConversationPage> {
 
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: Theme.of(context).brightness == Brightness.dark
+        foregroundColor: isDark
             ? Colors.white
             : Colors.black87,
       ),
@@ -314,7 +312,7 @@ class _ConversationPageState extends State<ConversationPage> {
           child: Container(
             height: 61,
             decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
+              color: isDark
                   ? Colors.black87
                   : Colors.white,
               borderRadius: BorderRadius.circular(35.0),
@@ -331,7 +329,9 @@ class _ConversationPageState extends State<ConversationPage> {
                     decoration: InputDecoration(
                       hintText: "Votre message",
                       hintStyle: TextStyle(
-                        color: EnsiConnectApp.ensisaBlue,
+                        color: isDark
+                          ? EnsiConnectApp.backgroundlightColor
+                          : EnsiConnectApp.ensisaBlue
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.only(left: 20),
@@ -340,9 +340,11 @@ class _ConversationPageState extends State<ConversationPage> {
                 ),
                 // Bouton d'envoi d'un message
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.send,
-                    color: EnsiConnectApp.ensisaBlue,
+                    color: isDark
+                      ? EnsiConnectApp.backgroundlightColor
+                      : EnsiConnectApp.ensisaBlue
                   ),
                   onPressed: () async {
                     final text = _controller.text.trim();
