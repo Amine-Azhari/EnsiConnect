@@ -26,20 +26,48 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int _currentIndex = 0;
-  
+  bool _focusExplorerSearch = false;
+
   List<Widget> get _pages => [
-    const HomePage(),
-    const SearchPage(),
-    const ChatPage(),
-    const ProfilPage(),
-  ];
+        HomePage(
+          onSearchTap: () => setState(() {
+            _currentIndex = 1;
+            _focusExplorerSearch = true;
+          }),
+        ),
+        SearchPage(autoFocusSearch: _focusExplorerSearch),
+        const ChatPage(),
+        const ProfilPage(),
+      ];
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 260),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) {
+          final slideAnimation = Tween<Offset>(
+            begin: const Offset(0.12, 0),
+            end: Offset.zero,
+          ).animate(animation);
+
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: slideAnimation,
+              child: child,
+            ),
+          );
+        },
+        child: KeyedSubtree(
+          key: ValueKey<int>(_currentIndex),
+          child: _pages[_currentIndex],
+        ),
+      ),
       floatingActionButton: SizedBox(
         width: 54,
         height: 54,
@@ -47,10 +75,13 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           onPressed: () {
             Navigator.pushNamed(context, '/post_session');
           },
-          backgroundColor: isDark ? EnsiConnectApp.backgroundlightColor : EnsiConnectApp.ensisaBlue,
+          backgroundColor: isDark
+              ? EnsiConnectApp.backgroundlightColor
+              : EnsiConnectApp.ensisaBlue,
           elevation: 4,
           shape: const CircleBorder(),
-          child: Icon(Icons.add, color: isDark ? Colors.black87 : Colors.white, size: 26),
+          child: Icon(Icons.add,
+              color: isDark ? Colors.black87 : Colors.white, size: 26),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -59,6 +90,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
         onIndexChanged: (index) {
           setState(() {
             _currentIndex = index;
+            _focusExplorerSearch = false;
           });
         },
       ),
@@ -67,7 +99,9 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, required this.onSearchTap});
+
+  final VoidCallback onSearchTap;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -76,15 +110,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-
   Future<List<Map<String, dynamic>>> _fetchUpcomingSessions() async {
     final db = FirebaseFirestore.instance;
     final now = DateTime.now();
-    
+
     final sessionSnap = await db.collection('Session').get();
-    
+
     List<Map<String, dynamic>> upcoming = [];
-    
+
     final matieresSnap = await db.collection('Matiere').get();
     final Map<String, String> matieresCache = {};
     for (var doc in matieresSnap.docs) {
@@ -96,25 +129,32 @@ class _HomePageState extends State<HomePage> {
       if (session.date.isNotEmpty) {
         try {
           final parsedDate = DateTime.parse(session.date);
-          
-          DateTime sessionDateTime = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+
+          DateTime sessionDateTime =
+              DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
           if (session.heureDebut.isNotEmpty) {
             final parts = session.heureDebut.split(':');
             if (parts.length >= 2) {
               final hour = int.tryParse(parts[0]) ?? 0;
               final minute = int.tryParse(parts[1]) ?? 0;
-              sessionDateTime = DateTime(parsedDate.year, parsedDate.month, parsedDate.day, hour, minute);
+              sessionDateTime = DateTime(parsedDate.year, parsedDate.month,
+                  parsedDate.day, hour, minute);
             }
           }
 
           if (sessionDateTime.isAfter(now)) {
-            final matiereNom = matieresCache[session.matiereId] ?? 'Matière inconnue';
-            final title = matiereNom != 'Matière inconnue' ? matiereNom : (session.sujet.isNotEmpty ? session.sujet : 'Session');
-            
+            final matiereNom =
+                matieresCache[session.matiereId] ?? 'Matière inconnue';
+            final title = matiereNom != 'Matière inconnue'
+                ? matiereNom
+                : (session.sujet.isNotEmpty ? session.sujet : 'Session');
+
             // Generate a simple relative time or just use the date and time
             final nowDateOnly = DateTime(now.year, now.month, now.day);
-            final sessionDateOnly = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
-            final differenceInDays = sessionDateOnly.difference(nowDateOnly).inDays;
+            final sessionDateOnly =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            final differenceInDays =
+                sessionDateOnly.difference(nowDateOnly).inDays;
 
             String timeString;
             if (differenceInDays == 0) {
@@ -123,15 +163,28 @@ class _HomePageState extends State<HomePage> {
               timeString = "Demain à ${session.heureDebut}";
             } else {
               final mois = [
-                '', 'janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
-                'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'
+                '',
+                'janv.',
+                'févr.',
+                'mars',
+                'avr.',
+                'mai',
+                'juin',
+                'juil.',
+                'août',
+                'sept.',
+                'oct.',
+                'nov.',
+                'déc.'
               ];
-              timeString = "Le ${sessionDateOnly.day} ${mois[sessionDateOnly.month]} à ${session.heureDebut}";
+              timeString =
+                  "Le ${sessionDateOnly.day} ${mois[sessionDateOnly.month]} à ${session.heureDebut}";
             }
 
             upcoming.add({
               'title': title,
-              'subtitle': session.description.isNotEmpty ? session.description : title,
+              'subtitle':
+                  session.description.isNotEmpty ? session.description : title,
               'time': timeString,
               'dateTime': sessionDateTime,
               'session': session,
@@ -142,8 +195,9 @@ class _HomePageState extends State<HomePage> {
         }
       }
     }
-    
-    upcoming.sort((a, b) => (a['dateTime'] as DateTime).compareTo(b['dateTime'] as DateTime));
+
+    upcoming.sort((a, b) =>
+        (a['dateTime'] as DateTime).compareTo(b['dateTime'] as DateTime));
     return upcoming.take(2).toList();
   }
 
@@ -155,7 +209,7 @@ class _HomePageState extends State<HomePage> {
     final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
 
     return Scaffold(
-      key: _scaffoldKey, 
+      key: _scaffoldKey,
       drawer: const CustomDrawer(),
       body: FutureBuilder<User?>(
         future: UserServices().getCurrentUser(),
@@ -163,27 +217,33 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          
-          final currentUser = snapshot.data ?? const User(
-            id: 'unknown',
-            firstName: 'Utilisateur',
-            lastName: '',
-            email: '',
-          );
+
+          final currentUser = snapshot.data ??
+              const User(
+                id: 'unknown',
+                firstName: 'Utilisateur',
+                lastName: '',
+                email: '',
+              );
 
           return SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CustomHeader(
-                    onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                    onMenuPressed: () =>
+                        _scaffoldKey.currentState?.openDrawer(),
                   ),
                   const SizedBox(height: 20),
                   Text(
                     "Bonjour, ${currentUser.firstName} 👋",
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: textColor),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -193,7 +253,7 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 24),
                   const WelcomeBanner(),
                   const SizedBox(height: 20),
-                  const CustomSearchBar(),
+                  CustomSearchBar(onTap: widget.onSearchTap),
                   const SizedBox(height: 24),
                   Text(
                     "Actions rapides",
@@ -221,7 +281,8 @@ class _HomePageState extends State<HomePage> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const MesSessionsPage()),
+                            MaterialPageRoute(
+                                builder: (context) => const MesSessionsPage()),
                           );
                         },
                         child: const Text(
@@ -238,14 +299,18 @@ class _HomePageState extends State<HomePage> {
                   FutureBuilder<List<Map<String, dynamic>>>(
                     future: _fetchUpcomingSessions(),
                     builder: (context, sessionSnapshot) {
-                      if (sessionSnapshot.connectionState == ConnectionState.waiting) {
+                      if (sessionSnapshot.connectionState ==
+                          ConnectionState.waiting) {
                         return const Center(child: CircularProgressIndicator());
                       }
-                      
-                      if (sessionSnapshot.hasError || !sessionSnapshot.hasData || sessionSnapshot.data!.isEmpty) {
+
+                      if (sessionSnapshot.hasError ||
+                          !sessionSnapshot.hasData ||
+                          sessionSnapshot.data!.isEmpty) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20.0),
-                          child: Text("Aucune session à venir pour le moment.", style: TextStyle(color: Colors.grey)),
+                          child: Text("Aucune session à venir pour le moment.",
+                              style: TextStyle(color: Colors.grey)),
                         );
                       }
 
@@ -255,14 +320,16 @@ class _HomePageState extends State<HomePage> {
                           int idx = entry.key;
                           var sessionData = entry.value;
                           return Padding(
-                            padding: EdgeInsets.only(bottom: idx < sessions.length - 1 ? 12.0 : 0),
+                            padding: EdgeInsets.only(
+                                bottom: idx < sessions.length - 1 ? 12.0 : 0),
                             child: GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => SessionsDetailsPage(
-                                      session: sessionData['session'] as Session,
+                                      session:
+                                          sessionData['session'] as Session,
                                     ),
                                   ),
                                 );
@@ -272,7 +339,9 @@ class _HomePageState extends State<HomePage> {
                                 subtitle: sessionData['subtitle'],
                                 time: sessionData['time'],
                                 iconData: Icons.event_note_rounded,
-                                iconColor: idx == 0 ? const Color(0xFF2196F3) : EnsiConnectApp.accentOrange,
+                                iconColor: idx == 0
+                                    ? const Color(0xFF2196F3)
+                                    : EnsiConnectApp.accentOrange,
                               ),
                             ),
                           );
