@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/ensiconnect_app.dart';
+import '../widgets/person_avatar.dart';
 import '../models/session.dart';
-import '../service/auth_service.dart';
 import 'profil.dart';
 
 class SessionsDetailsPage extends StatefulWidget {
@@ -601,7 +601,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
               child: ElevatedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Discussion bientôt disponible')),
+                    const SnackBar(
+                        content: Text('Discussion bientôt disponible')),
                   );
                 },
                 icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
@@ -613,7 +614,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: EnsiConnectApp.ensisaBlue,
-                  foregroundColor:Colors.white,
+                  foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -639,7 +640,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                   _isUpdating
                       ? '...'
                       : (_isRegistered ? 'Se Désinscrire' : "S'inscrire"),
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.bold),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -688,10 +690,7 @@ class _SessionParticipant {
   final String? imageUrl;
 
   String get initials {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return '?';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
+    return PersonAvatar.initialsForName(name);
   }
 }
 
@@ -706,22 +705,10 @@ class _ParticipantAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final imageUrl = participant.imageUrl;
-
-    return CircleAvatar(
+    return PersonAvatar(
+      name: participant.name,
+      imageUrl: participant.imageUrl,
       radius: 24,
-      backgroundColor: color.withValues(alpha: 0.18),
-      backgroundImage:
-          imageUrl == null || imageUrl.isEmpty ? null : NetworkImage(imageUrl),
-      child: imageUrl == null || imageUrl.isEmpty
-          ? Text(
-              participant.initials,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : null,
     );
   }
 }

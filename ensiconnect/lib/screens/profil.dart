@@ -5,6 +5,7 @@ import '../screens/chat_messages.dart';
 import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
+import '../widgets/person_avatar.dart';
 
 class ProfilPage extends StatefulWidget {
   final String? userId;
@@ -35,6 +36,7 @@ class _ProfilPageState extends State<ProfilPage> {
   String email = "";
   String filiere = "";
   String promotion = "";
+  String profilePictureUrl = '';
 
   int sessions = 0;
   double averageNote = 0.0;
@@ -66,12 +68,13 @@ class _ProfilPageState extends State<ProfilPage> {
       email = user.email;
       filiere = user.filiere;
       promotion = user.promotion;
+      profilePictureUrl = user.profilePictureUrl;
 
-      skills = List<String>.from(user.skills ?? []);
-      _descriptionController.text = user.description ?? "";
+      skills = List<String>.from(user.skills);
+      _descriptionController.text = user.description;
 
-      sessions = user.sessions ?? 0;
-      averageNote = (user.averageNote ?? 0).toDouble();
+      sessions = user.sessions;
+      averageNote = user.averageNote;
 
       skillsOptions =
           options.map<String>((e) => e['name'].toString()).toSet().toList();
@@ -105,13 +108,6 @@ class _ProfilPageState extends State<ProfilPage> {
         selectedSkill = null;
       });
     }
-  }
-
-  String getInitials(String name) {
-    if (name.trim().isEmpty) return "?";
-    final parts = name.trim().split(" ");
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
   @override
@@ -356,8 +352,6 @@ class _ProfilPageState extends State<ProfilPage> {
                 ),
                 const SizedBox(height: 20),
                 Container(
-                  width: 144,
-                  height: 144,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [
@@ -368,26 +362,11 @@ class _ProfilPageState extends State<ProfilPage> {
                       ),
                     ],
                   ),
-                  child: Container(
-                    margin: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF42A5FF), Color(0xFF086CFF)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        getInitials(fullName),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 44,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ),
+                  child: PersonAvatar(
+                    name: fullName.isEmpty ? 'Profil' : fullName,
+                    imageUrl: profilePictureUrl,
+                    radius: 64,
+                    fontSize: 44,
                   ),
                 ),
                 const SizedBox(height: 18),
