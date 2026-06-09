@@ -25,7 +25,7 @@ class SessionService {
           .map((doc) => Session.fromMap(doc.data(), doc.id))
           .toList();
 
-      sessions.sort((a, b) => b.date.compareTo(a.date));
+      sessions.sort(Session.compareByStartTime);
       return sessions;
     });
   }
@@ -61,8 +61,8 @@ class SessionService {
                 if (parts.length >= 2) {
                   final hour = int.tryParse(parts[0]) ?? 23;
                   final minute = int.tryParse(parts[1]) ?? 59;
-                  final endTime = DateTime(
-                      sessionDate.year, sessionDate.month, sessionDate.day, hour, minute);
+                  final endTime = DateTime(sessionDate.year, sessionDate.month,
+                      sessionDate.day, hour, minute);
                   if (endTime.isBefore(now)) {
                     isExpired = true;
                   }
@@ -71,12 +71,15 @@ class SessionService {
             }
 
             if (isExpired) {
-              final tutorId = data['tutorId'] ?? data['organisateurId'] as String?;
-              final participants = data['participants'] as List<dynamic>?; 
+              final tutorId =
+                  data['tutorId'] ?? data['organisateurId'] as String?;
+              final participants = data['participants'] as List<dynamic>?;
               final sessionName = data['nom'] ?? data['matiere'] ?? 'Session';
               final sessionId = doc.id;
 
-              if (tutorId != null && participants != null && participants.isNotEmpty) {
+              if (tutorId != null &&
+                  participants != null &&
+                  participants.isNotEmpty) {
                 WriteBatch batch = _db.batch();
 
                 for (var participant in participants) {
@@ -85,14 +88,16 @@ class SessionService {
                   if (participantId == tutorId) continue;
 
                   // Création d'un document de notification unique
-                  DocumentReference notifRef = _db.collection('Notification').doc();
+                  DocumentReference notifRef =
+                      _db.collection('Notification').doc();
 
                   batch.set(notifRef, {
                     'receiverId': participantId,
                     'tutorId': tutorId,
                     'sessionId': sessionId,
                     'title': 'Session terminée',
-                    'message': 'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
+                    'message':
+                        'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
                     'type': 'evaluation',
                     'isRead': false,
                     'createdAt': FieldValue.serverTimestamp(),
