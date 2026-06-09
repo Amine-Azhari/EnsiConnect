@@ -5,6 +5,9 @@ import '../widgets/ensiconnect_app.dart';
 import '../models/session.dart';
 import '../service/auth_service.dart';
 import 'profil.dart';
+import '../service/chat_service.dart';
+import '../models/conversation.dart';
+import 'chat_messages.dart';
 
 class SessionsDetailsPage extends StatefulWidget {
   const SessionsDetailsPage({super.key, required this.session});
@@ -30,6 +33,36 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String _matiereNom = 'Matière inconnue';
   String _salleNom = 'Salle inconnue';
   String _organisateurNom = 'Organisateur inconnu';
+
+  Future<void> _ouvrirChat() async {
+    final currentUser = await UserServices().getCurrentUser();
+    if (currentUser == null || widget.session.id == null) return;
+
+    final chatService = ChatService();
+    final convoId = await chatService.getOrCreateConversation(
+      participants: [...widget.session.participantsIds, currentUser.id],
+      name: widget.session.sujet,
+    );
+
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConversationPage(
+          conversation: Conversation(
+            id: convoId,
+            participants: widget.session.participantsIds,
+            messages: const [],
+            lastMessage: '',
+            lastMessageAt: null,
+            createdAt: null,
+            name: widget.session.sujet,
+          ),
+          currentUserId: currentUser.id,
+        ),
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -110,6 +143,49 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       });
     }
   }
+
+  Future<String?> _getChatId() async {
+    final sessionId = widget.session.id;
+    if (sessionId == null) return null;
+
+    final snap = await FirebaseFirestore.instance
+        .collection('Chats')
+        .where('sessionId', isEqualTo: sessionId)
+        .limit(1)
+        .get();
+
+    if (snap.docs.isEmpty) return null;
+    return snap.docs.first.id;
+  }
+
+  void _openChat() async {
+    final chatId = await _getChatId();
+
+    if (chatId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Chat introuvable")),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text("Chat")),
+        body: const Center(child: Text("Chat pas encore créé")),
+      ),
+      ),
+    );
+  }
+
+  bool _canAccessChat() {
+    final currentUserId = _currentStudentId;
+    if (currentUserId == null) return false;
+
+    return widget.session.participantsIds.contains(currentUserId);
+  }
+
 
   Future<String> _getDocumentName(String collection, String id) async {
     final fallback =
@@ -586,70 +662,58 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   }
 
   Widget _buildBottomButton() {
-    final buttonColor =
-        _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+  final buttonColor =
+      _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      child: Row(
-        children: [
-          Expanded(
-            child: SizedBox(
-              height: 54,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Discussion bientôt disponible')),
-                  );
-                },
-                icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
-                label: const Text(
-                  'Discussion',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: EnsiConnectApp.ensisaBlue,
-                  foregroundColor:Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: _isUpdating ? null : _toggleRegistration,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: buttonColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    _isUpdating
+                        ? 'Chargement...'
+                        : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: SizedBox(
+            const SizedBox(width: 12),
+            SizedBox(
               height: 54,
+              width: 54,
               child: ElevatedButton(
-                onPressed: _isUpdating ? null : _toggleRegistration,
+                onPressed: _isRegistered ? _ouvrirChat : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
+                  backgroundColor: EnsiConnectApp.ensisaBlue,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
+                  padding: EdgeInsets.zero,
                 ),
-                child: Text(
-                  _isUpdating
-                      ? '...'
-                      : (_isRegistered ? 'Se Désinscrire' : "S'inscrire"),
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                child: const Icon(Icons.chat_bubble_outline_rounded),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
+          ],
+        ),
+      );
+    }
+  
 
   String _formatDate(String rawDate) {
     try {

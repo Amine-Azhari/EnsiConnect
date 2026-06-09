@@ -52,9 +52,14 @@ class PostSessionService {
     final dateStr =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+    final allParticipants = <String>{
+      user?.id ?? 'inconnu',
+      ...participants,
+    }.toList();
+
     // 4. Insère la session
     final sessionRef = await _db.collection('Session').add({
-      'Titre': titre,
+      'Sujet': titre,
       'MatiereID': matiereId,
       'SalleID': salleId,
       'OrganisateurID': user?.id ?? 'inconnu',
@@ -67,6 +72,14 @@ class PostSessionService {
       'Description': description,
       'Public': true,
       'participants': participants,
+      'participants': allParticipants,
+    });
+
+    await _db.collection('Chats').add({
+      'sessionId': sessionRef.id,
+      'name': titre,
+      'participants': allParticipants,
+      'createdAt': FieldValue.serverTimestamp(),
     });
 
     await _db.collection('RejoindreSession').add({
