@@ -69,14 +69,17 @@ class _ConversationPageState extends State<ConversationPage> {
                     builder: (context) {
                       final participants = widget.conversation.participants;
 
-                      return ListView(
+                      return ListView.separated(
+                        separatorBuilder: (context, index) => const Divider(height: 18),
                         padding: EdgeInsets.only(top:10),
-                        children: participants.map((id) {
+                        itemCount: participants.length,
+                        itemBuilder: (context, index){
+                           final id = participants[index];
+                          
                           return FutureBuilder<User?>(
                             future: chatService.getUserById(id),
                             builder: (context, snapshot) {
                               final user = snapshot.data;
-
                               if (!snapshot.hasData) {
                                 return const ListTile(
                                   title: Text("Chargement..."),
@@ -102,10 +105,17 @@ class _ConversationPageState extends State<ConversationPage> {
                                   ),
                                 );
                               }
-                              else { return SizedBox(height: 0,);}
+                              else { 
+                                return ListTile(
+                                  leading: PersonAvatar(
+                                    name: user?.fullName ?? id,
+                                  ),
+                                  title: Text('Vous ('+(user?.fullName ?? id)+')'),
+                                );
+                              }
                             },
                           );
-                        }).toList(),
+                        }
                       );
                     },
                   );
@@ -186,9 +196,9 @@ class _ConversationPageState extends State<ConversationPage> {
               final data = docs[index].data() as Map<String, dynamic>;
 
               final msg = Message(
-                senderId: data['senderId'],
-                content: data['content'],
-                createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+                senderId: data['SenderId'],
+                content: data['Content'],
+                createdAt: (data['CreatedAt'] as Timestamp?)?.toDate(),
               );
 
               final isMe = msg.senderId == widget.currentUserId;
@@ -203,8 +213,8 @@ class _ConversationPageState extends State<ConversationPage> {
                         // Photo de profil qui redirige vers le profil
                         if (isGroup && !isMe)
                           FutureBuilder<String>(
-                            future: data['name'] != null
-                                ? Future.value(data['name'])
+                            future: data['Name'] != null
+                                ? Future.value(data['Name'])
                                 : getUserName(msg.senderId),
                             builder: (context, snapshot) {
                               final name = snapshot.data ?? '?';
@@ -260,8 +270,8 @@ class _ConversationPageState extends State<ConversationPage> {
                               children: [
                                 if (isGroup && !isMe)
                                   FutureBuilder<String>(
-                                    future: data['name'] != null
-                                        ? Future.value(data['name'])
+                                    future: data['Name'] != null
+                                        ? Future.value(data['Name'])
                                         : getUserName(msg.senderId),
                                     builder: (context, snapshot) {
                                       final name = snapshot.data ?? '?';
