@@ -92,6 +92,7 @@ class _ChatPageState extends State<ChatPage> {
                   StreamBuilder<QuerySnapshot>(
                     stream: chatService.getConversations(currentUserId),
                     builder: (context, snapshot) {
+                      // Debug
                       print("state: ${snapshot.connectionState}");
                       print("hasData: ${snapshot.hasData}");
                       print("hasError: ${snapshot.hasError}");
@@ -111,15 +112,6 @@ class _ChatPageState extends State<ChatPage> {
 
                       final docs = snapshot.data!.docs;
 
-                      if (docs.isEmpty) {
-                        return const Center(
-                          child: Text(
-                            "Aucune conversation",
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        );
-                      }
-
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
@@ -132,58 +124,64 @@ class _ChatPageState extends State<ChatPage> {
 
                           final lastMessageAt = (data['lastMessageAt'] as Timestamp?)?.toDate();      
 
-                          return ListTile(
-                            leading: FutureBuilder<String>(
-                              future: data['name'] != null
-                                  ? Future.value(data['name'])
-                                  : getUserName(getOtherUser(participants, currentUserId)),
-                              builder: (context, snapshot) {
-                                final name = snapshot.data ?? '?';
-                                return CircleAvatar(
-                                  child: Text(getInitials(name)),
+                          if(
+                            (selectedFilter=='Solo' && data['name'] ==null) ||
+                            (selectedFilter=='Groupe' && data['name'] !=null) ||
+                            selectedFilter=='Toutes'
+                          ){
+                            return ListTile(
+                              leading: FutureBuilder<String>(
+                                future: data['name'] != null
+                                    ? Future.value(data['name'])
+                                    : getUserName(getOtherUser(participants, currentUserId)),
+                                builder: (context, snapshot) {
+                                  final name = snapshot.data ?? '?';
+                                  return CircleAvatar(
+                                    child: Text(getInitials(name)),
+                                  );
+                                },
+                              ),
+                              title: FutureBuilder<String>(
+                                future: data['name'] != null
+                                    ? Future.value(data['name'])
+                                    : getUserName(getOtherUser(participants, currentUserId)),
+                                builder: (context, snapshot) {
+                                  final name = snapshot.data ?? '...';
+
+                                  return Text(name);
+                                },
+                              ),
+                              subtitle: Text(
+                                data['lastMessage'] ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,),
+                              trailing: Text(
+                                formatTimeAgo(lastMessageAt),
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              
+                              // Ouvre la page de la conversation sélectionée
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ConversationPage(
+                                      conversation:Conversation(
+                                        id:docs[index].id,
+                                        participants: participants,
+                                        messages: const[],
+                                        lastMessage: data['lastMessage'] ?? '',
+                                        lastMessageAt: lastMessageAt,
+                                        createdAt: null,
+                                        name: data['name'],
+                                      ),
+                                      currentUserId: currentUserId,
+                                    ),
+                                  ),
                                 );
                               },
-                            ),
-                            title: FutureBuilder<String>(
-                              future: data['name'] != null
-                                  ? Future.value(data['name'])
-                                  : getUserName(getOtherUser(participants, currentUserId)),
-                              builder: (context, snapshot) {
-                                final name = snapshot.data ?? '...';
-
-                                return Text(name);
-                              },
-                            ),
-                            subtitle: Text(
-                              data['lastMessage'] ?? '',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,),
-                            trailing: Text(
-                              formatTimeAgo(lastMessageAt),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            
-                            // Ouvre la page de la conversation sélectionée
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => ConversationPage(
-                                    conversation:Conversation(
-                                      id:docs[index].id,
-                                      participants: participants,
-                                      messages: const[],
-                                      lastMessage: data['lastMessage'] ?? '',
-                                      lastMessageAt: lastMessageAt,
-                                      createdAt: null,
-                                      name: data['name'],
-                                    ),
-                                    currentUserId: currentUserId,
-                                  ),
-                                ),
-                              );
-                            },
-                          );
+                            );
+                          }
                         },
                       );
                     }
