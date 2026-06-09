@@ -117,13 +117,27 @@ class _ChatPageState extends State<ChatPage> {
 
                       final docs = snapshot.data!.docs;
 
+                      final filteredDocs = docs.where((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+
+                        if (selectedFilter == 'Solo') {
+                          return data['name'] == null;
+                        }
+
+                        if (selectedFilter == 'Groupe') {
+                          return data['name'] != null;
+                        }
+
+                        return true; 
+                      }).toList();
+
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: docs.length,
+                        itemCount: filteredDocs.length,
                         itemBuilder: (context, index) {
                           final data =
-                              docs[index].data() as Map<String, dynamic>;
+                              filteredDocs[index].data() as Map<String, dynamic>;
 
                           final participants =
                               List<String>.from(data['participants']);
@@ -174,7 +188,7 @@ class _ChatPageState extends State<ChatPage> {
                                   MaterialPageRoute(
                                     builder: (_) => ConversationPage(
                                       conversation:Conversation(
-                                        id:docs[index].id,
+                                        id:filteredDocs[index].id,
                                         participants: participants,
                                         messages: const[],
                                         lastMessage: data['lastMessage'] ?? '',
@@ -189,6 +203,7 @@ class _ChatPageState extends State<ChatPage> {
                               },
                             );
                           }
+                          else {return const SizedBox(height: 0);}                         
                         },
                       );
                     })
