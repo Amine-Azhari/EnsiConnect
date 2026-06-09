@@ -82,27 +82,29 @@ class _ConversationPageState extends State<ConversationPage> {
                                   title: Text("Chargement..."),
                                 );
                               }
-
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => ProfilPage(
-                                        userId: user!.id,                                
+                              if (user?.id != widget.currentUserId){
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ProfilPage(
+                                          userId: user!.id,                                
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: ListTile(
+                                    leading: CircleAvatar(
+                                      child: Text(
+                                        getInitials(user?.fullName ?? '?'),
                                       ),
                                     ),
-                                  );
-                                },
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    child: Text(
-                                      getInitials(user?.fullName ?? '?'),
-                                    ),
+                                    title: Text(user?.fullName ?? id),
                                   ),
-                                  title: Text(user?.fullName ?? id),
-                                ),
-                              );
+                                );
+                              }
+                              else { return SizedBox(height: 0,);}
                             },
                           );
                         }).toList(),
