@@ -157,7 +157,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   Future<void> _toggleRegistration() async {
     final sessionId = widget.session.id;
 
-
     if (_currentStudentId == null || sessionId == null) {
       setState(() {
         _errorMessage = 'Connecte-toi pour t inscrire a cette session.';
