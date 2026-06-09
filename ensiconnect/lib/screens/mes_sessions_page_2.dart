@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import "../widgets/ensiconnect_app.dart";
 import '../service/joined_session_service.dart';
+import '../widgets/person_avatar.dart';
 import 'sessions_details.dart';
 
 enum _SessionFilter { all, today, week }
@@ -326,16 +327,9 @@ class _ReservationCard extends StatelessWidget {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  CircleAvatar(
+                  PersonAvatar(
+                    name: reservation.organizerName,
                     radius: 18,
-                    backgroundColor: color.withValues(alpha: 0.16),
-                    child: Text(
-                      _initials(reservation.organizerName),
-                      style: TextStyle(
-                        color: color,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -521,18 +515,6 @@ String _formatDate(String rawDate) {
   } catch (_) {
     return rawDate;
   }
-}
-
-String _initials(String fullName) {
-  final parts = fullName
-      .split(' ')
-      .where((part) => part.trim().isNotEmpty)
-      .take(2)
-      .toList();
-  if (parts.isEmpty) {
-    return '?';
-  }
-  return parts.map((part) => part[0].toUpperCase()).join();
 }
 
 Color _getSubjectColor(String subject, bool isDark) {

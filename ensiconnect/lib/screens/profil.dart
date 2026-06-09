@@ -4,7 +4,7 @@ import '../models/conversation.dart';
 import '../screens/chat_messages.dart';
 import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
-import '../widgets/custom_header.dart';
+import '../widgets/person_avatar.dart';
 
 class ProfilPage extends StatefulWidget {
   final String? userId;
@@ -73,10 +73,8 @@ class _ProfilPageState extends State<ProfilPage> {
       sessions = user.sessions ?? 0;
       averageNote = (user.averageNote ?? 0).toDouble();
 
-      skillsOptions = options
-          .map<String>((e) => e['name'].toString())
-          .toSet()
-          .toList();
+      skillsOptions =
+          options.map<String>((e) => e['name'].toString()).toSet().toList();
     });
   }
 
@@ -107,13 +105,6 @@ class _ProfilPageState extends State<ProfilPage> {
         selectedSkill = null;
       });
     }
-  }
-
-  String getInitials(String name) {
-    if (name.trim().isEmpty) return "?";
-    final parts = name.trim().split(" ");
-    if (parts.length == 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
   }
 
   @override
@@ -153,16 +144,13 @@ class _ProfilPageState extends State<ProfilPage> {
     return Scaffold(
       key: _scaffoldKey,
       drawer: const CustomDrawer(),
-
       appBar: AppBar(
         title: Text(isOwnProfile ? 'Mon profil' : 'Profil'),
         elevation: 0,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor:
-            Theme.of(context).brightness == Brightness.dark
-                ? Colors.white
-                : Colors.black87,
-
+        foregroundColor: Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : Colors.black87,
         leading: isOwnProfile
             ? IconButton(
                 icon: const Icon(Icons.menu),
@@ -177,7 +165,6 @@ class _ProfilPageState extends State<ProfilPage> {
                 },
               ),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -188,26 +175,15 @@ class _ProfilPageState extends State<ProfilPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-
                 const SizedBox(height: 20),
-
                 Center(
-                  child: CircleAvatar(
+                  child: PersonAvatar(
+                    name: fullName,
                     radius: 30,
-                    backgroundColor: Colors.blue.shade600,
-                    child: Text(
-                      getInitials(fullName),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    fontSize: 18,
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 Center(
                   child: Text(
                     fullName,
@@ -217,9 +193,7 @@ class _ProfilPageState extends State<ProfilPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 if (!isOwnProfile)
                   Center(
                     child: ElevatedButton.icon(
@@ -259,9 +233,7 @@ class _ProfilPageState extends State<ProfilPage> {
                       },
                     ),
                   ),
-
                 const SizedBox(height: 15),
-
                 if (isOwnProfile)
                   Center(
                     child: ElevatedButton(
@@ -271,9 +243,7 @@ class _ProfilPageState extends State<ProfilPage> {
                       ),
                     ),
                   ),
-
                 const SizedBox(height: 20),
-
                 Row(
                   children: [
                     Expanded(child: _statCard("Sessions", "$sessions", isDark)),
@@ -287,15 +257,12 @@ class _ProfilPageState extends State<ProfilPage> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
-
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF111827)
-                        : Colors.blue.shade50,
+                    color:
+                        isDark ? const Color(0xFF111827) : Colors.blue.shade50,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -315,9 +282,7 @@ class _ProfilPageState extends State<ProfilPage> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 TextField(
                   controller: _descriptionController,
                   enabled: isEditing && isOwnProfile,
@@ -326,9 +291,7 @@ class _ProfilPageState extends State<ProfilPage> {
                     hintText: "Décris-toi...",
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 Row(
                   children: [
                     Expanded(
@@ -358,7 +321,6 @@ class _ProfilPageState extends State<ProfilPage> {
                     ),
                   ],
                 ),
-
                 Wrap(
                   spacing: 8,
                   children: skills.isEmpty
