@@ -71,7 +71,8 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
           try {
             // Suppose la date est au format 'YYYY-MM-DD' (comme inséré dans data_insert.dart)
             final DateTime parsedDate = DateTime.parse(session.date);
-            final sessionDate = DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+            final sessionDate =
+                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
 
             // Supprimer la session si elle est passée de date
             bool isExpired = false;
@@ -84,8 +85,8 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
                 if (parts.length >= 2) {
                   final hour = int.tryParse(parts[0]) ?? 23;
                   final minute = int.tryParse(parts[1]) ?? 59;
-                  final endTime = DateTime(
-                      sessionDate.year, sessionDate.month, sessionDate.day, hour, minute);
+                  final endTime = DateTime(sessionDate.year, sessionDate.month,
+                      sessionDate.day, hour, minute);
                   if (endTime.isBefore(now)) {
                     isExpired = true;
                   }
@@ -111,6 +112,10 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
         }
       }
 
+      for (final sessions in newSessionsByDate.values) {
+        sessions.sort(Session.compareByStartTime);
+      }
+
       if (mounted) {
         setState(() {
           _sessionsByDate = newSessionsByDate;
@@ -130,7 +135,8 @@ class _MesSessionsPageState extends State<MesSessionsPage> {
 
   void _updateSelectedSessions(DateTime day) {
     final normalized = _normalizeDate(day);
-    _selectedSessions = _sessionsByDate[normalized] ?? [];
+    _selectedSessions = List<Session>.from(_sessionsByDate[normalized] ?? [])
+      ..sort(Session.compareByStartTime);
   }
 
   // Cette méthode est appelée par table_calendar pour savoir s'il faut afficher un point
