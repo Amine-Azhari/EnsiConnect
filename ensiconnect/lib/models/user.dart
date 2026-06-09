@@ -36,7 +36,6 @@ class User {
 
     if (f.isEmpty && l.isEmpty) return '?';
 
-    return (f.isNotEmpty ? f[0] : '') +
-        (l.isNotEmpty ? l[0] : '');
+    return (f.isNotEmpty ? f[0] : '') + (l.isNotEmpty ? l[0] : '');
   }
 }
