@@ -14,11 +14,12 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  
   // On crée une instance du service et on lance l'insertion
   final service = FirebaseDataService();
   await service.initialiserDonneesDeTest();
   await UserServices().normalizeAverageNoteTypes();
+  await UserServices().rebuildAverageNotesFromEvaluations();
 
   // On ouvre le stockage local
   final prefs = await SharedPreferences.getInstance();

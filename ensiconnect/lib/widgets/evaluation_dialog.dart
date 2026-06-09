@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+
 import './ensiconnect_app.dart';
 import '../service/notification_evaluation_service.dart';
 
 class EvaluationDialog extends StatefulWidget {
   final String tutorId;
+  final String sessionId;
   final String notificationId;
 
   const EvaluationDialog({
-    super.key, 
+    super.key,
     required this.tutorId,
-    required this.notificationId
+    required this.sessionId,
+    required this.notificationId,
   });
 
   @override
   State<EvaluationDialog> createState() => _EvaluationDialogState();
-
 }
 
 class _EvaluationDialogState extends State<EvaluationDialog> {
@@ -33,45 +35,46 @@ class _EvaluationDialogState extends State<EvaluationDialog> {
 
     return AlertDialog(
       title: Text(
-        'Évaluer le tuteur',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, 
-        color: isDark ? Colors.white : Colors.black87)
+        'Evaluer le tuteur',
+        style: TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+          color: isDark ? Colors.white : Colors.black87,
         ),
-      backgroundColor: isDark ? Colors.black87 : Colors.blue,
+      ),
+      backgroundColor: isDark ? Colors.black87 : Colors.white,
       content: Column(
-        mainAxisSize: MainAxisSize.min, 
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-            for (var i = 0; i < 5; i++)
+              for (var i = 0; i < 5; i++)
                 IconButton(
                   hoverColor: Colors.transparent,
-                  splashColor: Colors.transparent, 
+                  splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
-                  onPressed: () {
-                    setState(() {
-                        _rating = i + 1;
-                    });
-                  },
+                  onPressed: () => setState(() => _rating = i + 1),
                   icon: Icon(
-                  _rating >= (i + 1) ? Icons.star : Icons.star_rate_outlined,
-                  color: EnsiConnectApp.ensisaBlue,
-                  size: 32.0,
+                    _rating >= (i + 1) ? Icons.star : Icons.star_rate_outlined,
+                    color: Colors.amber,
+                    size: 32,
                   ),
                 ),
             ],
           ),
           Text(
-            'Comment s\'est passée cette session ?',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, 
-            color: isDark ? Colors.white : Colors.black87),
+            'Comment s\'est passee cette session ?',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
           ),
           TextField(
             controller: _commentController,
             minLines: 1,
-            maxLines: 3, 
+            maxLines: 3,
             keyboardType: TextInputType.multiline,
             decoration: const InputDecoration(
               hintText: 'Laissez un commentaire...',
@@ -81,29 +84,36 @@ class _EvaluationDialogState extends State<EvaluationDialog> {
       ),
       actions: [
         ElevatedButton(
-          onPressed: (_rating > 0) ? () async {
-            try {
-              await NotificationEvaluationService().submitEvaluation(
-                tutorId: widget.tutorId, 
-                note: _rating, 
-                commentaire: _commentController.text);
+          onPressed: _rating > 0
+              ? () async {
+                  try {
+                    await NotificationEvaluationService().submitEvaluation(
+                      sessionId: widget.sessionId,
+                      tutorId: widget.tutorId,
+                      note: _rating,
+                      commentaire: _commentController.text,
+                    );
 
-              await NotificationEvaluationService().deleteNotification(widget.notificationId);
+                    await NotificationEvaluationService()
+                        .deleteNotification(widget.notificationId);
 
-              if (!context.mounted) return;
-              Navigator.of(context).pop();
-            } catch (e) {
-              debugPrint("Erreur lors de l'évaluation : $e");
-            }
-          } : null,
+                    if (!context.mounted) {
+                      return;
+                    }
+                    Navigator.of(context).pop();
+                  } catch (e) {
+                    debugPrint('Erreur lors de l\'evaluation : $e');
+                  }
+                }
+              : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: EnsiConnectApp.ensisaBlue,
             foregroundColor: Colors.white,
             disabledBackgroundColor: Colors.grey.shade300,
-            // disabledForegroundColor: Colors.grey.shade500, 
           ),
-          child: const Text('Envoyer',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          child: const Text(
+            'Envoyer',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       ],

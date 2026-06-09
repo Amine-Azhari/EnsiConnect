@@ -24,7 +24,7 @@ class HelpRequestService {
             (doc) => HelpRequest.fromMap(
               doc.data(),
               id: doc.id,
-              isMe: doc.data()['OrganisateurID'] == currentUserId,
+              isMe: doc.data()['OrganisateurId'] == currentUserId,
             ),
           )
           .toList();
