@@ -85,7 +85,10 @@ class SessionService {
             continue;
           }
 
-          final tutorId = (data['OrganisateurId'] ?? '').toString().trim();
+          final tutorId =
+              (data['OrganisateurId'] ?? data['OrganisateurID'] ?? '')
+                  .toString()
+                  .trim();
           if (tutorId.isEmpty) {
             continue;
           }
@@ -98,9 +101,7 @@ class SessionService {
             tutorId: tutorId,
             sessionData: data,
           );
-          final registrations = await _registrations
-              .where('SessionId', isEqualTo: sessionId)
-              .get();
+          final registrations = await _loadRegistrations(sessionId);
 
           final batch = _db.batch();
 
@@ -130,7 +131,7 @@ class SessionService {
             });
           }
 
-          for (final registration in registrations.docs) {
+          for (final registration in registrations) {
             batch.delete(registration.reference);
           }
 
@@ -168,13 +169,33 @@ class SessionService {
       }
     }
 
-    final registrations =
-        await _registrations.where('SessionId', isEqualTo: sessionId).get();
+    final registrations = await _loadRegistrations(sessionId);
 
-    for (final registration in registrations.docs) {
-      addCandidate(registration.data()['EtudiantId']);
+    for (final registration in registrations) {
+      addCandidate(
+        registration.data()['EtudiantId'] ?? registration.data()['EtudiantID'],
+      );
     }
 
     return participantIds;
+  }
+
+  Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _loadRegistrations(
+    String sessionId,
+  ) async {
+    final lowerCaseSnapshot =
+        await _registrations.where('SessionId', isEqualTo: sessionId).get();
+    final upperCaseSnapshot =
+        await _registrations.where('SessionID', isEqualTo: sessionId).get();
+
+    final registrationsById = <String, QueryDocumentSnapshot<Map<String, dynamic>>>{};
+    for (final doc in lowerCaseSnapshot.docs) {
+      registrationsById[doc.id] = doc;
+    }
+    for (final doc in upperCaseSnapshot.docs) {
+      registrationsById[doc.id] = doc;
+    }
+
+    return registrationsById.values.toList();
   }
 }
