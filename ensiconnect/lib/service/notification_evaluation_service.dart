@@ -20,8 +20,8 @@ class NotificationEvaluationService {
 
     await _db.collection('Evaluation').add({
       // 'SessionID': sessionId,
-      'tutorID': tutorId,
-      'EleveID': userId,
+      'tutorId': tutorId,
+      'EleveId': userId,
       'Note': note,
       'Commentaire': commentaire,
       'DateDEnvoi': FieldValue.serverTimestamp(),
