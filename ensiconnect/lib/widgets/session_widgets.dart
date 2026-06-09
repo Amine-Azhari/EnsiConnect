@@ -7,15 +7,11 @@ const Color _ensisaBlue = Color(0xFF0055A5);
 // ─── 1. Section card ──────────────────────────────────────────────────────────
 
 class SessionFormSection extends StatelessWidget {
-  final IconData icon;
-  final String label;
   final Color cardColor;
   final List<Widget> children;
 
   const SessionFormSection({
     super.key,
-    required this.icon,
-    required this.label,
     required this.cardColor,
     required this.children,
   });
@@ -25,7 +21,7 @@ class SessionFormSection extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.06),
@@ -34,24 +30,10 @@ class SessionFormSection extends StatelessWidget {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            Icon(icon, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-                color: Colors.white,
-                letterSpacing: 0.4,
-              ),
-            ),
-          ]),
-          const SizedBox(height: 12),
           ...children,
         ],
       ),
@@ -86,14 +68,14 @@ class SessionPickerTile extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 10),
         decoration: BoxDecoration(
           color: hasValue
               ? _ensisaBlue.withValues(alpha: 0.08)
               : (isDark
                   ? Colors.white.withValues(alpha: 0.05)
                   : Colors.grey.shade50),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: hasValue
                 ? _ensisaBlue
@@ -115,11 +97,11 @@ class SessionPickerTile extends StatelessWidget {
                     letterSpacing: 0.3,
                   )),
             ]),
-            const SizedBox(height: 4),
+              const SizedBox(height: 3),
             Text(
               value ?? placeholder,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: hasValue ? FontWeight.w700 : FontWeight.w400,
                 color: hasValue
                     ? (isDark ? Colors.white : Colors.black87)
@@ -180,13 +162,13 @@ class SessionPlacesCounter extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8),
-        width: 34,
-        height: 34,
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
           color: _ensisaBlue.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(7),
         ),
-        child: Icon(icon, color: _ensisaBlue, size: 18),
+        child: Icon(icon, color: _ensisaBlue, size: 16),
       ),
     );
   }
@@ -219,10 +201,10 @@ class SessionTagsGrid extends StatelessWidget {
           onTap: () => onToggle(tag),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: selected ? _ensisaBlue : Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
                 color: selected
                     ? _ensisaBlue

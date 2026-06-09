@@ -39,9 +39,10 @@ class _ChatPageState extends State<ChatPage> {
       key: _scaffoldKey,
       drawer: const CustomDrawer(),
       body: SafeArea(
-          child: FutureBuilder<User?>(
+        child: FutureBuilder<User?>(
         future: _user.getCurrentUser(),
         builder: (context, userSnapshot) {
+          print("FutureBuilder rebuild");
           if (!userSnapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -66,147 +67,144 @@ class _ChatPageState extends State<ChatPage> {
                       color: textColor),
                 ),
 
-                  const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-                  //Filtres
+                //Filtres
                   SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: filters.map((filter) {
-                        final selected = selectedFilter.contains(filter);
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            label: Text(filter),
-                            selected: selected,
-                            selectedColor: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
-                            onSelected: (value) {
-                              setState(() {
-                                selectedFilter=filter;                                
-                              });
-                            },
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: filters.map((filter) {
+                      final selected = selectedFilter.contains(filter);
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text(filter),
+                          selected: selected,
+                          selectedColor: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
+                          onSelected: (value) {
+                            setState(() {
+                              selectedFilter=filter;                                
+                            });
+                          },
+                        ),
+                      );
+                    }).toList(),
                   ),
+                ),
 
                 const SizedBox(height: 10),
 
                 StreamBuilder<QuerySnapshot>(
-                    stream: chatService.getConversations(currentUserId),
-                    builder: (context, snapshot) {
-                      // Debug
-                      print("state: ${snapshot.connectionState}");
-                      print("hasData: ${snapshot.hasData}");
-                      print("hasError: ${snapshot.hasError}");
-                      print("data: ${snapshot.data}");
+                  stream: chatService.getConversations(currentUserId),
+                  builder: (context, snapshot) {
+                    // Debug
+                    print("state: ${snapshot.connectionState}");
+                    print("hasData: ${snapshot.hasData}");
+                    print("hasError: ${snapshot.hasError}");
+                    print("data: ${snapshot.data}");
 
-                      if (!snapshot.hasData) {
-                        return const Center(child: CircularProgressIndicator());
+                    print("StreamBuilder rebuild");
+
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return const Center(
+                        child: Text("Erreur de chargement"));
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text("Aucune conversation"));
+                    }
+
+                    final docs = snapshot.data!.docs;
+
+                    final filteredDocs = docs.where((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+
+                      if (selectedFilter == 'Solo') {
+                        return data['Name'] == null;
                       }
 
-                      if (snapshot.hasError) {
-                        return const Center(
-                            child: Text("Erreur de chargement"));
+                      if (selectedFilter == 'Groupe') {
+                        return data['Name'] != null;
                       }
 
-                      if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                        return const Center(child: Text("Aucune conversation"));
-                      }
+                      return true; 
+                    }).toList();
 
-                      final docs = snapshot.data!.docs;
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredDocs.length,
+                      itemBuilder: (context, index) {
+                        final data =
+                          filteredDocs[index].data() as Map<String, dynamic>;
 
-                      final filteredDocs = docs.where((doc) {
-                        final data = doc.data() as Map<String, dynamic>;
+                        final participants =
+                          List<String>.from(data['Participants']);
 
-                        if (selectedFilter == 'Solo') {
-                          return data['name'] == null;
-                        }
+                        final lastMessageAt =
+                          (data['LastMessageAt'] as Timestamp?)?.toDate();
 
-                        if (selectedFilter == 'Groupe') {
-                          return data['name'] != null;
-                        }
-
-                        return true; 
-                      }).toList();
-
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: filteredDocs.length,
-                        itemBuilder: (context, index) {
-                          final data =
-                              filteredDocs[index].data() as Map<String, dynamic>;
-
-                          final participants =
-                              List<String>.from(data['participants']);
-
-                          final lastMessageAt =
-                              (data['lastMessageAt'] as Timestamp?)?.toDate();
-
-                          if(
-                            (selectedFilter=='Solo' && data['name'] ==null) ||
-                            (selectedFilter=='Groupe' && data['name'] !=null) ||
-                            selectedFilter=='Toutes'
-                          ){
-                            return ListTile(
-                              leading: FutureBuilder<String>(
-                                future: data['name'] != null
-                                    ? Future.value(data['name'])
-                                    : getUserName(getOtherUser(participants, currentUserId)),
-                                builder: (context, snapshot) {
-                                  final name = snapshot.data ?? '?';
-                                  return PersonAvatar(
-                                    name: name,
-                                  );
-                                },
-                              ),
-                              title: FutureBuilder<String>(
-                                future: data['name'] != null
-                                    ? Future.value(data['name'])
-                                    : getUserName(getOtherUser(participants, currentUserId)),
-                                builder: (context, snapshot) {
-                                  final name = snapshot.data ?? '...';
-
-                                  return Text(name);
-                                },
-                              ),
-                              subtitle: Text(
-                                data['lastMessage'] ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,),
-                              trailing: Text(
-                                formatTimeAgo(lastMessageAt),
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
+                        return ListTile(
                               
-                              // Ouvre la page de la conversation sélectionée
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ConversationPage(
-                                      conversation:Conversation(
-                                        id:filteredDocs[index].id,
-                                        participants: participants,
-                                        messages: const[],
-                                        lastMessage: data['lastMessage'] ?? '',
-                                        lastMessageAt: lastMessageAt,
-                                        createdAt: null,
-                                        name: data['name'],
-                                      ),
-                                      currentUserId: currentUserId,
-                                    ),
+                          leading: FutureBuilder<String>(
+                            future: data['Name'] != null
+                                ? Future.value(data['Name'])
+                                : getUserName(getOtherUser(participants, currentUserId)),
+                            builder: (context, snapshot) {
+                              final name = snapshot.data ?? '?';
+                              return PersonAvatar(
+                                name: name,
+                              );
+                            },
+                          ),
+                          title: FutureBuilder<String>(
+                            future: data['Name'] != null
+                                ? Future.value(data['Name'])
+                                : getUserName(getOtherUser(participants, currentUserId)),
+                            builder: (context, snapshot) {
+                              final name = snapshot.data ?? '...';
+
+                              return Text(name);
+                            },
+                          ),
+                          subtitle: Text(
+                            data['LastMessage'] ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,),
+                          trailing: Text(
+                            formatTimeAgo(lastMessageAt),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                              
+                          // Ouvre la page de la conversation sélectionée
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ConversationPage(
+                                  conversation:Conversation(
+                                    id:filteredDocs[index].id,
+                                    participants: participants,
+                                    messages: const[],
+                                    lastMessage: data['LastMessage'] ?? '',
+                                    lastMessageAt: lastMessageAt,
+                                    createdAt: null,
+                                    name: data['Name'],
                                   ),
-                                );
-                              },
+                                  currentUserId: currentUserId,
+                                ),
+                              ),
                             );
-                          }
-                          else {return const SizedBox(height: 0);}                         
-                        },
-                      );
-                    })
+                          },
+                        );                 
+                      },
+                    );
+                  }
+                )
               ],
             ),
           );

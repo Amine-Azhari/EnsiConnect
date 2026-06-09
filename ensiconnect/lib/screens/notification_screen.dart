@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import '../widgets/ensiconnect_app.dart';
 import '../widgets/evaluation_dialog.dart';
 import '../service/notification_evaluation_service.dart';
@@ -13,18 +15,47 @@ class NotificationScreen extends StatefulWidget {
 
 class _NotificationScreenState extends State<NotificationScreen> {
 
-  late Future<List<Map<String, dynamic>>?> _notificationsFuture;
+  String? currentStudentId;
+  bool _loadingUser = true;
 
   @override
   void initState() {
     super.initState();
-    _notificationsFuture = NotificationEvaluationService().getNotificationsCurrentUser();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('user_email');
+    if (email != null) {
+      final studentResult = await FirebaseFirestore.instance
+          .collection('Etudiant')
+          .where('eMail', isEqualTo: email)
+          .limit(1)
+          .get();
+      if (studentResult.docs.isNotEmpty && mounted) {
+        setState(() {
+          currentStudentId = studentResult.docs.first.id;
+          _loadingUser = false;
+        });
+        return;
+      }
+    }
+    if (mounted) setState(() => _loadingUser = false);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
+
+    if (_loadingUser) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (currentStudentId == null) {
+      return const Scaffold(body: Center(child: Text("Utilisateur non trouvé.")));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -35,40 +66,26 @@ class _NotificationScreenState extends State<NotificationScreen> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>?>(
-        future: _notificationsFuture,
+      body: StreamBuilder<List<Map<String, dynamic>>>(
+        stream: NotificationEvaluationService().watchMyNotifications(currentStudentId!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
-
           if (snapshot.hasError) {
-            return Center(
-              child: Text("BUG : ${snapshot.error}"),
-            );
+            return Center(child: Text("Erreur : ${snapshot.error}"));
           }
-
-          if (!snapshot.hasData || snapshot.data == null) {
-            return const Center(
-              child: Text("Impossible de charger vos données (Profil introuvable ou déconnecté)."),
-            );
-          }
-
-          final notifications = snapshot.data!;
+          final notifications = snapshot.data ?? [];
 
           if (notifications.isEmpty) {
-            return const Center(
-              child: Text("Aucune notification pour le moment"),
-            );
+            return const Center(child: Text("Aucune notification pour le moment"));
           }
 
           return ListView.builder(
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notif = notifications[index];
-          
+
               return ListTile(
                 title: Text(
                   notif["message"] ?? "Notification sans message",
@@ -76,12 +93,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 ),
                 trailing: const Icon(Icons.star_border, color: Colors.amber),
                 onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => EvaluationDialog(
-                    tutorId: notif["tutorId"] ?? "",
-                  ),
-                );
+                  showDialog(
+                    context: context,
+                    builder: (context) => EvaluationDialog(
+                      tutorId: notif["tutorId"] ?? "",
+                      notificationId: notif["id"] ?? "", // 👈 On transmet l'ID ici !
+                    ),
+                  );
                 },
               );
             },
