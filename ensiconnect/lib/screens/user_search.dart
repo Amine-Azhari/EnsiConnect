@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import "../widgets/ensiconnect_app.dart";
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
+import '../widgets/person_avatar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../service/user_service.dart';
 import 'profil.dart';
 import 'dart:async';
-
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -78,29 +78,27 @@ class _SearchPageState extends State<SearchPage> {
 
   //Récupère les données dans Etudiant
   Future<void> chargerTuteurs() async {
-    
-    final etudiantSnap = await FirebaseFirestore.instance.collection('Etudiant').get();
+    final etudiantSnap =
+        await FirebaseFirestore.instance.collection('Etudiant').get();
 
     final Set<String> matieresUniques = {};
 
-    final liste = etudiantSnap.docs
-        .where((doc) => doc.id != currentUserId)
-        .map((doc) {
-          final skills = doc.data().containsKey("skills")
-              ? List<String>.from(doc.data()["skills"])
-              : <String>[];
+    final liste =
+        etudiantSnap.docs.where((doc) => doc.id != currentUserId).map((doc) {
+      final skills = doc.data().containsKey("skills")
+          ? List<String>.from(doc.data()["skills"])
+          : <String>[];
 
-          matieresUniques.addAll(skills);
+      matieresUniques.addAll(skills);
 
-          return {
-            "id": doc.id,
-            "nom": doc["Nom"],
-            "prenom": doc["Prenom"],
-            "matieres": skills,
-            "note": (doc.data()["averageNote"] ?? 0.0).toDouble(),
-          };
-        })
-        .toList();
+      return {
+        "id": doc.id,
+        "nom": doc["Nom"],
+        "prenom": doc["Prenom"],
+        "matieres": skills,
+        "note": (doc.data()["averageNote"] ?? 0.0).toDouble(),
+      };
+    }).toList();
     //Trier par note décroissantes
     liste.sort(
       (a, b) => (b["note"] as double).compareTo(a["note"] as double),
@@ -123,23 +121,18 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  
   List<Map<String, dynamic>> get tuteursFiltres {
-
     return tuteurs.where((tuteur) {
-      
       final nom = (tuteur["nom"] as String).toLowerCase();
       final prenom = (tuteur["prenom"] as String).toLowerCase();
       final matieres = (tuteur["matieres"] as List<String>);
 
       // Filtres multiples
-      final correspondFiltres =
-          filtresSelectionnes.isEmpty ||
+      final correspondFiltres = filtresSelectionnes.isEmpty ||
           matieres.any((m) => filtresSelectionnes.contains(m));
 
       // Recherche par nom ou matière
-      final correspondRecherche =
-          recherche.isEmpty ||
+      final correspondRecherche = recherche.isEmpty ||
           nom.contains(recherche.toLowerCase()) ||
           prenom.contains(recherche.toLowerCase()) ||
           matieres.any(
@@ -148,9 +141,6 @@ class _SearchPageState extends State<SearchPage> {
 
       return correspondFiltres && correspondRecherche;
     }).toList();
-
-
-
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -178,116 +168,151 @@ class _SearchPageState extends State<SearchPage> {
               Center(
                 child: Text(
                   "Trouver un tuteur",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: textColor),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: textColor),
                 ),
               ),
               const SizedBox(height: 20),
 
               // Barre de recherche
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: TextField(
-                onChanged: _onSearchChanged,
-                decoration: InputDecoration(
-                  hintText: "Rechercher une matière ou un tuteur...",
-                  hintStyle: TextStyle(
-                    color: hintColor,
-                    fontSize: 14,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: hintColor,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    vertical: 15,
-                  ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Filtres
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: filtres.map((filtre) {
-                  final selected = filtresSelectionnes.contains(filtre);
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: FilterChip(
-                      label: Text(filtre),
-                      selected: selected,
-                      selectedColor: Theme.of(context).brightness == Brightness.dark ? EnsiConnectApp.ensisaBlue : EnsiConnectApp.ensisaLightBlue,
-                      onSelected: (value) {
-                        setState(() {
-                          if (value) {
-                            filtresSelectionnes.add(filtre);
-                          } else {
-                            filtresSelectionnes.remove(filtre);
-                          }
-                        });
-                      },
+                child: TextField(
+                  onChanged: _onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: "Rechercher une matière ou un tuteur...",
+                    hintStyle: TextStyle(
+                      color: hintColor,
+                      fontSize: 14,
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text("${tuteursFiltres.length} tuteur(s)",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: hintColor,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 15,
+                    ),
+                  ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
+              ),
 
-            //Affichage tuteurs
-            Expanded(
-              child: tuteursFiltres.isEmpty
-                ? const Center(
-                    child: Text("Aucun tuteur trouvé"),
-                  )
-                :ListView.builder(
-                  itemCount: tuteursFiltres.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          child: Text(
-                            '${(tuteursFiltres[index]["prenom"] as String)[0]}${(tuteursFiltres[index]["nom"] as String)[0]}'.toUpperCase(),
-                            ),
-                        ),
-                        title: Text("${tuteursFiltres[index]["prenom"]} ${tuteursFiltres[index]["nom"]}"),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 4,
-                              children: (tuteursFiltres[index]["matieres"] as List<String>)
-                                  .map(
-                                    (matiere) => Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context).brightness == Brightness.dark
-                                            ? EnsiConnectApp.ensisaBlue
-                                            : EnsiConnectApp.ensisaLightBlue,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        matiere,
+              const SizedBox(height: 12),
+
+              // Filtres
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: filtres.map((filtre) {
+                    final selected = filtresSelectionnes.contains(filtre);
+
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(filtre),
+                        selected: selected,
+                        selectedColor:
+                            Theme.of(context).brightness == Brightness.dark
+                                ? EnsiConnectApp.ensisaBlue
+                                : EnsiConnectApp.ensisaLightBlue,
+                        onSelected: (value) {
+                          setState(() {
+                            if (value) {
+                              filtresSelectionnes.add(filtre);
+                            } else {
+                              filtresSelectionnes.remove(filtre);
+                            }
+                          });
+                        },
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "${tuteursFiltres.length} tuteur(s)",
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textColor),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              //Affichage tuteurs
+              Expanded(
+                child: tuteursFiltres.isEmpty
+                    ? const Center(
+                        child: Text("Aucun tuteur trouvé"),
+                      )
+                    : ListView.builder(
+                        itemCount: tuteursFiltres.length,
+                        itemBuilder: (context, index) {
+                          return Card(
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            child: ListTile(
+                              leading: PersonAvatar(
+                                name:
+                                    '${tuteursFiltres[index]["prenom"]} ${tuteursFiltres[index]["nom"]}',
+                              ),
+                              title: Text(
+                                  "${tuteursFiltres[index]["prenom"]} ${tuteursFiltres[index]["nom"]}"),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Wrap(
+                                    spacing: 6,
+                                    runSpacing: 4,
+                                    children: (tuteursFiltres[index]["matieres"]
+                                            as List<String>)
+                                        .map(
+                                          (matiere) => Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 5),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context)
+                                                          .brightness ==
+                                                      Brightness.dark
+                                                  ? EnsiConnectApp.ensisaBlue
+                                                  : EnsiConnectApp
+                                                      .ensisaLightBlue,
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              matiere,
+                                              style:
+                                                  const TextStyle(fontSize: 12),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+
+                                  const SizedBox(height: 6),
+
+                                  //Affichage des étoiles
+                                  Row(
+                                    children: [
+                                      StarRating(
+                                          note: tuteursFiltres[index]["note"]
+                                              as double),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        "${tuteursFiltres[index]["note"]}/5",
                                         style: const TextStyle(fontSize: 12),
                                       ),
                                     ),
@@ -320,18 +345,29 @@ class _SearchPageState extends State<SearchPage> {
                               builder: (context) => ProfilPage(
                                 userId: tuteursFiltres[index]["id"] as String,
                               ),
+                              trailing:
+                                  const Icon(Icons.arrow_forward_ios, size: 16),
+
+                              //redirection profil tuteur
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ProfilPage(
+                                      userId:
+                                          tuteursFiltres[index]["id"] as String,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           );
                         },
                       ),
-                    );
-                  },
-                ),
-              
-            )
-          ],
+              )
+            ],
+          ),
         ),
-      ),
       ),
     );
   }
