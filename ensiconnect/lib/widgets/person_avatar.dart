@@ -48,6 +48,11 @@ class PersonAvatar extends StatelessWidget {
     final accentColor = colorForName(name);
     final trimmedImageUrl = imageUrl?.trim() ?? '';
     final hasImage = trimmedImageUrl.isNotEmpty;
+    final ImageProvider<Object>? imageProvider = hasImage
+        ? (trimmedImageUrl.startsWith('assets/')
+            ? AssetImage(trimmedImageUrl) as ImageProvider<Object>
+            : NetworkImage(trimmedImageUrl) as ImageProvider<Object>)
+        : null;
 
     return Container(
       padding: const EdgeInsets.all(2),
@@ -58,7 +63,7 @@ class PersonAvatar extends StatelessWidget {
       child: CircleAvatar(
         radius: radius,
         backgroundColor: Colors.white,
-        backgroundImage: hasImage ? NetworkImage(trimmedImageUrl) : null,
+        backgroundImage: imageProvider,
         child: hasImage
             ? null
             : Text(
