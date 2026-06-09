@@ -120,7 +120,7 @@ class ChatService {
         .doc(conversationId)
         .update({
           'participants': FieldValue.arrayRemove([userId]),
-        });;
+        });
   }
 
   // A demander d'implémenter dans user_service
