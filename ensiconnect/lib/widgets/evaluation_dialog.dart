@@ -4,12 +4,12 @@ import '../service/notification_evaluation_service.dart';
 
 class EvaluationDialog extends StatefulWidget {
   final String tutorId;
-  // final String sessionId;
+  final String notificationId;
 
   const EvaluationDialog({
     super.key, 
     required this.tutorId,
-    // required this.sessionId
+    required this.notificationId
   });
 
   @override
@@ -87,6 +87,8 @@ class _EvaluationDialogState extends State<EvaluationDialog> {
                 tutorId: widget.tutorId, 
                 note: _rating, 
                 commentaire: _commentController.text);
+
+              await NotificationEvaluationService().deleteNotification(widget.notificationId);
 
               if (!context.mounted) return;
               Navigator.of(context).pop();

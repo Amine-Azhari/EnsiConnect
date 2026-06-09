@@ -61,17 +61,20 @@ class NotificationEvaluationService {
 
   }
 
-  // Sans recharger
-  // Stream<List<Map<String, dynamic>>> watchMyNotifications(String studentId) {
-  // return _db
-  //   .collection('Notification')
-  //   .where('receiverId', isEqualTo: studentId)
-  //   .orderBy('createdAt', descending: true) // Les plus récentes en premier
-  //   .snapshots()
-  //   .map((snapshot) => snapshot.docs.map((doc) {
-  //         final data = doc.data();
-  //         data['id'] = doc.id;
-  //         return data;
-  //       }).toList());
-  // }
+  Stream<List<Map<String, dynamic>>> watchMyNotifications(String studentId) {
+  return _db
+    .collection('Notification')
+    .where('receiverId', isEqualTo: studentId)
+    // .orderBy('createdAt', descending: true) // Les plus récentes en premier
+    .snapshots()
+    .map((snapshot) => snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return data;
+        }).toList());
+  }
+
+  Future<void> deleteNotification(String notificationId) async {
+    await _db.collection('Notification').doc(notificationId).delete();
+  }
 }
