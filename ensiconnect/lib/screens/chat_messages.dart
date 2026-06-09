@@ -335,11 +335,8 @@ class _ConversationPageState extends State<ConversationPage> {
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.only(left: 20),
-                    ),
-                    
-                    
-                  ),
-                  
+                    ),                                        
+                  ),                  
                 ),
                 // Bouton d'envoi d'un message
                 IconButton(
