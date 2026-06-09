@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CustomSearchBar extends StatelessWidget {
-  const CustomSearchBar({super.key});
+  const CustomSearchBar({super.key, this.onTap});
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -12,12 +13,20 @@ class CustomSearchBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? Colors.grey.shade900 : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
-        boxShadow: isDark ? [] : [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
+        border:
+            isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4)),
+              ],
       ),
       child: TextField(
+        readOnly: onTap != null,
+        onTap: onTap,
         decoration: InputDecoration(
           hintText: "Rechercher une matière, un tuteur...",
           hintStyle: TextStyle(color: hintColor, fontSize: 14),
