@@ -80,6 +80,7 @@ class _PostSessionPageState extends State<PostSessionPage>
   late Animation<Offset> _slideAnim;
 
   bool _submitting = false;
+
   String? _currentUserId;
 
   @override
