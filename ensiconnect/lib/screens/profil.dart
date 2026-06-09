@@ -48,14 +48,17 @@ class _ProfilPageState extends State<ProfilPage> {
 
   Future<void> _loadUser() async {
     final currentUser = await _user.getCurrentUser();
+    if (!mounted) return;
 
     final user = widget.isOwnProfile
         ? currentUser
         : await _user.getUserById(widget.userId!);
+    if (!mounted) return;
 
     final options = await _user.getAllSkillsOptions();
+    if (!mounted) return;
 
-    if (!mounted || user == null || currentUser == null) return;
+    if (user == null || currentUser == null) return;
 
     setState(() {
       currentUserId = currentUser.id;
@@ -83,6 +86,7 @@ class _ProfilPageState extends State<ProfilPage> {
         filiere: filiere,
         promotion: promotion,
       );
+      if (!mounted) return;
     }
     setState(() => isEditing = !isEditing);
   }
@@ -252,8 +256,6 @@ class _ProfilPageState extends State<ProfilPage> {
   }
 
   Widget _profileActionButton() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     if (widget.isOwnProfile) {
       return OutlinedButton.icon(
         onPressed: _toggleEdit,
@@ -318,7 +320,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      // ✅ Drawer uniquement sur "mon profil"
       drawer: widget.isOwnProfile ? const CustomDrawer() : null,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -328,7 +329,6 @@ class _ProfilPageState extends State<ProfilPage> {
             padding: const EdgeInsets.fromLTRB(20, 10, 20, 28),
             child: Column(
               children: [
-                // ✅ Header conditionné proprement
                 if (widget.isOwnProfile)
                   CustomHeader(
                     onMenuPressed: () =>
@@ -380,8 +380,7 @@ class _ProfilPageState extends State<ProfilPage> {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            const Color(0xFF248BFF).withValues(alpha: 0.35),
+                        color: const Color(0xFF248BFF).withValues(alpha: 0.35),
                         blurRadius: 28,
                         spreadRadius: 2,
                       ),
@@ -413,7 +412,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
                 const SizedBox(height: 30),
 
-                // ✅ Row des stats sans les Text orphelins
                 Row(
                   children: [
                     Expanded(
@@ -480,13 +478,11 @@ class _ProfilPageState extends State<ProfilPage> {
                           Expanded(
                             child: TextField(
                               controller: _descriptionController,
-                              // ✅ widget.isOwnProfile au lieu de isOwnProfile
                               enabled: isEditing && widget.isOwnProfile,
                               maxLines: 4,
                               minLines: 2,
                               style: TextStyle(
-                                color:
-                                    isDark ? Colors.white : Colors.black87,
+                                color: isDark ? Colors.white : Colors.black87,
                                 fontSize: 16,
                               ),
                               decoration: InputDecoration(
@@ -517,7 +513,6 @@ class _ProfilPageState extends State<ProfilPage> {
                     children: [
                       _sectionTitle(
                         "Compétences",
-                        // ✅ widget.isOwnProfile au lieu de isOwnProfile
                         trailing: isEditing && widget.isOwnProfile
                             ? TextButton.icon(
                                 onPressed: _addSkill,
@@ -533,7 +528,6 @@ class _ProfilPageState extends State<ProfilPage> {
                               )
                             : null,
                       ),
-                      // ✅ widget.isOwnProfile au lieu de isOwnProfile
                       if (isEditing && widget.isOwnProfile) ...[
                         const SizedBox(height: 18),
                         Container(
@@ -659,9 +653,7 @@ class _IconTile extends StatelessWidget {
       width: 58,
       height: 58,
       decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF102033)
-            : const Color(0xFFEAF4FF),
+        color: isDark ? const Color(0xFF102033) : const Color(0xFFEAF4FF),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
