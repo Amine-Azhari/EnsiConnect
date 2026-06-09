@@ -35,6 +35,13 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String _organisateurNom = 'Organisateur inconnu';
   bool _sessionComplete = false;
 
+  int _effectiveParticipantCount(List<_SessionParticipant> participants) {
+    final organizerId = widget.session.organisateurId;
+    final includesOrganizer = organizerId.isNotEmpty &&
+        participants.any((participant) => participant.id == organizerId);
+    return participants.length + (includesOrganizer ? 0 : 1);
+  }
+
   Future<void> _ouvrirChat() async {
     final currentUser = await UserServices().getCurrentUser();
     if (currentUser == null || widget.session.id == null) return;
@@ -76,8 +83,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       final currentUser = await _userServices.getCurrentUser();
       final session = widget.session;
 
-      
-
       final matiereNom = await _getDocumentName('Matiere', session.matiereId);
       final salleNom = await _getDocumentName('Salle', session.salleId);
       final organisateurNom = await _getStudentName(session.organisateurId);
@@ -89,9 +94,11 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       // APRÈS
       if (session.id != null) {
         // Participants ajoutés à la création
-        final sessionDoc = await _db.collection('Session').doc(session.id).get();
+        final sessionDoc =
+            await _db.collection('Session').doc(session.id).get();
         final sessionData = sessionDoc.data();
-        final preInscrits = List<String>.from(sessionData?['Participants'] ?? []);
+        final preInscrits =
+            List<String>.from(sessionData?['Participants'] ?? []);
 
         final idsDejaAjoutes = <String>{};
 
@@ -112,7 +119,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
         for (final registration in registrations.docs) {
           final etudiantId = registration.data()['EtudiantId'] ?? '';
-          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)) continue;
+          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId))
+            continue;
 
           if (currentUser != null && etudiantId == currentUser.id) {
             isRegistered = true;
@@ -122,12 +130,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           participants.add(await _getParticipant(etudiantId));
         }
 
-
         final nbPlaces = sessionDoc.data()?['NbPlaces'] ?? 0;
-        setState(() {
-          _sessionComplete = _participants.length >= nbPlaces;
-        });
-
+        _sessionComplete = _effectiveParticipantCount(participants) >= nbPlaces;
       }
 
       if (!mounted) return;
@@ -180,9 +184,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       context,
       MaterialPageRoute(
         builder: (_) => Scaffold(
-        appBar: AppBar(title: const Text("Chat")),
-        body: const Center(child: Text("Chat pas encore créé")),
-      ),
+          appBar: AppBar(title: const Text("Chat")),
+          body: const Center(child: Text("Chat pas encore créé")),
+        ),
       ),
     );
   }
@@ -193,7 +197,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
     return widget.session.participantsIds.contains(currentUserId);
   }
-
 
   Future<String> _getDocumentName(String collection, String id) async {
     final fallback =
@@ -268,12 +271,14 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           _participants.removeWhere(
             (participant) => participant.id == _currentStudentId,
           );
+          _sessionComplete = false;
         });
       } else {
         // Empêche l'organisateur de s'inscrire à sa propre session
         if (_currentStudentId == widget.session.organisateurId) {
           setState(() {
-            _errorMessage = 'Vous ne pouvez pas vous inscrire à votre propre session.';
+            _errorMessage =
+                'Vous ne pouvez pas vous inscrire à votre propre session.';
             _isUpdating = false;
           });
           return;
@@ -281,14 +286,14 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         // Vérifie le nombre de places
         final sessionDoc = await _db.collection('Session').doc(sessionId).get();
         final nbPlaces = sessionDoc.data()?['NbPlaces'] ?? 0;
-        
-        if (_participants.length >= nbPlaces) {
+
+        if (_effectiveParticipantCount(_participants) >= nbPlaces) {
           setState(() {
             _errorMessage = 'Cette session est complète.';
             _isUpdating = false;
           });
           return;
-        } 
+        }
 
         final created = await _db.collection('RejoindreSession').add({
           'EtudiantId': _currentStudentId,
@@ -303,7 +308,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         });
 
         await _loadDetails();
-      } 
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -690,69 +695,76 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   }
 
   Widget _buildBottomButton() {
-  final isOrganisateur = _currentStudentId == widget.session.organisateurId;
-  final buttonColor =
-      _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
+    final isOrganisateur = _currentStudentId == widget.session.organisateurId;
+    final buttonColor =
+        _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
 
-  return Container(
-    width: double.infinity,
-    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-    child: Row(
-      children: [
-        if (!isOrganisateur)
-          Expanded(
-            child: SizedBox(
-              height: 54,
-              child: ElevatedButton(
-                onPressed: (_isUpdating || (_sessionComplete && !_isRegistered)) ? null : _toggleRegistration,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+      child: Row(
+        children: [
+          if (!isOrganisateur)
+            Expanded(
+              child: SizedBox(
+                height: 54,
+                child: ElevatedButton(
+                  onPressed:
+                      (_isUpdating || (_sessionComplete && !_isRegistered))
+                          ? null
+                          : _toggleRegistration,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: buttonColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                ),
-                child: Text(
-                  _isUpdating
-                      ? 'Chargement...'
-                      : (_isRegistered
-                          ? 'Se désinscrire'
-                          : (_sessionComplete ? 'Session complète' : "S'inscrire")),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    _isUpdating
+                        ? 'Chargement...'
+                        : (_isRegistered
+                            ? 'Se désinscrire'
+                            : (_sessionComplete
+                                ? 'Session complète'
+                                : "S'inscrire")),
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ),
-          ),
-        if (!isOrganisateur && _isRegistered) const SizedBox(width: 12),
-        if (_isRegistered || isOrganisateur)
-          Expanded(
-            child: SizedBox(
-              height: 54,
-              child: ElevatedButton(
-                onPressed: _ouvrirChat,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: EnsiConnectApp.ensisaBlue,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+          if (!isOrganisateur && _isRegistered) const SizedBox(width: 12),
+          if (_isRegistered || isOrganisateur)
+            Expanded(
+              child: SizedBox(
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: _ouvrirChat,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: EnsiConnectApp.ensisaBlue,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.chat_bubble_outline_rounded),
-                    SizedBox(width: 8),
-                    Text('Chat', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ],
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.chat_bubble_outline_rounded),
+                      SizedBox(width: 8),
+                      Text('Chat',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
-    ),
-  );
-}
-  
+        ],
+      ),
+    );
+  }
 
   String _formatDate(String rawDate) {
     try {
