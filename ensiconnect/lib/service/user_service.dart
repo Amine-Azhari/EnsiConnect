@@ -18,10 +18,8 @@ class UserServices {
 
     if (email == null) return null;
 
-    final result = await _etudiants
-        .where('eMail', isEqualTo: email)
-        .limit(1)
-        .get();
+    final result =
+        await _etudiants.where('eMail', isEqualTo: email).limit(1).get();
 
     if (result.docs.isEmpty) return null;
 
@@ -55,14 +53,16 @@ class UserServices {
       skills: List<String>.from(data['skills'] ?? []),
 
       //  SAFE CAST SESSIONS
-      sessions: (data['sessions'] is num)
-          ? (data['sessions'] as num).toInt()
-          : 0,
+      sessions:
+          (data['sessions'] is num) ? (data['sessions'] as num).toInt() : 0,
 
       //  SAFE CAST AVERAGE NOTE (FIX IMPORTANT)
       averageNote: (data['averageNote'] is num)
           ? (data['averageNote'] as num).toDouble()
           : 0.0,
+      profilePictureUrl:
+          (data['ProfilePictureUrl'] ?? data['profilePictureUrl'] ?? '')
+              .toString(),
     );
   }
 

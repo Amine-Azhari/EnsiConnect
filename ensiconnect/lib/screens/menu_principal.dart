@@ -25,48 +25,121 @@ class MainNavigationScreen extends StatefulWidget {
 }
 
 class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  static const Duration _searchFlightDuration = Duration(milliseconds: 700);
+
   int _currentIndex = 0;
   bool _focusExplorerSearch = false;
+  bool _hideExplorerSearch = false;
+  bool _showSearchFlight = false;
+  Rect? _searchFlightRect;
+
+  final GlobalKey _bodyStackKey = GlobalKey();
+  final GlobalKey _homeSearchKey = GlobalKey();
+  final GlobalKey _explorerSearchKey = GlobalKey();
 
   List<Widget> get _pages => [
         HomePage(
-          onSearchTap: () => setState(() {
-            _currentIndex = 1;
-            _focusExplorerSearch = true;
-          }),
+          searchBarKey: _homeSearchKey,
+          onSearchTap: _openExplorerFromSearch,
         ),
-        SearchPage(autoFocusSearch: _focusExplorerSearch),
+        SearchPage(
+          autoFocusSearch: _focusExplorerSearch,
+          searchBarKey: _explorerSearchKey,
+          hideSearchBar: _hideExplorerSearch,
+        ),
         const ChatPage(),
         const ProfilPage(),
       ];
+
+  Rect? _rectForKey(GlobalKey key) {
+    final context = key.currentContext;
+    final stackContext = _bodyStackKey.currentContext;
+    if (context == null || stackContext == null) {
+      return null;
+    }
+
+    final box = context.findRenderObject() as RenderBox?;
+    final stackBox = stackContext.findRenderObject() as RenderBox?;
+    if (box == null || stackBox == null || !box.hasSize) {
+      return null;
+    }
+
+    final offset = box.localToGlobal(Offset.zero, ancestor: stackBox);
+    return offset & box.size;
+  }
+
+  Future<void> _openExplorerFromSearch() async {
+    if (_showSearchFlight) {
+      return;
+    }
+
+    final startRect = _rectForKey(_homeSearchKey);
+    if (startRect == null) {
+      setState(() {
+        _currentIndex = 1;
+        _focusExplorerSearch = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _searchFlightRect = startRect;
+      _showSearchFlight = true;
+      _hideExplorerSearch = true;
+      _focusExplorerSearch = false;
+      _currentIndex = 1;
+    });
+
+    await WidgetsBinding.instance.endOfFrame;
+    if (!mounted) return;
+
+    final endRect = _rectForKey(_explorerSearchKey);
+    if (endRect == null) {
+      setState(() {
+        _showSearchFlight = false;
+        _hideExplorerSearch = false;
+        _focusExplorerSearch = true;
+      });
+      return;
+    }
+
+    setState(() {
+      _searchFlightRect = endRect;
+    });
+
+    await Future<void>.delayed(_searchFlightDuration);
+    if (!mounted) return;
+
+    setState(() {
+      _showSearchFlight = false;
+      _hideExplorerSearch = false;
+      _focusExplorerSearch = true;
+      _searchFlightRect = null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 260),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        transitionBuilder: (child, animation) {
-          final slideAnimation = Tween<Offset>(
-            begin: const Offset(0.12, 0),
-            end: Offset.zero,
-          ).animate(animation);
-
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: slideAnimation,
-              child: child,
+      body: Stack(
+        key: _bodyStackKey,
+        children: [
+          _pages[_currentIndex],
+          if (_showSearchFlight && _searchFlightRect != null)
+            AnimatedPositioned(
+              duration: _searchFlightDuration,
+              curve: Curves.easeInOutCubic,
+              left: _searchFlightRect!.left,
+              top: _searchFlightRect!.top,
+              width: _searchFlightRect!.width,
+              height: _searchFlightRect!.height,
+              child: const IgnorePointer(
+                child: _FlyingSearchBar(),
+              ),
             ),
-          );
-        },
-        child: KeyedSubtree(
-          key: ValueKey<int>(_currentIndex),
-          child: _pages[_currentIndex],
-        ),
+        ],
       ),
       floatingActionButton: SizedBox(
         width: 54,
@@ -91,6 +164,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           setState(() {
             _currentIndex = index;
             _focusExplorerSearch = false;
+            _hideExplorerSearch = false;
+            _showSearchFlight = false;
           });
         },
       ),
@@ -99,9 +174,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.onSearchTap});
+  const HomePage({
+    super.key,
+    required this.onSearchTap,
+    required this.searchBarKey,
+  });
 
   final VoidCallback onSearchTap;
+  final GlobalKey searchBarKey;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -253,7 +333,10 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 24),
                   const WelcomeBanner(),
                   const SizedBox(height: 20),
-                  CustomSearchBar(onTap: widget.onSearchTap),
+                  CustomSearchBar(
+                    key: widget.searchBarKey,
+                    onTap: widget.onSearchTap,
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     "Actions rapides",
@@ -355,6 +438,52 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _FlyingSearchBar extends StatelessWidget {
+  const _FlyingSearchBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hintColor = isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? Colors.grey.shade900 : Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border:
+              isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Icon(Icons.search_rounded, color: hintColor),
+            ),
+            Expanded(
+              child: Text(
+                "Rechercher une matière, un tuteur...",
+                style: TextStyle(color: hintColor, fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
