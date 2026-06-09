@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:ensiconnect/service/user_service.dart';
+// import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationEvaluationService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -25,4 +27,48 @@ class NotificationEvaluationService {
       'DateDEnvoi': FieldValue.serverTimestamp(),
     });
   }
+
+  Future<List<Map<String, dynamic>>?> getNotificationsCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final email = prefs.getString('user_email');
+
+
+    if (email == null) return null;
+
+    final studentResult = await _db
+      .collection('Etudiant') 
+      .where('eMail', isEqualTo: email)
+      .limit(1)
+      .get();
+
+    if (studentResult.docs.isEmpty) return null;
+
+    final String studentId = studentResult.docs.first.id;
+
+    final notificationsResult = await _db
+        .collection('Notification')
+        .where('receiverId', isEqualTo: studentId)
+        .get();
+
+    return notificationsResult.docs.map((doc) {
+      final data = doc.data();
+      data['id'] = doc.id;
+      return data;
+    }).toList();
+
+  }
+
+  // Sans recharger
+  // Stream<List<Map<String, dynamic>>> watchMyNotifications(String studentId) {
+  // return _db
+  //   .collection('Notification')
+  //   .where('receiverId', isEqualTo: studentId)
+  //   .orderBy('createdAt', descending: true) // Les plus récentes en premier
+  //   .snapshots()
+  //   .map((snapshot) => snapshot.docs.map((doc) {
+  //         final data = doc.data();
+  //         data['id'] = doc.id;
+  //         return data;
+  //       }).toList());
+  // }
 }

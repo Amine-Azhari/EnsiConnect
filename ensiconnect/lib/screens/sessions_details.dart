@@ -42,6 +42,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       final currentUser = await _userServices.getCurrentUser();
       final session = widget.session;
 
+      
+
       final matiereNom = await _getDocumentName('Matiere', session.matiereId);
       final salleNom = await _getDocumentName('Salle', session.salleId);
       final organisateurNom = await _getStudentName(session.organisateurId);
@@ -50,7 +52,25 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       var isRegistered = false;
       final participants = <_SessionParticipant>[];
 
+      // APRÈS
       if (session.id != null) {
+        // Participants ajoutés à la création
+        final sessionDoc = await _db.collection('Session').doc(session.id).get();
+        final sessionData = sessionDoc.data();
+        final preInscrits = List<String>.from(sessionData?['Participants'] ?? []);
+
+        final idsDejaAjoutes = <String>{};
+
+        for (final etudiantId in preInscrits) {
+          if (etudiantId.isEmpty) continue;
+          idsDejaAjoutes.add(etudiantId);
+          if (currentUser != null && etudiantId == currentUser.id) {
+            isRegistered = true;
+          }
+          participants.add(await _getParticipant(etudiantId));
+        }
+
+        // Participants inscrits via RejoindreSession
         final registrations = await _db
             .collection('RejoindreSession')
             .where('SessionID', isEqualTo: session.id)
@@ -58,7 +78,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
         for (final registration in registrations.docs) {
           final etudiantId = registration.data()['EtudiantID'] ?? '';
-          if (etudiantId.isEmpty) continue;
+          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)) continue;
 
           if (currentUser != null && etudiantId == currentUser.id) {
             isRegistered = true;
@@ -568,28 +588,65 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   Widget _buildBottomButton() {
     final buttonColor =
         _isRegistered ? Colors.redAccent : EnsiConnectApp.ensisaBlue;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      child: SizedBox(
-        height: 54,
-        child: ElevatedButton(
-          onPressed: _isUpdating ? null : _toggleRegistration,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: buttonColor,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 54,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Discussion bientôt disponible')),
+                  );
+                },
+                icon: const Icon(Icons.chat_bubble_outline_rounded, size: 20),
+                label: const Text(
+                  'Discussion',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: EnsiConnectApp.ensisaBlue,
+                  foregroundColor:Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
             ),
           ),
-          child: Text(
-            _isUpdating
-                ? 'Chargement...'
-                : (_isRegistered ? 'Se désinscrire' : "S'inscrire"),
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          const SizedBox(width: 12),
+          Expanded(
+            child: SizedBox(
+              height: 54,
+              child: ElevatedButton(
+                onPressed: _isUpdating ? null : _toggleRegistration,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: Text(
+                  _isUpdating
+                      ? '...'
+                      : (_isRegistered ? 'Se Désinscrire' : "S'inscrire"),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

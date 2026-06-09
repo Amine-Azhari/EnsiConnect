@@ -16,6 +16,13 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
   final TextEditingController _messageController = TextEditingController();
   final UserServices _userServices = UserServices();
   final HelpRequestService _helpRequestService = HelpRequestService();
+  late final Future<dynamic> _currentUserFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUserFuture = _userServices.getCurrentUser();
+  }
 
   @override
   void dispose() {
@@ -148,9 +155,14 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
         elevation: 0,
       ),
       body: FutureBuilder(
-        future: _userServices.getCurrentUser(),
+        future: _currentUserFuture,
         builder: (context, userSnapshot) {
-          final currentUserId = userSnapshot.data?.id;
+          if (userSnapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final currentUser = userSnapshot.data;
+          final currentUserId = currentUser?.id;
 
           return StreamBuilder<List<HelpRequest>>(
             stream: _helpRequestService.watchRequests(currentUserId),
@@ -207,17 +219,22 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
                                 backgroundColor: isDark
                                     ? Colors.grey.shade800
                                     : EnsiConnectApp.ensisaLightBlue,
-                                child: Text(
-                                  req.authorName.isNotEmpty
-                                      ? req.authorName[0]
-                                      : '?',
-                                  style: TextStyle(
-                                    color: isDark
-                                        ? Colors.white
-                                        : EnsiConnectApp.ensisaBlue,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                backgroundImage: req.isMe && currentUser?.profilePictureUrl != null && currentUser!.profilePictureUrl.isNotEmpty
+                                    ? NetworkImage(currentUser.profilePictureUrl)
+                                    : null,
+                                child: (!req.isMe || currentUser?.profilePictureUrl == null || currentUser!.profilePictureUrl.isEmpty)
+                                    ? Text(
+                                        req.authorName.isNotEmpty
+                                            ? req.authorName[0]
+                                            : '?',
+                                        style: TextStyle(
+                                          color: isDark
+                                              ? Colors.white
+                                              : EnsiConnectApp.ensisaBlue,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      )
+                                    : null,
                               ),
                               const SizedBox(width: 12),
                               Expanded(

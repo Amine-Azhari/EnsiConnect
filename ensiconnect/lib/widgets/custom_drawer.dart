@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import "./ensiconnect_app.dart";
 import '../models/user.dart'; // Pour le modèle User
 import '../screens/setting_page.dart'; // Pour la navigation vers les paramètres
+import '../screens/help_support_page.dart'; // Pour la navigation vers l'aide et support
 import '../service/user_service.dart'; // Pour le service d'authentification
 import '../service/auth_service.dart';
 
@@ -74,7 +75,13 @@ class CustomDrawer extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.help_outline),
                 title: const Text('Aide & Support'),
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+                  Navigator.pop(context); // Ferme le Drawer
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HelpSupportPage()), 
+                  );
+                },
               ),
               Divider(color: isDark ? Colors.grey.shade800 : Colors.grey.shade300),
               ListTile(
