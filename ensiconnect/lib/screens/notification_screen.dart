@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// import '../widgets/ensiconnect_app.dart';
-import '../widgets/evaluation_dialog.dart';
+
 import '../service/notification_evaluation_service.dart';
+import '../service/session_service.dart';
+import '../widgets/evaluation_dialog.dart';
 
 class NotificationScreen extends StatefulWidget {
-
   const NotificationScreen({super.key});
 
   @override
@@ -14,7 +14,6 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-
   String? currentStudentId;
   bool _loadingUser = true;
 
@@ -25,6 +24,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Future<void> _loadUser() async {
+    await SessionService().cleanupOldSessions();
+
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('user_email');
     if (email != null) {
@@ -41,7 +42,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return;
       }
     }
-    if (mounted) setState(() => _loadingUser = false);
+    if (mounted) {
+      setState(() => _loadingUser = false);
+    }
   }
 
   @override
@@ -54,7 +57,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     }
 
     if (currentStudentId == null) {
-      return const Scaffold(body: Center(child: Text("Utilisateur non trouvé.")));
+      return const Scaffold(
+          body: Center(child: Text('Utilisateur non trouve.')));
     }
 
     return Scaffold(
@@ -67,40 +71,67 @@ class _NotificationScreenState extends State<NotificationScreen> {
         elevation: 0,
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: NotificationEvaluationService().watchMyNotifications(currentStudentId!),
+        stream: NotificationEvaluationService()
+            .watchMyNotifications(currentStudentId!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text("Erreur : ${snapshot.error}"));
+            return Center(child: Text('Erreur : ${snapshot.error}'));
           }
-          final notifications = snapshot.data ?? [];
 
+          final notifications = snapshot.data ?? [];
           if (notifications.isEmpty) {
-            return const Center(child: Text("Aucune notification pour le moment"));
+            return const Center(
+              child: Text('Aucune notification pour le moment'),
+            );
           }
 
           return ListView.builder(
             itemCount: notifications.length,
             itemBuilder: (context, index) {
               final notif = notifications[index];
+              final isEvaluation = notif['type'] == 'evaluation';
 
               return ListTile(
                 title: Text(
-                  notif["message"] ?? "Notification sans message",
+                  notif['message'] ?? 'Notification sans message',
                   style: TextStyle(color: textColor),
                 ),
-                trailing: const Icon(Icons.star_border, color: Colors.amber),
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => EvaluationDialog(
-                      tutorId: notif["tutorId"] ?? "",
-                      notificationId: notif["id"] ?? "",
-                    ),
-                  );
-                },
+                trailing: isEvaluation
+                    ? const Icon(
+                        Icons.star_border,
+                        color: Colors.amber,
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.blueGrey,
+                        ),
+                        tooltip: 'Supprimer',
+                        onPressed: () async {
+                          final notificationId =
+                              (notif['id'] ?? '').toString().trim();
+                          if (notificationId.isEmpty) {
+                            return;
+                          }
+                          await NotificationEvaluationService()
+                              .deleteNotification(notificationId);
+                        },
+                      ),
+                onTap: isEvaluation
+                    ? () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => EvaluationDialog(
+                            tutorId: (notif['tutorId'] ?? '').toString(),
+                            sessionId: (notif['sessionId'] ?? '').toString(),
+                            notificationId: (notif['id'] ?? '').toString(),
+                          ),
+                        );
+                      }
+                    : null,
               );
             },
           );

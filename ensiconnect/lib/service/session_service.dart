@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../models/session.dart';
 
 class SessionService {
@@ -9,6 +10,10 @@ class SessionService {
 
   CollectionReference<Map<String, dynamic>> get _sessions =>
       _db.collection('Session');
+  CollectionReference<Map<String, dynamic>> get _notifications =>
+      _db.collection('Notification');
+  CollectionReference<Map<String, dynamic>> get _registrations =>
+      _db.collection('RejoindreSession');
 
   Future<DocumentReference<Map<String, dynamic>>> createHelpRequestSession(
     Session session,
@@ -38,94 +43,138 @@ class SessionService {
     try {
       final now = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
-
       final snapshot = await _sessions.get();
 
-      for (var doc in snapshot.docs) {
+      for (final doc in snapshot.docs) {
         final data = doc.data();
         final rawDate = data['Date'] as String?;
-        if (rawDate != null && rawDate.isNotEmpty) {
-          try {
-            final parsedDate = DateTime.parse(rawDate);
-            final sessionDate =
-                DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
+        if (rawDate == null || rawDate.isEmpty) {
+          continue;
+        }
 
-            bool isExpired = false;
+        try {
+          final parsedDate = DateTime.parse(rawDate);
+          final sessionDate =
+              DateTime(parsedDate.year, parsedDate.month, parsedDate.day);
 
-            if (sessionDate.isBefore(today)) {
-              isExpired = true;
-            } else if (sessionDate.isAtSameMomentAs(today)) {
-              final heureFin = data['Heure_Fin'] as String?;
-              if (heureFin != null && heureFin.isNotEmpty) {
-                final parts = heureFin.split(':');
-                if (parts.length >= 2) {
-                  final hour = int.tryParse(parts[0]) ?? 23;
-                  final minute = int.tryParse(parts[1]) ?? 59;
-                  final endTime = DateTime(sessionDate.year, sessionDate.month,
-                      sessionDate.day, hour, minute);
-                  if (endTime.isBefore(now)) {
-                    isExpired = true;
-                  }
+          var isExpired = false;
+          if (sessionDate.isBefore(today)) {
+            isExpired = true;
+          } else if (sessionDate.isAtSameMomentAs(today)) {
+            final heureFin = data['Heure_Fin'] as String?;
+            if (heureFin != null && heureFin.isNotEmpty) {
+              final parts = heureFin.split(':');
+              if (parts.length >= 2) {
+                final hour = int.tryParse(parts[0]) ?? 23;
+                final minute = int.tryParse(parts[1]) ?? 59;
+                final endTime = DateTime(
+                  sessionDate.year,
+                  sessionDate.month,
+                  sessionDate.day,
+                  hour,
+                  minute,
+                );
+                if (endTime.isBefore(now)) {
+                  isExpired = true;
                 }
               }
             }
-
-            if (isExpired) {
-              final tutorId = data['OrganisateurID'] as String?;
-              final participantsRaw = data['participants'] as List<dynamic>?;
-
-              List<dynamic> participants = [];
-              if (participantsRaw is List) participants = participantsRaw;
-
-              final sessionName = data['Titre'] as String? ?? 'Session';
-              final sessionId = doc.id;
-
-              WriteBatch batch = _db.batch();
-
-              if (tutorId != null && tutorId.isNotEmpty) {            
-                DocumentReference notifRef = _db.collection('Notification').doc();
-                batch.set(notifRef, {
-                  'userId': tutorId,
-                  'tutorId': tutorId,
-                  'sessionId': sessionId,
-                  'title': 'Session terminée !',
-                  'message': 'Votre session de "$sessionName" est finie. Vos élèves ont été invités à vous laisser une note.',
-                  'type': 'info',
-                  'isRead': false,
-                  'createdAt': FieldValue.serverTimestamp(),
-                }); 
-              }
-
-                for (var participant in participants) {
-                  final participantId = participant.toString().trim();
-                  if (participantId.isEmpty || participantId == tutorId) continue;
-
-                  DocumentReference notifRef = _db.collection('Notification').doc();
-                  batch.set(notifRef, {
-                    'userId': participantId,
-                    'tutorId': tutorId,
-                    'sessionId': sessionId,
-                    'title': 'Évaluez votre tuteur',
-                    'message': 'La session de "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
-                    'type': 'evaluation',
-                    'isRead': false,
-                    'createdAt': FieldValue.serverTimestamp(),
-                  });
-                }
-
-                // await doc.reference.delete();
-
-                batch.delete(doc.reference);
-
-                await batch.commit();
-            }
-          } catch (e) {
-            // Ignorer les erreurs de parsing pour ne pas bloquer la boucle
           }
+
+          if (!isExpired) {
+            continue;
+          }
+
+          final tutorId = (data['OrganisateurID'] ?? '').toString().trim();
+          if (tutorId.isEmpty) {
+            continue;
+          }
+
+          final sessionId = doc.id;
+          final sessionName =
+              ((data['Titre'] ?? data['Sujet'] ?? 'Session') as String).trim();
+          final participantIds = await _resolveParticipantIds(
+            sessionId: sessionId,
+            tutorId: tutorId,
+            sessionData: data,
+          );
+          final registrations = await _registrations
+              .where('SessionID', isEqualTo: sessionId)
+              .get();
+
+          final batch = _db.batch();
+
+          batch.set(_notifications.doc(), {
+            'userId': tutorId,
+            'tutorId': tutorId,
+            'sessionId': sessionId,
+            'title': 'Session terminee !',
+            'message':
+                'Votre session de "$sessionName" est finie. Vos eleves ont ete invites a vous laisser une note.',
+            'type': 'info',
+            'isRead': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+
+          for (final participantId in participantIds) {
+            batch.set(_notifications.doc(), {
+              'userId': participantId,
+              'tutorId': tutorId,
+              'sessionId': sessionId,
+              'title': 'Evaluez votre tuteur',
+              'message':
+                  'La session de "$sessionName" est finie. Prenez un moment pour evaluer votre tuteur.',
+              'type': 'evaluation',
+              'isRead': false,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
+
+          for (final registration in registrations.docs) {
+            batch.delete(registration.reference);
+          }
+
+          batch.delete(doc.reference);
+          await batch.commit();
+        } catch (_) {
+          // Une session mal formée ne doit pas bloquer le nettoyage global.
         }
       }
-    } catch (e) {
-      // Gérer l'erreur silencieusement
+    } catch (_) {
+      // Le nettoyage ne doit pas casser l'application.
     }
+  }
+
+  Future<Set<String>> _resolveParticipantIds({
+    required String sessionId,
+    required String tutorId,
+    required Map<String, dynamic> sessionData,
+  }) async {
+    final participantIds = <String>{};
+
+    void addCandidate(dynamic value) {
+      final candidate = value.toString().trim();
+      if (candidate.isNotEmpty && candidate != tutorId) {
+        participantIds.add(candidate);
+      }
+    }
+
+    for (final key in const ['participants', 'Participants']) {
+      final raw = sessionData[key];
+      if (raw is List) {
+        for (final participant in raw) {
+          addCandidate(participant);
+        }
+      }
+    }
+
+    final registrations =
+        await _registrations.where('SessionID', isEqualTo: sessionId).get();
+
+    for (final registration in registrations.docs) {
+      addCandidate(registration.data()['EtudiantID']);
+    }
+
+    return participantIds;
   }
 }

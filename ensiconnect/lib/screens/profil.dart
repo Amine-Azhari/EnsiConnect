@@ -38,7 +38,7 @@ class _ProfilPageState extends State<ProfilPage> {
   String email = "";
   String filiere = "";
   String promotion = "";
-  String profilePictureUrl = '';
+  String profilePictureUrl = "";
 
   int sessions = 0;
   double averageNote = 0.0;
@@ -75,6 +75,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
     setState(() {
       currentUserId = currentUser.id;
+
       fullName = user.fullName;
       email = user.email;
       filiere = user.filiere;
@@ -164,19 +165,16 @@ class _ProfilPageState extends State<ProfilPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-
-      /// Drawer seulement sur ton profil
       drawer: widget.isOwnProfile ? const CustomDrawer() : null,
 
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
-      /// 🔥 APPBAR = flèche retour sur profils publics
+      // ✅ back arrow sur profil public
       appBar: widget.isOwnProfile
           ? null
           : AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              centerTitle: true,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
@@ -215,11 +213,12 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 20),
 
-              /// ACTION BUTTON
+              // ✅ bouton action
               widget.isOwnProfile
                   ? OutlinedButton(
                       onPressed: _toggleEdit,
-                      child: Text(isEditing ? "Sauvegarder" : "Modifier"),
+                      child:
+                          Text(isEditing ? "Sauvegarder" : "Modifier"),
                     )
                   : OutlinedButton.icon(
                       onPressed: _openChat,
@@ -249,7 +248,6 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 18),
 
-              /// INFOS
               ui.profileCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,13 +275,13 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 18),
 
-              /// DESCRIPTION
+              // ✅ DESCRIPTION
               ui.profileCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ui.sectionTitle("À propos"),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: _descriptionController,
                       enabled: isEditing,
@@ -302,7 +300,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 18),
 
-              /// SKILLS
+              // ✅ SKILLS
               ui.profileCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,9 +338,6 @@ class _ProfilPageState extends State<ProfilPage> {
                           label: Text(skill),
                           onDeleted: isEditing
                               ? () => _removeSkill(skill)
-                              : null,
-                          deleteIcon: isEditing
-                              ? const Icon(Icons.close, size: 18)
                               : null,
                         );
                       }).toList(),

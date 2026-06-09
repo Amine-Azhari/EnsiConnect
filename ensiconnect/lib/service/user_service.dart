@@ -129,17 +129,47 @@ class UserServices {
     }
   }
 
+  Future<void> rebuildAverageNotesFromEvaluations() async {
+    final studentsSnapshot = await _etudiants.get();
+    final evaluationsSnapshot = await _db.collection('Evaluation').get();
+    final notesByTutor = <String, List<double>>{};
+
+    for (final doc in evaluationsSnapshot.docs) {
+      final data = doc.data();
+      final tutorId = (data['tutorId'] ?? '').toString().trim();
+      final note = data['Note'];
+      if (tutorId.isEmpty || note is! num) {
+        continue;
+      }
+
+      notesByTutor.putIfAbsent(tutorId, () => <double>[]).add(note.toDouble());
+    }
+
+    final batch = _db.batch();
+
+    for (final studentDoc in studentsSnapshot.docs) {
+      final notes = notesByTutor[studentDoc.id] ?? const <double>[];
+      final average = notes.isEmpty
+          ? 0.0
+          : notes.reduce((a, b) => a + b) / notes.length;
+
+      batch.set(studentDoc.reference, {
+        'averageNote': double.parse(average.toStringAsFixed(2)),
+        'sessions': notes.length,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+
+    await batch.commit();
+  }
+
   //Calcule et met à jour averageNote
   Future<void> updateAverageNote(String userId) async {
-    // Récupère toutes les évaluations de l'étudiant
     final snapshot = await _db
         .collection('Evaluation')
         .where('tutorId', isEqualTo: userId)
         .get();
 
-    if (snapshot.docs.isEmpty) return;
-
-    // Calcule la moyenne
     final notes = snapshot.docs
         .map((doc) {
           final note = doc.data()['Note'];
@@ -148,14 +178,12 @@ class UserServices {
         .whereType<double>()
         .toList();
 
-    if (notes.isEmpty) return;
+    final average = notes.isEmpty
+        ? 0.0
+        : notes.reduce((a, b) => a + b) / notes.length;
 
-    final average = notes.reduce((a, b) => a + b) / notes.length;
-    final normalizedAverage = average.toDouble();
-
-    // Met à jour Etudiant
     await _etudiants.doc(userId).set({
-      'averageNote': double.parse(normalizedAverage.toStringAsFixed(2)),
+      'averageNote': double.parse(average.toStringAsFixed(2)),
       'sessions': notes.length,
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
