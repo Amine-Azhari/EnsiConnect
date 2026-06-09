@@ -54,10 +54,6 @@ class _PostSessionPageState extends State<PostSessionPage>
   final _titreCtrl = TextEditingController();
   final _lieuCtrl = TextEditingController();
 
-  final List<String> _tagsDisponibles = [
-    'Informatique', 'Automatique et système embarqués', 'Mécanique', 'Textile',
-    'Génie industriel',
-  ];
 
   final List<String> _matieres = [
     'Algorithme et systèmes de données', 'Programmation', 'Physique',
@@ -295,14 +291,9 @@ class _PostSessionPageState extends State<PostSessionPage>
           child: Form(
             key: _formKey,
             child: ListView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 88),
               children: [
-                const SessionHeader(),
-                const SizedBox(height: 24),
-
                 SessionFormSection(
-                  icon: Icons.menu_book_rounded,
-                  label: 'Sujet',
                   cardColor: cardColor,
                   children: [
                     _buildTextField(
@@ -320,11 +311,9 @@ class _PostSessionPageState extends State<PostSessionPage>
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 SessionFormSection(
-                  icon: Icons.description_rounded,
-                  label: 'Description',
                   cardColor: cardColor,
                   children: [
                     TextFormField(
@@ -355,11 +344,9 @@ class _PostSessionPageState extends State<PostSessionPage>
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 SessionFormSection(
-                  icon: Icons.calendar_today_rounded,
-                  label: 'Quand ?',
                   cardColor: cardColor,
                   children: [
                     SessionPickerTile(
@@ -370,7 +357,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                       onTap: _pickDate,
                       isDark: isDark,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Row(children: [
                       Expanded(
                         child: SessionPickerTile(
@@ -382,7 +369,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                           isDark: isDark,
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Expanded(
                         child: SessionPickerTile(
                           icon: Icons.access_time_filled_rounded,
@@ -396,11 +383,9 @@ class _PostSessionPageState extends State<PostSessionPage>
                     ]),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 SessionFormSection(
-                  icon: Icons.location_on_rounded,
-                  label: 'Lieu',
                   cardColor: cardColor,
                   children: [
                     TextFormField(
@@ -476,17 +461,15 @@ class _PostSessionPageState extends State<PostSessionPage>
                       ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 SessionFormSection(
-                  icon: Icons.people_rounded,
-                  label: 'Places',
                   cardColor: cardColor,
                   children: [
                     Row(children: [
                       const Icon(Icons.people_alt_outlined, color: EnsiConnectApp.ensisaBlue, size: 20),
-                      const SizedBox(width: 10),
-                      const Text('Nombre de places :', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 8),
+                      const Text('Nombre de places :', style: TextStyle(fontSize: 13)),
                       const Spacer(),
                       SessionPlacesCounter(
                         value: _data.nbPlaces,
@@ -496,11 +479,9 @@ class _PostSessionPageState extends State<PostSessionPage>
                     ]),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 SessionFormSection(
-                  icon: Icons.person_add_rounded,
-                  label: 'Participants',
                   cardColor: cardColor,
                   children: [SessionEtudiantSearch(
                   searchCtrl: _searchCtrl,
