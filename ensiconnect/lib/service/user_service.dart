@@ -107,4 +107,35 @@ class UserServices {
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
   }
+
+  //Calcule et met à jour averageNote
+  Future<void> updateAverageNote(String userId) async {
+    // Récupère toutes les évaluations de l'étudiant
+    final snapshot = await _db
+        .collection('Evaluation')
+        .where('tutorID', isEqualTo: userId)
+        .get();
+
+    if (snapshot.docs.isEmpty) return;
+
+    // Calcule la moyenne
+    final notes = snapshot.docs
+        .map((doc) {
+          final note = doc.data()['Note'];
+          return (note is num) ? note.toDouble() : null;
+        })
+        .whereType<double>()
+        .toList();
+
+    if (notes.isEmpty) return;
+
+    final average = notes.reduce((a, b) => a + b) / notes.length;
+
+    // Met à jour Etudiant
+    await _etudiants.doc(userId).set({
+      'averageNote': double.parse(average.toStringAsFixed(2)),
+      'sessions': notes.length,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
 }

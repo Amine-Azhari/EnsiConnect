@@ -322,6 +322,13 @@ class _ProfilPageState extends State<ProfilPage> {
       key: _scaffoldKey,
       drawer: widget.isOwnProfile ? const CustomDrawer() : null,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: widget.isOwnProfile
+          ? null
+          : AppBar(
+              centerTitle: true,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+            ),
       body: SafeArea(
         child: SizedBox(
           width: double.infinity,
@@ -333,44 +340,6 @@ class _ProfilPageState extends State<ProfilPage> {
                   CustomHeader(
                     onMenuPressed: () =>
                         _scaffoldKey.currentState?.openDrawer(),
-                  )
-                else
-                  Container(
-                    height: 56,
-                    margin: const EdgeInsets.only(bottom: 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? const Color(0xFF102033)
-                                : const Color(0xFFEAF4FF),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                                color: const Color(0xFF248BFF), width: 1),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF248BFF)
-                                    .withValues(alpha: 0.08),
-                                blurRadius: 12,
-                              ),
-                            ],
-                          ),
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            icon: const Icon(
-                              Icons.arrow_back_rounded,
-                              color: Color(0xFF248BFF),
-                              size: 28,
-                            ),
-                            onPressed: () => Navigator.pop(context),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
 
                 const SizedBox(height: 20),
@@ -532,8 +501,7 @@ class _ProfilPageState extends State<ProfilPage> {
                         const SizedBox(height: 18),
                         Container(
                           width: double.infinity,
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 14),
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
                             color: isDark
                                 ? const Color(0xFF07101C)
