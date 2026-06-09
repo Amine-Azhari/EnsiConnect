@@ -46,6 +46,8 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           autoFocusSearch: _focusExplorerSearch,
           searchBarKey: _explorerSearchKey,
           hideSearchBar: _hideExplorerSearch,
+          initialLoadDelay:
+              _showSearchFlight ? _searchFlightDuration : Duration.zero,
         ),
         const ChatPage(),
         const ProfilPage(),
@@ -87,6 +89,12 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       _showSearchFlight = true;
       _hideExplorerSearch = true;
       _focusExplorerSearch = false;
+    });
+
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    if (!mounted || !_showSearchFlight) return;
+
+    setState(() {
       _currentIndex = 1;
     });
 

@@ -16,11 +16,13 @@ class SearchPage extends StatefulWidget {
     this.autoFocusSearch = false,
     this.searchBarKey,
     this.hideSearchBar = false,
+    this.initialLoadDelay = Duration.zero,
   });
 
   final bool autoFocusSearch;
   final GlobalKey? searchBarKey;
   final bool hideSearchBar;
+  final Duration initialLoadDelay;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -73,7 +75,11 @@ class _SearchPageState extends State<SearchPage> {
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        initialiserPage();
+        Future<void>.delayed(widget.initialLoadDelay, () {
+          if (mounted) {
+            initialiserPage();
+          }
+        });
       }
     });
   }
