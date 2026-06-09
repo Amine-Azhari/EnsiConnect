@@ -325,13 +325,6 @@ class _ConversationPageState extends State<ConversationPage> {
             ),
             child: Row(
               children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.attach_file,
-                    color: EnsiConnectApp.ensisaBlue,
-                  ),
-                  onPressed: () {},
-                ),
                 Expanded(
                   child: TextField(
                     controller: _controller,
