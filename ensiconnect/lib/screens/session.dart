@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../widgets/session_widgets.dart';
@@ -30,6 +31,16 @@ class SessionFormData {
     this.nbPlaces = 2,
     this.tags = const [],
   });
+}
+
+class _TimeRangeSelection {
+  const _TimeRangeSelection({
+    required this.start,
+    required this.end,
+  });
+
+  final TimeOfDay start;
+  final TimeOfDay end;
 }
 
 // ─── Page principale ──────────────────────────────────────────────────────────
@@ -125,6 +136,17 @@ class _PostSessionPageState extends State<PostSessionPage>
   String _toHHmm(TimeOfDay t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
+  DateTime _dateTimeFromTime(TimeOfDay time) {
+    final baseDate = _data.date ?? DateTime.now();
+    return DateTime(
+      baseDate.year,
+      baseDate.month,
+      baseDate.day,
+      time.hour,
+      time.minute,
+    );
+  }
+
   Future<void> _pickDate() async {
     final now = DateTime.now();
     final picked = await showDatePicker(
@@ -143,34 +165,203 @@ class _PostSessionPageState extends State<PostSessionPage>
     if (picked != null) setState(() => _data.date = picked);
   }
 
-  Future<void> _pickTime() async {
-    final picked = await showTimePicker(
+  Future<void> _pickTimeRange() async {
+    final initialStart = _data.heure ?? const TimeOfDay(hour: 8, minute: 0);
+    final defaultEndDateTime =
+        _dateTimeFromTime(initialStart).add(const Duration(hours: 1));
+    final initialEnd =
+        _data.heureFin ?? TimeOfDay.fromDateTime(defaultEndDateTime);
+
+    DateTime selectedStart = _dateTimeFromTime(initialStart);
+    DateTime selectedEnd = _dateTimeFromTime(initialEnd);
+    if (!selectedEnd.isAfter(selectedStart)) {
+      selectedEnd = selectedStart.add(const Duration(hours: 1));
+    }
+
+    final result = await showModalBottomSheet<_TimeRangeSelection>(
       context: context,
-      initialTime: _data.heure ?? TimeOfDay.now(),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme:
-              ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
-        ),
-        child: child!,
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
+        final textColor = isDark ? Colors.white : Colors.black87;
+        final sheetColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+        final subTextColor = isDark ? Colors.white70 : Colors.black54;
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              decoration: BoxDecoration(
+                color: sheetColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 42,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.35),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Choisir la plage horaire',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Selectionne l\'heure de début et l\'heure de fin.',
+                      style: TextStyle(
+                        color: subTextColor,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildCupertinoTimeField(
+                      context: context,
+                      label: 'Début',
+                      value: selectedStart,
+                      onChanged: (newValue) {
+                        setSheetState(() {
+                          selectedStart = newValue;
+                          if (!selectedEnd.isAfter(selectedStart)) {
+                            selectedEnd =
+                                selectedStart.add(const Duration(minutes: 30));
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 14),
+                    _buildCupertinoTimeField(
+                      context: context,
+                      label: 'Fin',
+                      value: selectedEnd,
+                      minimumDate:
+                          selectedStart.add(const Duration(minutes: 30)),
+                      onChanged: (newValue) {
+                        setSheetState(() {
+                          selectedEnd = newValue;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.of(sheetContext).pop(),
+                            child: const Text('Annuler'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(sheetContext).pop(
+                                _TimeRangeSelection(
+                                  start: TimeOfDay.fromDateTime(selectedStart),
+                                  end: TimeOfDay.fromDateTime(selectedEnd),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: EnsiConnectApp.ensisaBlue,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Valider'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
-    if (picked != null) setState(() => _data.heure = picked);
+
+    if (result == null) return;
+
+    setState(() {
+      _data.heure = result.start;
+      _data.heureFin = result.end;
+    });
   }
 
-  Future<void> _pickTimeFin() async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: _data.heureFin ?? TimeOfDay.now(),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme:
-              ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
+  Widget _buildCupertinoTimeField({
+    required BuildContext context,
+    required String label,
+    required DateTime value,
+    required ValueChanged<DateTime> onChanged,
+    DateTime? minimumDate,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final cardColor =
+        isDark ? const Color(0xFF121212) : const Color(0xFFF6F7FB);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: EnsiConnectApp.ensisaBlue.withValues(alpha: 0.16),
         ),
-        child: child!,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: EnsiConnectApp.ensisaBlue,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 120,
+            child: CupertinoTheme(
+              data: CupertinoThemeData(
+                brightness: isDark ? Brightness.dark : Brightness.light,
+                textTheme: CupertinoTextThemeData(
+                  dateTimePickerTextStyle: TextStyle(
+                    color: textColor,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+              child: CupertinoDatePicker(
+                mode: CupertinoDatePickerMode.time,
+                use24hFormat: true,
+                minuteInterval: 15,
+                initialDateTime: value,
+                minimumDate: minimumDate,
+                onDateTimeChanged: onChanged,
+              ),
+            ),
+          ),
+        ],
       ),
     );
-    if (picked != null) setState(() => _data.heureFin = picked);
   }
 
   Future<void> _submit() async {
@@ -390,33 +581,16 @@ class _PostSessionPageState extends State<PostSessionPage>
                       isDark: isDark,
                     ),
                     const SizedBox(height: 8),
-                    Row(children: [
-                      Expanded(
-                        child: SessionPickerTile(
-                          icon: Icons.access_time_rounded,
-                          title: 'Heure de début',
-                          value: _data.heure != null
-                              ? _formatTime(_data.heure!)
-                              : null,
-                          placeholder: 'Choisir',
-                          onTap: _pickTime,
-                          isDark: isDark,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: SessionPickerTile(
-                          icon: Icons.access_time_filled_rounded,
-                          title: 'Heure de fin',
-                          value: _data.heureFin != null
-                              ? _formatTime(_data.heureFin!)
-                              : null,
-                          placeholder: 'Choisir',
-                          onTap: _pickTimeFin,
-                          isDark: isDark,
-                        ),
-                      ),
-                    ]),
+                    SessionPickerTile(
+                      icon: Icons.schedule_rounded,
+                      title: 'Plage horaire',
+                      value: _data.heure != null && _data.heureFin != null
+                          ? '${_formatTime(_data.heure!)} - ${_formatTime(_data.heureFin!)}'
+                          : null,
+                      placeholder: 'Choisir debut et fin',
+                      onTap: _pickTimeRange,
+                      isDark: isDark,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -561,7 +735,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                         final maxOtherParticipants = _data.nbPlaces - 1;
                         if (_etudiantsAjoutes.length >= maxOtherParticipants) {
                           _showError(
-                            'Cette session a ${_data.nbPlaces} place(s) au total, vous compris.',
+                            'Cette session a ${_data.nbPlaces} places au total',
                           );
                           return;
                         }
