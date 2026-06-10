@@ -8,6 +8,7 @@ import 'profil.dart';
 import '../service/chat_service.dart';
 import '../models/conversation.dart';
 import 'chat_messages.dart';
+import '../widgets/person_avatar.dart';
 
 class SessionsDetailsPage extends StatefulWidget {
   const SessionsDetailsPage({super.key, required this.session});
@@ -877,23 +878,15 @@ class _ParticipantAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageUrl = participant.imageUrl;
 
-    return CircleAvatar(
+    return PersonAvatar(
+      name: participant.name,
+      imageUrl: participant.imageUrl,
       radius: 24,
-      backgroundColor: color.withValues(alpha: 0.18),
-      backgroundImage:
-          imageUrl == null || imageUrl.isEmpty ? null : NetworkImage(imageUrl),
-      child: imageUrl == null || imageUrl.isEmpty
-          ? Text(
-              participant.initials,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          : null,
-    );
+      fontSize: 16,
+     );
+    }
   }
-}
+
 
 class _SectionCard extends StatelessWidget {
   const _SectionCard({required this.child});
