@@ -64,17 +64,8 @@ class _PostSessionPageState extends State<PostSessionPage>
   final _titreCtrl = TextEditingController();
   final _lieuCtrl = TextEditingController();
 
-  final List<String> _matieres = [
-    'Algorithme et systèmes de données',
-    'Programmation',
-    'Physique',
-    'Automatique',
-    'Électronique',
-    'Réseau & Télécoms',
-    'Mathématiques',
-    'Chimie',
-    'Autre',
-  ];
+  List<String> _matieres = [];
+  bool _matieresLoading = true;
 
   final Set<String> _tagsSelectionnes = {};
 
@@ -110,8 +101,10 @@ class _PostSessionPageState extends State<PostSessionPage>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOut));
     _animCtrl.forward();
+    _chargerMatieres();
     _chargerSalles();
     UserServices().getCurrentUser().then((user) {
+      if (!mounted) return;
       setState(() => _currentUserId = user?.id);
     });
   }
@@ -439,6 +432,99 @@ class _PostSessionPageState extends State<PostSessionPage>
       _sallesFiltrees = [];
       _sallesLoading = false;
     });
+  }
+
+  Future<void> _chargerMatieres() async {
+    try {
+      final snap = await FirebaseFirestore.instance.collection('Matiere').get();
+      final matieres = snap.docs
+          .map((doc) =>
+              (doc.data()['Nom'] ?? doc.data()['name'] ?? '').toString().trim())
+          .where((matiere) => matiere.isNotEmpty)
+          .toSet()
+          .toList()
+        ..sort();
+
+      if (!mounted) return;
+      setState(() {
+        _matieres = matieres;
+        _matieresLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _matieres = [];
+        _matieresLoading = false;
+      });
+    }
+  }
+
+  Future<String?> _choisirMatiere() async {
+    if (_matieresLoading || _matieres.isEmpty) return null;
+
+    return showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
+        final sheetColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+        final textColor = isDark ? Colors.white : Colors.black87;
+
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: sheetColor,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            constraints: const BoxConstraints(maxHeight: 420),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                  child: Text(
+                    'Choisir une matière',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: _matieres.length,
+                    separatorBuilder: (_, __) => Divider(
+                      height: 1,
+                      color: isDark ? Colors.white12 : Colors.grey.shade200,
+                    ),
+                    itemBuilder: (context, index) {
+                      final matiere = _matieres[index];
+                      return ListTile(
+                        title: Text(
+                          matiere,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: textColor),
+                        ),
+                        trailing: _data.matiere == matiere
+                            ? const Icon(Icons.check_rounded,
+                                color: EnsiConnectApp.ensisaBlue)
+                            : null,
+                        onTap: () => Navigator.of(sheetContext).pop(matiere),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _rechercherEtudiants(String query) async {
@@ -829,39 +915,84 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   Widget _buildDropdown(bool isDark) {
-    return DropdownButtonFormField<String>(
+    return FormField<String>(
       initialValue: _data.matiere,
-      hint: const Text('Matière concernée', style: TextStyle(fontSize: 13)),
-      style: TextStyle(
-          fontSize: 14, color: isDark ? Colors.white : Colors.black87),
-      dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded,
-          color: EnsiConnectApp.ensisaBlue),
-      decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.school_rounded,
-            color: EnsiConnectApp.ensisaBlue, size: 20),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        enabledBorder: OutlineInputBorder(
+      validator: (_) => _data.matiere == null || _data.matiere!.isEmpty
+          ? 'Champ requis'
+          : null,
+      builder: (state) {
+        final hasValue = (state.value ?? '').isNotEmpty;
+        final displayText = hasValue ? state.value! : 'Matière concernée';
+        final displayColor = hasValue
+            ? (isDark ? Colors.white : Colors.black87)
+            : Colors.grey.shade500;
+
+        return InkWell(
           borderRadius: BorderRadius.circular(12),
-          borderSide:
-              BorderSide(color: isDark ? Colors.white24 : Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: EnsiConnectApp.ensisaBlue, width: 1.8),
-        ),
-        filled: true,
-        fillColor:
-            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-      ),
-      items: _matieres
-          .map((m) => DropdownMenuItem(
-              value: m, child: Text(m, style: const TextStyle(fontSize: 14))))
-          .toList(),
-      onChanged: (v) => setState(() => _data.matiere = v),
+          onTap: _matieresLoading
+              ? null
+              : () async {
+                  final picked = await _choisirMatiere();
+                  if (picked == null) return;
+                  state.didChange(picked);
+                  if (!mounted) return;
+                  setState(() => _data.matiere = picked);
+                },
+          child: InputDecorator(
+            isEmpty: !hasValue,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.school_rounded,
+                  color: EnsiConnectApp.ensisaBlue, size: 20),
+              suffixIcon: _matieresLoading
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : const Icon(Icons.keyboard_arrow_down_rounded,
+                      color: EnsiConnectApp.ensisaBlue),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                    color: isDark ? Colors.white24 : Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                    color: EnsiConnectApp.ensisaBlue, width: 1.8),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red),
+              ),
+              filled: true,
+              fillColor: isDark
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.grey.shade50,
+              isDense: true,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            ),
+            child: SizedBox(
+              height: 34,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  displayText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 14, color: displayColor),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
