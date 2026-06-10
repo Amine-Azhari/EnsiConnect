@@ -45,6 +45,7 @@ class _ProfilPageState extends State<ProfilPage> {
   String profilePictureUrl = '';
 
   int sessions = 0;
+  int reviewsCount = 0;
   double averageNote = 0.0;
 
   bool get isOwnProfile => currentUserId == profileUserId;
@@ -88,6 +89,8 @@ class _ProfilPageState extends State<ProfilPage> {
       _isLoading = false;
     });
 
+    _loadReviewsCount();
+
     _profileSubscription?.cancel();
     _profileSubscription = FirebaseFirestore.instance
         .collection('Etudiant')
@@ -107,6 +110,39 @@ class _ProfilPageState extends State<ProfilPage> {
             ? (data['averageNote'] as num).toDouble()
             : averageNote;
       });
+    });
+  }
+
+  Future<void> _loadReviewsCount() async {
+    final snapshots = await Future.wait([
+      FirebaseFirestore.instance
+          .collection('Evaluation')
+          .where('tutorId', isEqualTo: profileUserId)
+          .get(),
+      FirebaseFirestore.instance
+          .collection('Evaluation')
+          .where('tutorID', isEqualTo: profileUserId)
+          .get(),
+    ]);
+
+    final seenIds = <String>{};
+    var count = 0;
+
+    for (final snapshot in snapshots) {
+      for (final doc in snapshot.docs) {
+        if (!seenIds.add(doc.id)) continue;
+
+        final comment = (doc.data()['Commentaire'] ?? '').toString().trim();
+        if (comment.isNotEmpty) {
+          count++;
+        }
+      }
+    }
+
+    if (!mounted) return;
+
+    setState(() {
+      reviewsCount = count;
     });
   }
 
@@ -152,6 +188,7 @@ class _ProfilPageState extends State<ProfilPage> {
     required IconData icon,
     required Color accentColor,
     VoidCallback? onTap,
+    String? subtitle,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -186,6 +223,18 @@ class _ProfilPageState extends State<ProfilPage> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFACB1BC) : Colors.black87,
+                      fontSize: 12,
+                      height: 1.2,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -310,20 +359,18 @@ class _ProfilPageState extends State<ProfilPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BoxDecoration(
-      color: isDark ? const Color(0xD90A111C) : Colors.white,
+      color: Theme.of(context).cardColor,
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(
-        color: isDark ? const Color(0xFF203047) : const Color(0xFFF1F4FA),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: isDark
-              ? Colors.black.withValues(alpha: 0.18)
-              : const Color(0xFF8FA5C7).withValues(alpha: 0.18),
-          blurRadius: 24,
-          offset: const Offset(0, 10),
-        ),
-      ],
+      border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
+      boxShadow: isDark
+          ? []
+          : [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
     );
   }
 
@@ -425,7 +472,13 @@ class _ProfilPageState extends State<ProfilPage> {
     if (icon == Icons.school_rounded || icon == Icons.school_outlined) {
       return const Color(0xFF66BB6A);
     }
-    if (icon == Icons.groups_outlined || icon == Icons.badge_outlined) {
+    if (icon == Icons.badge_outlined) {
+      return const Color(0xFF7E57C2);
+    }
+    if (icon == Icons.menu_book_outlined || icon == Icons.menu_book_rounded) {
+      return const Color(0xFFEF5350);
+    }
+    if (icon == Icons.groups_outlined) {
       return const Color(0xFFEF5350);
     }
     return const Color(0xFF42A5F5);
@@ -625,35 +678,30 @@ class _ProfilPageState extends State<ProfilPage> {
         children: [
           Row(
             children: [
-              _IconTile(
-                icon: Icons.badge_outlined,
-                color: _quickActionColorForIcon(Icons.badge_outlined),
-              ),
-              const SizedBox(width: 14),
               Expanded(child: _sectionTitle("Informations personnelles")),
             ],
           ),
           const SizedBox(height: 22),
           _infoGridTile(
-            icon: Icons.person_rounded,
+            icon: Icons.badge_outlined,
             label: "Nom",
             value: fullName,
           ),
           const SizedBox(height: 18),
           _infoGridTile(
-            icon: Icons.mail_rounded,
+            icon: Icons.mail_outline_rounded,
             label: "Email",
             value: email,
           ),
           const SizedBox(height: 18),
           _infoGridTile(
-            icon: Icons.school_rounded,
+            icon: Icons.school_outlined,
             label: "Filière",
             value: filiere,
           ),
           const SizedBox(height: 18),
           _infoGridTile(
-            icon: Icons.menu_book_rounded,
+            icon: Icons.menu_book_outlined,
             label: "Promotion",
             value: promotion,
           ),
@@ -844,10 +892,11 @@ class _ProfilPageState extends State<ProfilPage> {
                           const SizedBox(width: 14),
                           Expanded(
                             child: _statCard(
-                              title: "Note",
+                              title: "Avis",
                               value: averageNote.toStringAsFixed(1),
                               icon: Icons.star_border_rounded,
                               accentColor: const Color(0xFFE0A400),
+                              subtitle: "($reviewsCount)",
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -1100,20 +1149,21 @@ class _IconTile extends StatelessWidget {
       width: 58,
       height: 58,
       decoration: BoxDecoration(
-        color: isDark
-            ? color.withValues(alpha: 0.18)
-            : color.withValues(alpha: 0.10),
+        color: color,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(
-              alpha: isDark ? 0.10 : 0.08,
-            ),
-            blurRadius: 18,
-          ),
-        ],
+        border:
+            isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.18),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
-      child: Icon(icon, color: color, size: 30),
+      child: Icon(icon, color: Colors.white, size: 30),
     );
   }
 }

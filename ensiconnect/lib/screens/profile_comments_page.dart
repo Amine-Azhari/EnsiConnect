@@ -116,7 +116,7 @@ class _ProfileCommentsPageState extends State<ProfileCommentsPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
     final mutedColor = isDark ? const Color(0xFFACB1BC) : Colors.black54;
-    final cardColor = isDark ? const Color(0xD90A111C) : Colors.white;
+    final cardColor = Theme.of(context).cardColor;
 
     return Scaffold(
       backgroundColor: isDark
@@ -144,20 +144,18 @@ class _ProfileCommentsPageState extends State<ProfileCommentsPage> {
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark
-                        ? const Color(0xFF203047)
-                        : const Color(0xFFF1F4FA),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isDark
-                          ? Colors.black.withValues(alpha: 0.18)
-                          : const Color(0xFF8FA5C7).withValues(alpha: 0.18),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  border: isDark
+                      ? Border.all(color: Colors.grey.shade800, width: 1)
+                      : null,
+                  boxShadow: isDark
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                 ),
                 child: Row(
                   children: [
@@ -165,14 +163,26 @@ class _ProfileCommentsPageState extends State<ProfileCommentsPage> {
                       width: 58,
                       height: 58,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE0A400).withValues(
-                          alpha: isDark ? 0.18 : 0.12,
-                        ),
+                        color: const Color(0xFFE0A400),
                         borderRadius: BorderRadius.circular(14),
+                        border: isDark
+                            ? Border.all(color: Colors.grey.shade700, width: 1)
+                            : null,
+                        boxShadow: isDark
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: const Color(
+                                    0xFFE0A400,
+                                  ).withValues(alpha: 0.18),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
                       ),
                       child: const Icon(
                         Icons.star_border_rounded,
-                        color: Color(0xFFE0A400),
+                        color: Colors.white,
                         size: 32,
                       ),
                     ),
@@ -275,11 +285,22 @@ class _ProfileCommentsPageState extends State<ProfileCommentsPage> {
                           decoration: BoxDecoration(
                             color: cardColor,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF203047)
-                                  : const Color(0xFFF1F4FA),
-                            ),
+                            border: isDark
+                                ? Border.all(
+                                    color: Colors.grey.shade800,
+                                    width: 1,
+                                  )
+                                : null,
+                            boxShadow: isDark
+                                ? []
+                                : [
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.03),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
