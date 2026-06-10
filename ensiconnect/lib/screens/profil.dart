@@ -169,7 +169,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
-      // ✅ back arrow sur profil public
+      //  back arrow sur profil public
       appBar: widget.isOwnProfile
           ? null
           : AppBar(
@@ -213,7 +213,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 20),
 
-              // ✅ bouton action
+              //  bouton action
               widget.isOwnProfile
                   ? OutlinedButton(
                       onPressed: _toggleEdit,
@@ -275,7 +275,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 18),
 
-              // ✅ DESCRIPTION
+              //  DESCRIPTION
               ui.profileCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +300,7 @@ class _ProfilPageState extends State<ProfilPage> {
 
               const SizedBox(height: 18),
 
-              // ✅ SKILLS
+              //  SKILLS
               ui.profileCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
