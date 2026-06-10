@@ -735,7 +735,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                         final maxOtherParticipants = _data.nbPlaces - 1;
                         if (_etudiantsAjoutes.length >= maxOtherParticipants) {
                           _showError(
-                            'Cette session a ${_data.nbPlaces} place(s) au total, vous compris.',
+                            'Cette session a ${_data.nbPlaces} places au total',
                           );
                           return;
                         }
