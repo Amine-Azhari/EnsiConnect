@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'person_avatar.dart';
 
 const Color _ensisaBlue = Color(0xFF0055A5);
