@@ -69,7 +69,7 @@ class _MesSessionsPage2State extends State<MesSessionsPage2> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Mes reservations',
+          'Mes réservations',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -86,7 +86,7 @@ class _MesSessionsPage2State extends State<MesSessionsPage2> {
             if (snapshot.hasError) {
               return _ErrorState(
                 onRetry: _reloadSessions,
-                message: 'Impossible de charger vos reservations Firebase.',
+                message: 'Impossible de charger vos réservations Firebase.',
               );
             }
 
@@ -127,7 +127,7 @@ class _MesSessionsPage2State extends State<MesSessionsPage2> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Reservations programmees',
+                    'Réservations programmées',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -136,7 +136,7 @@ class _MesSessionsPage2State extends State<MesSessionsPage2> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${filteredSessions.length} session${filteredSessions.length > 1 ? 's' : ''} trouvee${filteredSessions.length > 1 ? 's' : ''}',
+                    '${filteredSessions.length} session${filteredSessions.length > 1 ? 's' : ''} trouvée${filteredSessions.length > 1 ? 's' : ''}',
                     style: TextStyle(
                       fontSize: 13,
                       color:
@@ -146,12 +146,12 @@ class _MesSessionsPage2State extends State<MesSessionsPage2> {
                   const SizedBox(height: 14),
                   if (sessions.isEmpty)
                     const _EmptyState(
-                      title: 'Aucune reservation',
-                      subtitle: 'Votre profil n\'est inscrit a aucune session',
+                      title: 'Aucune réservation',
+                      subtitle: 'Votre profil n\'est inscrit à aucune session',
                     )
                   else if (filteredSessions.isEmpty)
                     const _EmptyState(
-                      title: 'Aucun resultat pour ce filtre',
+                      title: 'Aucun résultat pour ce filtre',
                       subtitle:
                           'Essayez un autre filtre pour afficher vos inscriptions.',
                     )
@@ -294,7 +294,7 @@ class _ReservationCard extends StatelessWidget {
                     ? reservation.session.description
                     : reservation.joinMessage.isNotEmpty
                         ? reservation.joinMessage
-                        : 'Inscription confirmee pour cette session.',
+                        : 'Inscription confirmée pour cette session.',
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.4,
@@ -443,7 +443,7 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,
-              child: const Text('Reessayer'),
+              child: const Text('Réessayer'),
             ),
           ],
         ),
@@ -499,17 +499,17 @@ String _formatDate(String rawDate) {
     final date = DateTime.parse(rawDate);
     const months = <String>[
       'janvier',
-      'fevrier',
+      'février',
       'mars',
       'avril',
       'mai',
       'juin',
       'juillet',
-      'aout',
+      'août',
       'septembre',
       'octobre',
       'novembre',
-      'decembre',
+      'décembre',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   } catch (_) {

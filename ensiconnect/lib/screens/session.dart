@@ -224,7 +224,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Selectionne l\'heure de début et l\'heure de fin.',
+                      'Sélectionne l\'heure de début et l\'heure de fin.',
                       style: TextStyle(
                         color: subTextColor,
                         fontSize: 14,
@@ -587,7 +587,7 @@ class _PostSessionPageState extends State<PostSessionPage>
                       value: _data.heure != null && _data.heureFin != null
                           ? '${_formatTime(_data.heure!)} - ${_formatTime(_data.heureFin!)}'
                           : null,
-                      placeholder: 'Choisir debut et fin',
+                      placeholder: 'Choisir début et fin',
                       onTap: _pickTimeRange,
                       isDark: isDark,
                     ),

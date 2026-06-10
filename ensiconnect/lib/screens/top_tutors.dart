@@ -106,7 +106,7 @@ class _TopTutorsPageState extends State<TopTutorsPage> {
         });
       }
     } catch (e) {
-      debugPrint("Erreur lors du chargement des tuteurs: $e");
+      debugPrint("Erreur lors du chargement des tuteurs : $e");
       if (mounted) {
         setState(() {
           _isLoading = false;
