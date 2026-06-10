@@ -38,6 +38,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String _salleNom = 'Salle inconnue';
   String _organisateurNom = 'Organisateur inconnu';
   bool _sessionComplete = false;
+  int _maxParticipants = 0;
 
   int _effectiveParticipantCount(List<SessionParticipant> participants) {
     final organizerId = widget.session.organisateurId;
@@ -116,6 +117,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       var isRegistered = false;
       final participants = <SessionParticipant>[];
       final conversationId = session.conversationId;
+      var maxParticipants = 0;
 
       // APRÈS
       if (session.id != null) {
@@ -157,8 +159,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
           participants.add(await _getParticipant(etudiantId));
         }
 
-        final nbPlaces = sessionDoc.data()?['NbPlaces'] ?? 0;
-        _sessionComplete = _effectiveParticipantCount(participants) >= nbPlaces;
+        maxParticipants = sessionDoc.data()?['NbPlaces'] ?? 0;
+        _sessionComplete =
+            _effectiveParticipantCount(participants) >= maxParticipants;
       }
 
       if (!mounted) return;
@@ -169,6 +172,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         _salleNom = salleNom;
         _organisateurNom = organisateurNom;
         _participants = participants;
+        _maxParticipants = maxParticipants;
         _isRegistered = isRegistered;
         _registrationDocId = registrationDocId;
         _isLoading = false;
@@ -569,7 +573,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    '${_participants.length}',
+                    '${_effectiveParticipantCount(_participants)}/$_maxParticipants',
                     style: TextStyle(
                       color: subjectColor,
                       fontWeight: FontWeight.bold,
