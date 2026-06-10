@@ -53,7 +53,7 @@ class _QuickActionsGridState extends State<QuickActionsGrid> {
         ),
         ActionItem(
           icon: Icons.calendar_today_rounded,
-          label: "Sessions \nprevues",
+          label: "Sessions \nprévues",
           color: const Color(0xFFEF5350),
           onTap: () {
             _pushNamed('/mes_sessions');
@@ -61,7 +61,7 @@ class _QuickActionsGridState extends State<QuickActionsGrid> {
         ),
         ActionItem(
           icon: Icons.bookmark_border_rounded,
-          label: "Mes\nreservations",
+          label: "Mes\nréservations",
           color: const Color(0xFF66BB6A),
           onTap: () {
             _pushNamed('/mes_sessions_page_2');

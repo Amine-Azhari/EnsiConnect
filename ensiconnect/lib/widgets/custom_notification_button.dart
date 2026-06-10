@@ -35,10 +35,12 @@ class _CustomNotificationButtonState extends State<CustomNotificationButton> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black87;
+    final surfaceColor =
+        isDark ? Colors.grey.shade800 : Theme.of(context).cardColor;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey.shade800 : Theme.of(context).cardColor,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(12),
         border:
             isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
@@ -67,29 +69,56 @@ class _CustomNotificationButtonState extends State<CustomNotificationButton> {
             Icon(Icons.notifications_none_rounded, color: textColor),
             if (_currentUserId != null)
               Positioned(
-                right: -1,
-                top: -1,
+                right: -6,
+                top: -8,
                 child: StreamBuilder<List<Map<String, dynamic>>>(
                   stream: NotificationEvaluationService()
                       .watchMyNotifications(_currentUserId!),
                   builder: (context, snapshot) {
-                    final hasNotifications =
-                        (snapshot.data?.isNotEmpty ?? false);
-                    if (!hasNotifications) {
+                    final count = snapshot.data?.length ?? 0;
+                    if (count == 0) {
                       return const SizedBox.shrink();
                     }
 
-                    return Container(
-                      width: 10,
-                      height: 10,
+                    final badgeText = count > 9 ? '9+' : '$count';
+                    final hasSeveralNotifications = count > 1;
+
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: hasSeveralNotifications ? 6 : 0,
+                        vertical: hasSeveralNotifications ? 3 : 0,
+                      ),
+                      constraints: BoxConstraints(
+                        minWidth: hasSeveralNotifications ? 22 : 12,
+                        minHeight: hasSeveralNotifications ? 22 : 12,
+                      ),
                       decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.grey.shade800
-                              : Theme.of(context).cardColor,
-                          width: 1.5,
+                        color: hasSeveralNotifications
+                            ? const Color(0xFFE53935)
+                            : const Color(0xFFFF6B6B),
+                        borderRadius: BorderRadius.circular(
+                          hasSeveralNotifications ? 999 : 12,
+                        ),
+                        border: Border.all(color: surfaceColor, width: 1.8),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFE53935).withValues(alpha: 0.28),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          hasSeveralNotifications ? badgeText : '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                            height: 1,
+                          ),
                         ),
                       ),
                     );
