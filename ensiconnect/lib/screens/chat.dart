@@ -42,7 +42,6 @@ class _ChatPageState extends State<ChatPage> {
         child: FutureBuilder<User?>(
         future: _user.getCurrentUser(),
         builder: (context, userSnapshot) {
-          print("FutureBuilder rebuild");
           if (!userSnapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -97,14 +96,7 @@ class _ChatPageState extends State<ChatPage> {
                 StreamBuilder<QuerySnapshot>(
                   stream: chatService.getConversations(currentUserId),
                   builder: (context, snapshot) {
-                    // Debug
-                    print("state: ${snapshot.connectionState}");
-                    print("hasData: ${snapshot.hasData}");
-                    print("hasError: ${snapshot.hasError}");
-                    print("data: ${snapshot.data}");
-
-                    print("StreamBuilder rebuild");
-
+              
                     if (!snapshot.hasData) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -178,82 +170,77 @@ class _ChatPageState extends State<ChatPage> {
                               );
                             },
                           
-                          child:SizedBox(
-                            height: 80,
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                              child: Row(
-                                children: [
-                                  FutureBuilder<String>(
-                                    future: data['Name'] != null
-                                        ? Future.value(data['Name'])
-                                        : getUserName(getOtherUser(participants, currentUserId)),
-                                    builder: (context, snapshot) {
-                                      final name = snapshot.data ?? '?';
-                                      return PersonAvatar(
-                                        name: name,
-                                      );
-                                    },
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: FutureBuilder<String>(
+                            child:SizedBox(
+                              height: 80,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                child: Row(
+                                  children: [
+                                    FutureBuilder<String>(
                                       future: data['Name'] != null
                                           ? Future.value(data['Name'])
                                           : getUserName(getOtherUser(participants, currentUserId)),
-                                      
                                       builder: (context, snapshot) {
-                                        final name = snapshot.data ?? '...';
-
-                                        return Row(
-                                          children:[
-                                            Expanded(
-                                              child: Column(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    name,
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w600,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                  if (lastMessage.isNotEmpty) ...[
-                                                    const SizedBox(height: 4),
-                                                    Text(
-                                                      lastMessage,
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ],
-                                              ),
-                                            ),
-                                            Text(
-                                              formatTimeAgo(lastMessageAt),
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey.shade500,
-                                              ),
-                                            ),
-                                          ]
+                                        final name = snapshot.data ?? '?';
+                                        return PersonAvatar(
+                                          name: name,
                                         );
                                       },
-                                  )
-                        
-                            
-                                                                                 
-                          )
-                                ],
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: FutureBuilder<String>(
+                                        future: data['Name'] != null
+                                          ? Future.value(data['Name'])
+                                          : getUserName(getOtherUser(participants, currentUserId)),
+                                        
+                                        builder: (context, snapshot) {
+                                          final name = snapshot.data ?? '...';
+
+                                          return Row(
+                                            children:[
+                                              Expanded(
+                                                child: Column(
+                                                  mainAxisAlignment: MainAxisAlignment.center,
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      name,
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w600,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                    if (lastMessage.isNotEmpty) ...[
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        lastMessage,
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                        style: TextStyle(
+                                                          fontSize: 13,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                              ),
+                                              Text(
+                                                formatTimeAgo(lastMessageAt),
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey.shade500,
+                                                ),
+                                              ),
+                                            ]
+                                          );
+                                        },
+                                      )                                                                                 
+                                    )
+                                  ],
+                                )
                               )
-                            )
-                          )
-                          
-                          
+                            )                          
                           )
                         );                 
                       },
