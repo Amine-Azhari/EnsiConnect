@@ -12,6 +12,7 @@ class Session {
   final String sujet;
   final String description;
   final List<String> participantsIds;
+  final String conversationId;
 
   Session({
     this.id,
@@ -27,6 +28,7 @@ class Session {
     this.organisateurNom = '',
     this.sujet = '',
     this.description = '',
+    required this.conversationId,
   });
 
   String get organisateurFullName =>
@@ -87,6 +89,7 @@ class Session {
       sujet: map['Titre'] ?? map['Sujet'] ?? '',
       description: map['Description'] ?? '',
       participantsIds: List<String>.from(map['Participants'] ?? []),
+      conversationId: map['ConversationId'] ?? '',
     );
   }
 

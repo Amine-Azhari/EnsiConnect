@@ -28,6 +28,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String? _registrationDocId;
   String? _currentStudentId;
   String? _errorMessage;
+  String? _conversationId;
   List<_SessionParticipant> _participants = [];
 
   String _matiereNom = 'Matière inconnue';
@@ -46,19 +47,13 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     final currentUser = await UserServices().getCurrentUser();
     if (currentUser == null || widget.session.id == null) return;
 
-    final chatService = ChatService();
-    final convoId = await chatService.getOrCreateConversation(
-      participants: [...widget.session.participantsIds, currentUser.id],
-      name: widget.session.sujet,
-    );
-
     if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ConversationPage(
           conversation: Conversation(
-            id: convoId,
+            id: _conversationId!,
             participants: widget.session.participantsIds,
             messages: const [],
             lastMessage: '',
@@ -90,6 +85,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       String? registrationDocId;
       var isRegistered = false;
       final participants = <_SessionParticipant>[];
+      final conversationId = session.conversationId;
 
       // APRÈS
       if (session.id != null) {
@@ -145,6 +141,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         _isRegistered = isRegistered;
         _registrationDocId = registrationDocId;
         _isLoading = false;
+        _conversationId = conversationId;
       });
     } catch (e) {
       if (!mounted) return;
@@ -243,6 +240,10 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
   Future<void> _toggleRegistration() async {
     final sessionId = widget.session.id;
+    final ChatService chatService = ChatService();
+
+    final currentUser = await UserServices().getCurrentUser();
+    if (currentUser == null || widget.session.id == null) return;
 
     if (_currentStudentId == null || sessionId == null) {
       setState(() {
@@ -262,8 +263,14 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
             .collection('RejoindreSession')
             .doc(_registrationDocId)
             .delete();
+        
 
         if (!mounted) return;
+
+        chatService.deleteUserFromConversation(
+          conversationId: _conversationId!,
+          userId: currentUser.id,
+        );
 
         setState(() {
           _isRegistered = false;
@@ -301,6 +308,11 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         });
 
         if (!mounted) return;
+
+        chatService.addUserIntoConversation(
+          conversationId: _conversationId!,
+          userId: currentUser.id,
+        );
 
         setState(() {
           _isRegistered = true;
