@@ -13,6 +13,18 @@ class ProfileCommentsPage extends StatelessWidget {
   final String profileName;
   final double averageNote;
 
+  Stream<double> _watchAverageNote() {
+    return FirebaseFirestore.instance
+        .collection('Etudiant')
+        .doc(profileUserId)
+        .snapshots()
+        .map((doc) {
+      final data = doc.data();
+      final value = data?['averageNote'];
+      return value is num ? value.toDouble() : averageNote;
+    });
+  }
+
   Future<List<_ReviewItem>> _loadReviews() async {
     final snapshots = await Future.wait([
       FirebaseFirestore.instance
@@ -40,9 +52,8 @@ class ProfileCommentsPage extends StatelessWidget {
           continue;
         }
 
-        final authorId = (data['userId'] ?? data['EvaluateurID'] ?? '')
-            .toString()
-            .trim();
+        final authorId =
+            (data['userId'] ?? data['EvaluateurID'] ?? '').toString().trim();
         final note = data['Note'];
         final authorName = await _loadAuthorName(authorId);
 
@@ -146,27 +157,36 @@ class ProfileCommentsPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            averageNote.toStringAsFixed(1),
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 30,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            profileName.isEmpty
-                                ? 'Note moyenne'
-                                : 'Note moyenne de $profileName',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(color: mutedColor, fontSize: 15),
-                          ),
-                        ],
+                      child: StreamBuilder<double>(
+                        stream: _watchAverageNote(),
+                        initialData: averageNote,
+                        builder: (context, snapshot) {
+                          final liveAverage = snapshot.data ?? averageNote;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                liveAverage.toStringAsFixed(1),
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                profileName.isEmpty
+                                    ? 'Note moyenne'
+                                    : 'Note moyenne de $profileName',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style:
+                                    TextStyle(color: mutedColor, fontSize: 15),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ),
                   ],
