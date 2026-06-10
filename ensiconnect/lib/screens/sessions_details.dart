@@ -378,13 +378,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         ),
         centerTitle: true,
         elevation: 0,
-        actions: [
-    if (_currentStudentId == widget.session.organisateurId)
-      IconButton(
-        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
-        onPressed: _supprimerSession,
-      ),
-  ],
+        actions: [ ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
