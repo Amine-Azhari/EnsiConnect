@@ -209,7 +209,7 @@ class _ProfilPageState extends State<ProfilPage> {
                   value,
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black87,
-                    fontSize: 26,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
