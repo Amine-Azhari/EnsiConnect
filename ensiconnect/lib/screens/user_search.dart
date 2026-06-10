@@ -125,6 +125,7 @@ class _SearchPageState extends State<SearchPage> {
     final userService = UserServices();
     final user = await userService.getCurrentUser();
 
+    if (!mounted) return; 
     setState(() {
       currentUserId = user?.id;
     });
@@ -158,6 +159,7 @@ class _SearchPageState extends State<SearchPage> {
       (a, b) => (b["note"] as double).compareTo(a["note"] as double),
     );
 
+    if (!mounted) return;
     setState(() {
       tuteurs.clear();
       tuteurs.addAll(liste);
@@ -171,6 +173,7 @@ class _SearchPageState extends State<SearchPage> {
   void _onSearchChanged(String val) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
       setState(() => recherche = val);
     });
   }
