@@ -57,16 +57,18 @@ class _ChatPageState extends State<ChatPage> {
                 CustomHeader(
                   onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  "Vos messages",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: textColor),
+                const SizedBox(height: 10),
+                Center(
+                  child: Text(
+                    "Vos messages",
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: textColor),
+                  ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
 
                 //Filtres
                   SingleChildScrollView(
