@@ -172,7 +172,7 @@ class _ProfilPageState extends State<ProfilPage> {
                   value,
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black87,
-                    fontSize: 30,
+                    fontSize: 26,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -181,7 +181,7 @@ class _ProfilPageState extends State<ProfilPage> {
                   title,
                   style: TextStyle(
                     color: isDark ? const Color(0xFFACB1BC) : Colors.black87,
-                    fontSize: 15,
+                    fontSize: 13,
                     height: 1.2,
                     fontWeight: FontWeight.w500,
                   ),
@@ -268,7 +268,7 @@ class _ProfilPageState extends State<ProfilPage> {
     required String value,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const iconColor = Color(0xFF0B77E3);
+    final iconColor = _quickActionColorForIcon(icon);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -540,14 +540,14 @@ class _ProfilPageState extends State<ProfilPage> {
                         child: _profileBadge(
                           icon: Icons.computer_rounded,
                           label: filiere,
-                          color: const Color(0xFFE0A400),
+                          color: const Color(0xFF42A5F5),
                         ),
                       ),
                       const SizedBox(width: 8),
                       _profileBadge(
                         icon: Icons.school_rounded,
                         label: promotion,
-                        color: const Color(0xFFE0A400),
+                        color: const Color(0xFF66BB6A),
                       ),
                     ],
                   ),
@@ -627,7 +627,7 @@ class _ProfilPageState extends State<ProfilPage> {
             children: [
               _IconTile(
                 icon: Icons.badge_outlined,
-                color: const Color(0xFF0B77E3),
+                color: _quickActionColorForIcon(Icons.badge_outlined),
               ),
               const SizedBox(width: 14),
               Expanded(child: _sectionTitle("Informations personnelles")),
