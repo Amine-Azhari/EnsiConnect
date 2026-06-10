@@ -77,12 +77,12 @@ class PostSessionService {
       'participants': participants,
     });
 
-    await _db.collection('Chats').add({
-      'sessionId': sessionRef.id,
-      'name': titre,
-      'participants': allParticipants,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
+    // await _db.collection('Chats').add({
+    //   'sessionId': sessionRef.id,
+    //   'name': titre,
+    //   'participants': allParticipants,
+    //   'createdAt': FieldValue.serverTimestamp(),
+    // });
 
     await _db.collection('RejoindreSession').add({
       'SessionId': sessionRef.id,
