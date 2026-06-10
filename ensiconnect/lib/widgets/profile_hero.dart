@@ -30,52 +30,6 @@ class ProfileHero extends StatelessWidget {
   final String profileUserId;
   final ChatService chatService;
 
-  Widget _profileBadge({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required bool isDark
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: BoxDecoration(
-        color: isDark
-            ? color.withValues(alpha: 0.22)
-            : color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: isDark ? 0.35 : 0.20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: isDark ? 0.10 : 0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label.isEmpty ? '-' : label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   ButtonStyle _outlinedActionStyle() {
     return OutlinedButton.styleFrom(
       foregroundColor: isOwnProfile ? Colors.white : const Color(0xFF0B77E3),
@@ -148,52 +102,51 @@ class ProfileHero extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final actionButton = isOwnProfile
-    ? OutlinedButton.icon(
-        onPressed: onActionPressed,// _toggleEdit,
-        icon: Icon(
-          isEditing ? Icons.save_outlined : Icons.edit_outlined,
-          color: Colors.white,
-        ),
-        label: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
-        style: _outlinedActionStyle(),
-      )
-    : OutlinedButton.icon(
-      onPressed: () async {
-        final convoId = await chatService.getOrCreateConversation(
-          participants: [
-            currentUserId,
-            profileUserId,// widget.userId!,
-          ],
-        );
-
-        if (!context.mounted) return;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ConversationPage(
-              conversation: Conversation(
-                id: convoId,
+        ? OutlinedButton.icon(
+            onPressed: onActionPressed, // _toggleEdit,
+            icon: Icon(
+              isEditing ? Icons.save_outlined : Icons.edit_outlined,
+              color: Colors.white,
+            ),
+            label: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
+            style: _outlinedActionStyle(),
+          )
+        : OutlinedButton.icon(
+            onPressed: () async {
+              final convoId = await chatService.getOrCreateConversation(
                 participants: [
                   currentUserId,
-                  profileUserId,// widget.userId!,
+                  profileUserId, // widget.userId!,
                 ],
-                messages: const [],
-                lastMessage: '',
-                lastMessageAt: null,
-                createdAt: null,
-                name: null,
-              ),
-              currentUserId: currentUserId,
-            ),
-          ),
-        );
-      },
-      icon: const Icon(Icons.chat_bubble_outline_rounded),
-      label: const Text("Envoyer un message"),
-      style: _outlinedActionStyle(),
-    );
+              );
 
+              if (!context.mounted) return;
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ConversationPage(
+                    conversation: Conversation(
+                      id: convoId,
+                      participants: [
+                        currentUserId,
+                        profileUserId, // widget.userId!,
+                      ],
+                      messages: const [],
+                      lastMessage: '',
+                      lastMessageAt: null,
+                      createdAt: null,
+                      name: null,
+                    ),
+                    currentUserId: currentUserId,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.chat_bubble_outline_rounded),
+            label: const Text("Envoyer un message"),
+            style: _outlinedActionStyle(),
+          );
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       child: Row(
@@ -242,28 +195,8 @@ class ProfileHero extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: _profileBadge(
-                          icon: Icons.computer_rounded,
-                          label: filiere,
-                          color: const Color(0xFF42A5F5),
-                          isDark: isDark
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _profileBadge(
-                        icon: Icons.school_rounded,
-                        label: promotion,
-                        color: const Color(0xFF66BB6A),
-                        isDark: isDark
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 14),
-                  actionButton,// _profileActionButton(),
+                  actionButton, // _profileActionButton(),
                 ],
               ),
             ),
