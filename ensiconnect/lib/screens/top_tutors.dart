@@ -59,7 +59,10 @@ class _TopTutorsPageState extends State<TopTutorsPage> {
 
   Future<void> _loadTopTutors() async {
     try {
-      final user = await UserServices().getCurrentUser();
+      final userServices = UserServices();
+      await userServices.rebuildAverageNotesFromEvaluations();
+
+      final user = await userServices.getCurrentUser();
       currentUserId = user?.id;
 
       final etudiantSnap =

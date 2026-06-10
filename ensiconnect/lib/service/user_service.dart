@@ -136,7 +136,8 @@ class UserServices {
 
     for (final doc in evaluationsSnapshot.docs) {
       final data = doc.data();
-      final tutorId = (data['tutorId'] ?? '').toString().trim();
+      final tutorId =
+          (data['tutorId'] ?? data['tutorID'] ?? '').toString().trim();
       final note = data['Note'];
       if (tutorId.isEmpty || note is! num) {
         continue;
@@ -149,15 +150,17 @@ class UserServices {
 
     for (final studentDoc in studentsSnapshot.docs) {
       final notes = notesByTutor[studentDoc.id] ?? const <double>[];
-      final average = notes.isEmpty
-          ? 0.0
-          : notes.reduce((a, b) => a + b) / notes.length;
+      final average =
+          notes.isEmpty ? 0.0 : notes.reduce((a, b) => a + b) / notes.length;
 
-      batch.set(studentDoc.reference, {
-        'averageNote': double.parse(average.toStringAsFixed(2)),
-        'sessions': notes.length,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      batch.set(
+          studentDoc.reference,
+          {
+            'averageNote': double.parse(average.toStringAsFixed(2)),
+            'sessions': notes.length,
+            'updatedAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true));
     }
 
     await batch.commit();
@@ -165,22 +168,29 @@ class UserServices {
 
   //Calcule et met à jour averageNote
   Future<void> updateAverageNote(String userId) async {
-    final snapshot = await _db
-        .collection('Evaluation')
-        .where('tutorId', isEqualTo: userId)
-        .get();
+    final snapshots = await Future.wait([
+      _db.collection('Evaluation').where('tutorId', isEqualTo: userId).get(),
+      _db.collection('Evaluation').where('tutorID', isEqualTo: userId).get(),
+    ]);
 
-    final notes = snapshot.docs
-        .map((doc) {
-          final note = doc.data()['Note'];
-          return (note is num) ? note.toDouble() : null;
-        })
-        .whereType<double>()
-        .toList();
+    final seenIds = <String>{};
+    final notes = <double>[];
 
-    final average = notes.isEmpty
-        ? 0.0
-        : notes.reduce((a, b) => a + b) / notes.length;
+    for (final snapshot in snapshots) {
+      for (final doc in snapshot.docs) {
+        if (!seenIds.add(doc.id)) {
+          continue;
+        }
+
+        final note = doc.data()['Note'];
+        if (note is num) {
+          notes.add(note.toDouble());
+        }
+      }
+    }
+
+    final average =
+        notes.isEmpty ? 0.0 : notes.reduce((a, b) => a + b) / notes.length;
 
     await _etudiants.doc(userId).set({
       'averageNote': double.parse(average.toStringAsFixed(2)),

@@ -16,14 +16,14 @@ class NotificationEvaluationService {
 
     final existingEvaluation = await _db
         .collection('Evaluation')
-        .where('SessionID', isEqualTo: sessionId)
+        .where('SessionId', isEqualTo: sessionId)
         .where('tutorId', isEqualTo: tutorId)
         .where('userId', isEqualTo: userId)
         .limit(1)
         .get();
 
     final payload = <String, dynamic>{
-      'SessionID': sessionId,
+      'SessionId': sessionId,
       'tutorId': tutorId,
       'userId': userId,
       'Note': note,
