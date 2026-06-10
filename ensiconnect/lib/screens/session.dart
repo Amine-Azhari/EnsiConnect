@@ -141,12 +141,13 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
-      initialDate: _data.date ?? now,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2030),
+      locale: const Locale('fr', 'FR'),
+
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme:

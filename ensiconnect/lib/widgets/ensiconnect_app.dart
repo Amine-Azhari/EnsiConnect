@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import '../screens/mes_sessions_page.dart';
 import '../screens/mes_sessions_page_2.dart';
 import '../screens/session.dart';
@@ -93,6 +94,15 @@ class _EnsiConnectAppState extends State<EnsiConnectApp>
         return MaterialApp(
           title: 'EnsiConnect',
           debugShowCheckedModeBanner: false,
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('fr', 'FR'),
+            Locale('en', 'US'),
+          ],
 
           // ── THÈME CLAIR ──
           theme: ThemeData(
