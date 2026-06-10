@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class ProfileCommentsPage extends StatelessWidget {
+class ProfileCommentsPage extends StatefulWidget {
   const ProfileCommentsPage({
     super.key,
     required this.profileUserId,
@@ -13,58 +13,79 @@ class ProfileCommentsPage extends StatelessWidget {
   final String profileName;
   final double averageNote;
 
+  @override
+  State<ProfileCommentsPage> createState() => _ProfileCommentsPageState();
+}
+
+class _ProfileCommentsPageState extends State<ProfileCommentsPage> {
+  late final Stream<List<_ReviewItem>> _reviewsStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _reviewsStream = _watchReviews();
+  }
+
   Stream<double> _watchAverageNote() {
     return FirebaseFirestore.instance
         .collection('Etudiant')
-        .doc(profileUserId)
+        .doc(widget.profileUserId)
         .snapshots()
         .map((doc) {
       final data = doc.data();
       final value = data?['averageNote'];
-      return value is num ? value.toDouble() : averageNote;
+      return value is num ? value.toDouble() : widget.averageNote;
     });
   }
 
-  Future<List<_ReviewItem>> _loadReviews() async {
-    final snapshots = await Future.wait([
-      FirebaseFirestore.instance
-          .collection('Evaluation')
-          .where('tutorId', isEqualTo: profileUserId)
-          .get(),
-      FirebaseFirestore.instance
-          .collection('Evaluation')
-          .where('tutorID', isEqualTo: profileUserId)
-          .get(),
-    ]);
+  Stream<List<_ReviewItem>> _watchReviews() async* {
+    await for (final snapshot
+        in FirebaseFirestore.instance.collection('Evaluation').snapshots()) {
+      final reviews = await _buildReviews(snapshot.docs);
+      yield reviews;
+    }
+  }
 
+  Future<List<_ReviewItem>> _buildReviews(
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> docs,
+  ) async {
     final seenIds = <String>{};
     final reviews = <_ReviewItem>[];
 
-    for (final snapshot in snapshots) {
-      for (final doc in snapshot.docs) {
-        if (!seenIds.add(doc.id)) {
-          continue;
-        }
+    final matchingDocs = docs.where((doc) {
+      final data = doc.data();
+      final tutorId =
+          (data['tutorId'] ?? data['tutorID'] ?? '').toString().trim();
+      final note = data['Note'];
+      return tutorId == widget.profileUserId && note is num;
+    }).toList()
+      ..sort((a, b) {
+        final aTime = a.data()['DateDEnvoi'];
+        final bTime = b.data()['DateDEnvoi'];
+        final aMillis = aTime is Timestamp ? aTime.millisecondsSinceEpoch : 0;
+        final bMillis = bTime is Timestamp ? bTime.millisecondsSinceEpoch : 0;
+        return bMillis.compareTo(aMillis);
+      });
 
-        final data = doc.data();
-        final comment = (data['Commentaire'] ?? '').toString().trim();
-        if (comment.isEmpty) {
-          continue;
-        }
-
-        final authorId =
-            (data['userId'] ?? data['EvaluateurID'] ?? '').toString().trim();
-        final note = data['Note'];
-        final authorName = await _loadAuthorName(authorId);
-
-        reviews.add(
-          _ReviewItem(
-            authorName: authorName,
-            comment: comment,
-            note: note is num ? note.toDouble() : 0.0,
-          ),
-        );
+    for (final doc in matchingDocs) {
+      if (!seenIds.add(doc.id)) {
+        continue;
       }
+
+      final data = doc.data();
+      final comment = (data['Commentaire'] ?? '').toString().trim();
+      final authorId =
+          (data['userId'] ?? data['EvaluateurID'] ?? '').toString().trim();
+      final note = data['Note'];
+      final authorName = await _loadAuthorName(authorId);
+
+      reviews.add(
+        _ReviewItem(
+          authorName: authorName,
+          comment: comment,
+          note: note is num ? note.toDouble() : 0.0,
+        ),
+      );
     }
 
     return reviews;
@@ -159,9 +180,10 @@ class ProfileCommentsPage extends StatelessWidget {
                     Expanded(
                       child: StreamBuilder<double>(
                         stream: _watchAverageNote(),
-                        initialData: averageNote,
+                        initialData: widget.averageNote,
                         builder: (context, snapshot) {
-                          final liveAverage = snapshot.data ?? averageNote;
+                          final liveAverage =
+                              snapshot.data ?? widget.averageNote;
 
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,9 +198,9 @@ class ProfileCommentsPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                profileName.isEmpty
+                                widget.profileName.isEmpty
                                     ? 'Note moyenne'
-                                    : 'Note moyenne de $profileName',
+                                    : 'Note moyenne de ${widget.profileName}',
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                                 style:
@@ -203,8 +225,8 @@ class ProfileCommentsPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: FutureBuilder<List<_ReviewItem>>(
-                  future: _loadReviews(),
+                child: StreamBuilder<List<_ReviewItem>>(
+                  stream: _reviewsStream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -245,6 +267,7 @@ class ProfileCommentsPage extends StatelessWidget {
                       separatorBuilder: (_, __) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
                         final review = reviews[index];
+                        final hasComment = review.comment.trim().isNotEmpty;
 
                         return Container(
                           width: double.infinity,
@@ -310,12 +333,19 @@ class ProfileCommentsPage extends StatelessWidget {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                review.comment,
+                                hasComment
+                                    ? review.comment
+                                    : 'Aucun commentaire laissé',
                                 style: TextStyle(
-                                  color: textColor,
+                                  color: hasComment ? textColor : mutedColor,
                                   fontSize: 17,
                                   height: 1.45,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: hasComment
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  fontStyle: hasComment
+                                      ? FontStyle.normal
+                                      : FontStyle.italic,
                                 ),
                               ),
                             ],
