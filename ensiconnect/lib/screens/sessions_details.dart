@@ -80,7 +80,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         builder: (_) => ConversationPage(
           conversation: Conversation(
             id: _conversationId!,
-            participants: widget.session.participantsIds,
+            participants: _participants.map((p) => p.id).toList(),
             messages: const [],
             lastMessage: '',
             lastMessageAt: null,
