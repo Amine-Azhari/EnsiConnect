@@ -180,48 +180,6 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     }
   }
 
-  // Future<String?> _getChatId() async {
-  //   final sessionId = widget.session.id;
-  //   if (sessionId == null) return null;
-
-  //   final snap = await FirebaseFirestore.instance
-  //       .collection('Chats')
-  //       .where('sessionId', isEqualTo: sessionId)
-  //       .limit(1)
-  //       .get();
-
-  //   if (snap.docs.isEmpty) return null;
-  //   return snap.docs.first.id;
-  // }
-
-  // void _openChat() async {
-  //   final chatId = await _getChatId();
-
-  //   if (chatId == null) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text("Chat introuvable")),
-  //     );
-  //     return;
-  //   }
-
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (_) => Scaffold(
-  //         appBar: AppBar(title: const Text("Chat")),
-  //         body: const Center(child: Text("Chat pas encore créé")),
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // bool _canAccessChat() {
-  //   final currentUserId = _currentStudentId;
-  //   if (currentUserId == null) return false;
-
-  //   return widget.session.participantsIds.contains(currentUserId);
-  // }
-
   Future<String> _getDocumentName(String collection, String id) async {
     final fallback =
         collection == 'Matiere' ? 'Matière inconnue' : 'Salle inconnue';
