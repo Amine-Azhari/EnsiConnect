@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../service/notification_evaluation_service.dart';
-import '../service/session_service.dart';
 import '../widgets/evaluation_dialog.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -28,8 +27,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Future<void> _loadUser() async {
-    await SessionService().cleanupOldSessions();
-
     final prefs = await SharedPreferences.getInstance();
     final email = prefs.getString('user_email');
     if (email != null) {
