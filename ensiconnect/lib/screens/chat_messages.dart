@@ -14,13 +14,10 @@ class ConversationPage extends StatefulWidget {
   final Conversation conversation;
   final String currentUserId;
 
-  String? otherUserName;
-
-  ConversationPage({
+  const ConversationPage({
     super.key,
     required this.conversation,
     required this.currentUserId,
-    this.otherUserName,
   });
 
   @override
@@ -108,7 +105,7 @@ class _ConversationPageState extends State<ConversationPage> {
                                   leading: PersonAvatar(
                                     name: user?.fullName ?? id,
                                   ),
-                                  title: Text('Vous ('+(user?.fullName ?? id)+')'),
+                                  title: Text('Vous (${user?.fullName ?? id})'),
                                 );
                               }
                             },
