@@ -44,8 +44,8 @@ class UserServices {
       firstName: data['Prenom'] ?? '',
       lastName: data['Nom'] ?? '',
       email: data['eMail'] ?? '',
-      promotion: data['Promotion'] ?? '1A',
-      filiere: data['Filiere'] ?? 'Informatique',
+      promotion: data['Promotion'] ?? '',
+      filiere: data['Filiere'] ?? '',
       role: data['Role'] ?? 'Étudiant',
       description: data['description'] ?? '',
 
