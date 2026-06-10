@@ -194,7 +194,8 @@ class _ProfilPageState extends State<ProfilPage> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
+        border:
+            isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
         boxShadow: isDark
             ? []
             : [
@@ -402,6 +403,16 @@ class _ProfilPageState extends State<ProfilPage> {
                         email: email,
                         filiere: filiere,
                         promotion: promotion,
+                        isEditing: isEditing,
+                        isOwnProfile: isOwnProfile,
+                        onFiliereChanged: (value) {
+                          if (value == null) return;
+                          setState(() => filiere = value);
+                        },
+                        onPromotionChanged: (value) {
+                          if (value == null) return;
+                          setState(() => promotion = value);
+                        },
                       ),
                       const SizedBox(height: 18),
                       ProfileSkillsCard(
@@ -410,7 +421,8 @@ class _ProfilPageState extends State<ProfilPage> {
                         isEditing: isEditing,
                         isOwnProfile: isOwnProfile,
                         selectedSkill: selectedSkill,
-                        onSkillChanged: (v) => setState(() => selectedSkill = v),
+                        onSkillChanged: (v) =>
+                            setState(() => selectedSkill = v),
                         onAddSkill: _addSkill,
                       ),
                       if (_showLegacyProfileCards) ...[
