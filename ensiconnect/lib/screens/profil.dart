@@ -178,6 +178,17 @@ class _ProfilPageState extends State<ProfilPage> {
     }
   }
 
+  void _removeSkill(String skill) {
+    if (!isOwnProfile) return;
+
+    setState(() {
+      skills.remove(skill);
+      if (selectedSkill == skill) {
+        selectedSkill = null;
+      }
+    });
+  }
+
   @override
   void dispose() {
     _profileSubscription?.cancel();
@@ -424,6 +435,7 @@ class _ProfilPageState extends State<ProfilPage> {
                         onSkillChanged: (v) =>
                             setState(() => selectedSkill = v),
                         onAddSkill: _addSkill,
+                        onRemoveSkill: _removeSkill,
                       ),
                       if (_showLegacyProfileCards) ...[
                         const SizedBox(height: 18),
