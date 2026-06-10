@@ -148,16 +148,27 @@ class _PostSessionPageState extends State<PostSessionPage>
   }
 
   Future<void> _pickDate() async {
-    final now = DateTime.now();
+    final isDark = isDarkModeNotifier.value;
     final picked = await showDatePicker(
       context: context,
-      initialDate: _data.date ?? now,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
+      initialDate: _data.date ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme:
-              ColorScheme.fromSeed(seedColor: EnsiConnectApp.ensisaBlue),
+          colorScheme: isDark
+              ? const ColorScheme.dark(
+                  primary: EnsiConnectApp.ensisaBlue,
+                  onPrimary: Colors.white,
+                  surface: Color(0xFF1E1E1E),
+                  onSurface: Colors.white,
+                )
+              : ColorScheme.light(
+                  primary: EnsiConnectApp.ensisaBlue,
+                  onPrimary: Colors.white,
+                  surface: Colors.white,
+                  onSurface: Colors.black87,
+                ),
         ),
         child: child!,
       ),
