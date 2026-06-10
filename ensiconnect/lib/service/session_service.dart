@@ -111,7 +111,7 @@ class SessionService {
             'sessionId': sessionId,
             'title': 'Session terminee !',
             'message':
-                'Votre session de "$sessionName" est finie. Vos eleves ont ete invites a vous laisser une note.',
+                'Votre session "$sessionName" est finie. Vos élèves ont été invités à vous laisser une note.',
             'type': 'info',
             'isRead': false,
             'createdAt': FieldValue.serverTimestamp(),
@@ -124,7 +124,7 @@ class SessionService {
               'sessionId': sessionId,
               'title': 'Evaluez votre tuteur',
               'message':
-                  'La session de "$sessionName" est finie. Prenez un moment pour evaluer votre tuteur.',
+                  'La session "$sessionName" est finie. Prenez un moment pour évaluer votre tuteur.',
               'type': 'evaluation',
               'isRead': false,
               'createdAt': FieldValue.serverTimestamp(),
