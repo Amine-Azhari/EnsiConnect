@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'person_avatar.dart';
 
 const Color _ensisaBlue = Color(0xFF0055A5);
@@ -165,7 +164,7 @@ class SessionPlacesCounter extends StatelessWidget {
         width: 30,
         height: 30,
         decoration: BoxDecoration(
-          color: _ensisaBlue.withOpacity(0.1),
+          color: _ensisaBlue.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(7),
         ),
         child: Icon(icon, color: _ensisaBlue, size: 16),
@@ -239,7 +238,7 @@ class SessionHeader extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_ensisaBlue, _ensisaBlue.withOpacity(0.75)],
+          colors: [_ensisaBlue, _ensisaBlue.withValues(alpha: 0.75)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -250,7 +249,7 @@ class SessionHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
+              color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child:
@@ -297,10 +296,10 @@ class SessionPublicBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.green.shade300.withOpacity(0.5)),
+        border: Border.all(color: Colors.green.shade300.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -366,7 +365,7 @@ class SessionSalleDropdown extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       hint: const Text('Choisir une salle', style: TextStyle(fontSize: 13)),
       style: TextStyle(
           fontSize: 14, color: isDark ? Colors.white : Colors.black87),
@@ -387,7 +386,7 @@ class SessionSalleDropdown extends StatelessWidget {
         ),
         filled: true,
         fillColor:
-            isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         contentPadding:
             const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
       ),
@@ -457,7 +456,7 @@ class SessionEtudiantSearch extends StatelessWidget {
             ),
             filled: true,
             fillColor:
-                isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
           ),
@@ -515,8 +514,8 @@ class SessionEtudiantSearch extends StatelessWidget {
                       onDeleted: () => onRetirer(e),
                       backgroundColor: isDark
                           ? Colors.white12
-                          : _ensisaBlue.withOpacity(0.08),
-                      side: BorderSide(color: _ensisaBlue.withOpacity(0.3)),
+                          : _ensisaBlue.withValues(alpha: 0.08),
+                      side: BorderSide(color: _ensisaBlue.withValues(alpha: 0.3)),
                     ))
                 .toList(),
           ),
