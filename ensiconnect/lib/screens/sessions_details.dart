@@ -1,5 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ensiconnect/service/user_service.dart';
+import '../widgets/session_participant_avatar.dart';
+import '../service/user_service.dart';
+import '../widgets/session_detail_row.dart';
+import '../widgets/session_section_card.dart';
 import 'package:flutter/material.dart';
 import '../widgets/ensiconnect_app.dart';
 import '../models/session.dart';
@@ -7,7 +10,7 @@ import 'profil.dart';
 import '../service/chat_service.dart';
 import '../models/conversation.dart';
 import 'chat_messages.dart';
-import '../widgets/person_avatar.dart';
+import '../models/session_participant.dart';
 
 class SessionsDetailsPage extends StatefulWidget {
   const SessionsDetailsPage({super.key, required this.session});
@@ -29,14 +32,14 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String? _currentStudentId;
   String? _errorMessage;
   String? _conversationId;
-  List<_SessionParticipant> _participants = [];
+  List<SessionParticipant> _participants = [];
 
   String _matiereNom = 'Matière inconnue';
   String _salleNom = 'Salle inconnue';
   String _organisateurNom = 'Organisateur inconnu';
   bool _sessionComplete = false;
 
-  int _effectiveParticipantCount(List<_SessionParticipant> participants) {
+  int _effectiveParticipantCount(List<SessionParticipant> participants) {
     final organizerId = widget.session.organisateurId;
     final includesOrganizer = organizerId.isNotEmpty &&
         participants.any((participant) => participant.id == organizerId);
@@ -111,7 +114,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
       String? registrationDocId;
       var isRegistered = false;
-      final participants = <_SessionParticipant>[];
+      final participants = <SessionParticipant>[];
       final conversationId = session.conversationId;
 
       // APRÈS
@@ -205,19 +208,19 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     return fullName.isEmpty ? 'Organisateur inconnu' : fullName;
   }
 
-  Future<_SessionParticipant> _getParticipant(String id) async {
+  Future<SessionParticipant> _getParticipant(String id) async {
     final doc = await _db.collection('Etudiant').doc(id).get();
     final data = doc.data();
 
     if (data == null) {
-      return _SessionParticipant(id: id, name: 'Étudiant inconnu');
+      return SessionParticipant(id: id, name: 'Étudiant inconnu');
     }
 
     final prenom = data['Prenom'] ?? '';
     final nom = data['Nom'] ?? '';
     final fullName = '$prenom $nom'.trim();
 
-    return _SessionParticipant(
+    return SessionParticipant(
       id: id,
       name: fullName.isEmpty ? 'Étudiant inconnu' : fullName,
       imageUrl: data['ProfilePictureUrl'],
@@ -320,7 +323,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     }
   }
 
-  void _openParticipantProfile(_SessionParticipant participant) {
+  void _openParticipantProfile(SessionParticipant participant) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -329,7 +332,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     );
   }
 
-  void _openParticipantProfileFromSheet(_SessionParticipant participant) {
+  void _openParticipantProfileFromSheet(SessionParticipant participant) {
     Navigator.pop(context);
     _openParticipantProfile(participant);
   }
@@ -473,10 +476,10 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   ) {
     final session = widget.session;
 
-    return _SectionCard(
+    return SectionCard(
       child: Column(
         children: [
-          _DetailRow(
+          DetailRow(
             icon: Icons.calendar_today_rounded,
             label: 'Date',
             value: _formatDate(session.date),
@@ -484,7 +487,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
             subtitleColor: subtitleColor,
             subjectColor: subjectColor,
           ),
-          _DetailRow(
+          DetailRow(
             icon: Icons.schedule_rounded,
             label: 'Heure',
             value: '${session.heureDebut} - ${session.heureFin}',
@@ -492,7 +495,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
             subtitleColor: subtitleColor,
             subjectColor: subjectColor,
           ),
-          _DetailRow(
+          DetailRow(
             icon: Icons.location_on_outlined,
             label: 'Salle',
             value: _salleNom,
@@ -500,7 +503,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
             subtitleColor: subtitleColor,
             subjectColor: subjectColor,
           ),
-          _DetailRow(
+          DetailRow(
             icon: Icons.person_outline_rounded,
             label: 'Organisateur',
             value: _organisateurNom,
@@ -587,7 +590,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                 child: Row(
                   children: [
                     for (final participant in visibleParticipants) ...[
-                      _ParticipantAvatar(
+                      ParticipantAvatar(
                         participant: participant,
                         color: subjectColor,
                       ),
@@ -629,7 +632,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
               return ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: _ParticipantAvatar(
+                leading: ParticipantAvatar(
                   participant: participant,
                   color: EnsiConnectApp.ensisaBlue,
                 ),
@@ -654,7 +657,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   ) {
     final description = widget.session.description.trim();
 
-    return _SectionCard(
+    return SectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -813,150 +816,5 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     ];
     final index = subject.hashCode.abs() % colors.length;
     return isDark ? colors[index].shade300 : colors[index].shade600;
-  }
-}
-
-class _SessionParticipant {
-  const _SessionParticipant({
-    required this.id,
-    required this.name,
-    this.imageUrl,
-  });
-
-  final String id;
-  final String name;
-  final String? imageUrl;
-
-  String get initials {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.isEmpty || parts.first.isEmpty) return '?';
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-  }
-}
-
-class _ParticipantAvatar extends StatelessWidget {
-  const _ParticipantAvatar({
-    required this.participant,
-    required this.color,
-  });
-
-  final _SessionParticipant participant;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final imageUrl = participant.imageUrl;
-
-    return PersonAvatar(
-      name: participant.name,
-      imageUrl: participant.imageUrl,
-      radius: 24,
-      fontSize: 16,
-     );
-    }
-  }
-
-
-class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF121820) : Colors.white,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.08),
-        ),
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-      ),
-      child: child,
-    );
-  }
-}
-
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.textColor,
-    required this.subtitleColor,
-    required this.subjectColor,
-    this.isLast = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color textColor;
-  final Color subtitleColor;
-  final Color subjectColor;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: subjectColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: subjectColor, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: TextStyle(color: subtitleColor, fontSize: 12),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        if (!isLast)
-          Divider(
-            height: 28,
-            color:
-                isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
-          ),
-      ],
-    );
   }
 }
