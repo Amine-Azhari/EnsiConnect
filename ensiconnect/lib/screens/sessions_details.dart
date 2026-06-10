@@ -174,7 +174,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       if (!mounted) return;
 
       setState(() {
-        _errorMessage = 'Impossible de charger les details de la session.';
+        _errorMessage = 'Impossible de charger les détails de la session.';
         _isLoading = false;
       });
     }
@@ -209,7 +209,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     final data = doc.data();
 
     if (data == null) {
-      return _SessionParticipant(id: id, name: 'Etudiant inconnu');
+      return _SessionParticipant(id: id, name: 'Étudiant inconnu');
     }
 
     final prenom = data['Prenom'] ?? '';
@@ -218,7 +218,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
     return _SessionParticipant(
       id: id,
-      name: fullName.isEmpty ? 'Etudiant inconnu' : fullName,
+      name: fullName.isEmpty ? 'Étudiant inconnu' : fullName,
       imageUrl: data['ProfilePictureUrl'],
     );
   }
@@ -232,7 +232,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
     if (_currentStudentId == null || sessionId == null) {
       setState(() {
-        _errorMessage = 'Connecte-toi pour t inscrire a cette session.';
+        _errorMessage = "Connecte-toi pour t'inscrire a cette session.";
       });
       return;
     }
@@ -343,7 +343,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Details de la session',
+          'Détails de la session',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,

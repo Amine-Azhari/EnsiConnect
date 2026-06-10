@@ -236,7 +236,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     Expanded(
                                       child: Text(
                                         isEvaluation
-                                            ? 'Evaluation demandée'
+                                            ? 'Évaluation demandée'
                                             : 'Nouvelle notification',
                                         style: TextStyle(
                                           color: textColor,

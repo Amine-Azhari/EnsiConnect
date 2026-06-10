@@ -26,7 +26,7 @@ class _ChatPageState extends State<ChatPage> {
 
   final Map<String, String> _userNamesCache = {};
 
-  final filters = ['Toutes', 'Solo' ,'Groupe'];
+  final filters = ['Tout', 'Privé' ,'Groupe'];
 
   var selectedFilter='Toutes';
 
