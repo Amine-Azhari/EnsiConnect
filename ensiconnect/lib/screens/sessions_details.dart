@@ -141,8 +141,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
         for (final registration in registrations.docs) {
           final etudiantId = registration.data()['EtudiantId'] ?? '';
-          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId))
+          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)){
             continue;
+            
 
           if (currentUser != null && etudiantId == currentUser.id) {
             isRegistered = true;
