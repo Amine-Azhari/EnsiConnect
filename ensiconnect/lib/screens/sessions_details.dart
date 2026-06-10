@@ -43,6 +43,33 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     return participants.length + (includesOrganizer ? 0 : 1);
   }
 
+  Future<void> _supprimerSession() async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Supprimer la session'),
+      content: const Text('Cette action est irréversible. Confirmer la suppression ?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: const Text('Annuler'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('Supprimer', style: TextStyle(color: Colors.redAccent)),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm != true) return;
+
+  await _db.collection('Session').doc(widget.session.id).delete();
+
+  if (!mounted) return;
+  Navigator.of(context).pop();
+}
+
   Future<void> _ouvrirChat() async {
     final currentUser = await UserServices().getCurrentUser();
     if (currentUser == null || widget.session.id == null) return;
@@ -354,7 +381,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     final textColor = isDark ? Colors.white : Colors.black87;
     final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
     final subjectColor = _getSubjectColor(_matiereNom, isDark);
-
+  
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -363,6 +390,13 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         ),
         centerTitle: true,
         elevation: 0,
+        actions: [
+    if (_currentStudentId == widget.session.organisateurId)
+      IconButton(
+        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+        onPressed: _supprimerSession,
+      ),
+  ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -747,7 +781,8 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
               ),
             ),
           if (!isOrganisateur && _isRegistered) const SizedBox(width: 12),
-          if (_isRegistered || isOrganisateur)
+          if (_isRegistered || isOrganisateur) ...[
+            if (!isOrganisateur) const SizedBox(width: 12),
             Expanded(
               child: SizedBox(
                 height: 54,
@@ -765,14 +800,39 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
                     children: [
                       Icon(Icons.chat_bubble_outline_rounded),
                       SizedBox(width: 8),
-                      Text('Chat',
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text('Chat', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
               ),
             ),
+          ],
+          if (isOrganisateur) ...[
+            const SizedBox(width: 12),
+            Expanded(
+              child: SizedBox(
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: _supprimerSession,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.delete_outline_rounded),
+                      SizedBox(width: 8),
+                      Text('Supprimer', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
