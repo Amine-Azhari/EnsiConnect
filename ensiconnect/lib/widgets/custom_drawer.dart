@@ -9,12 +9,7 @@ import '../service/auth_service.dart';
 import 'person_avatar.dart';
 
 class CustomDrawer extends StatelessWidget {
-  final String? currentUserId; 
-
-  const CustomDrawer({
-    super.key,
-    this.currentUserId,
-  });
+  const CustomDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {

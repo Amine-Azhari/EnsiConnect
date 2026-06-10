@@ -4,7 +4,6 @@ import '../widgets/ensiconnect_app.dart';
 import '../service/user_service.dart';
 import '../widgets/person_avatar.dart';
 import 'profil.dart';
-import '../models/user.dart';
 
 class StarRating extends StatelessWidget {
   final double note;
@@ -242,7 +241,7 @@ class _TopTutorsPageState extends State<TopTutorsPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ProfilPage(userId: currentUserId),
+            builder: (context) => ProfilPage(userId: tuteur["id"] as String),
           ),
         );
       },
