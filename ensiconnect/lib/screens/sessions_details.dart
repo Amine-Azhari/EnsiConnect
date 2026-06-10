@@ -3,7 +3,6 @@ import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/ensiconnect_app.dart';
 import '../models/session.dart';
-import '../service/auth_service.dart';
 import 'profil.dart';
 import '../service/chat_service.dart';
 import '../models/conversation.dart';
@@ -156,47 +155,47 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     }
   }
 
-  Future<String?> _getChatId() async {
-    final sessionId = widget.session.id;
-    if (sessionId == null) return null;
+  // Future<String?> _getChatId() async {
+  //   final sessionId = widget.session.id;
+  //   if (sessionId == null) return null;
 
-    final snap = await FirebaseFirestore.instance
-        .collection('Chats')
-        .where('sessionId', isEqualTo: sessionId)
-        .limit(1)
-        .get();
+  //   final snap = await FirebaseFirestore.instance
+  //       .collection('Chats')
+  //       .where('sessionId', isEqualTo: sessionId)
+  //       .limit(1)
+  //       .get();
 
-    if (snap.docs.isEmpty) return null;
-    return snap.docs.first.id;
-  }
+  //   if (snap.docs.isEmpty) return null;
+  //   return snap.docs.first.id;
+  // }
 
-  void _openChat() async {
-    final chatId = await _getChatId();
+  // void _openChat() async {
+  //   final chatId = await _getChatId();
 
-    if (chatId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Chat introuvable")),
-      );
-      return;
-    }
+  //   if (chatId == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Chat introuvable")),
+  //     );
+  //     return;
+  //   }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text("Chat")),
-          body: const Center(child: Text("Chat pas encore créé")),
-        ),
-      ),
-    );
-  }
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (_) => Scaffold(
+  //         appBar: AppBar(title: const Text("Chat")),
+  //         body: const Center(child: Text("Chat pas encore créé")),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  bool _canAccessChat() {
-    final currentUserId = _currentStudentId;
-    if (currentUserId == null) return false;
+  // bool _canAccessChat() {
+  //   final currentUserId = _currentStudentId;
+  //   if (currentUserId == null) return false;
 
-    return widget.session.participantsIds.contains(currentUserId);
-  }
+  //   return widget.session.participantsIds.contains(currentUserId);
+  // }
 
   Future<String> _getDocumentName(String collection, String id) async {
     final fallback =
