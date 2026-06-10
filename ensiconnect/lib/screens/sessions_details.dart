@@ -3,7 +3,6 @@ import 'package:ensiconnect/service/user_service.dart';
 import 'package:flutter/material.dart';
 import '../widgets/ensiconnect_app.dart';
 import '../models/session.dart';
-import '../service/auth_service.dart';
 import 'profil.dart';
 import '../service/chat_service.dart';
 import '../models/conversation.dart';
@@ -28,6 +27,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
   String? _registrationDocId;
   String? _currentStudentId;
   String? _errorMessage;
+  String? _conversationId;
   List<_SessionParticipant> _participants = [];
 
   String _matiereNom = 'Matière inconnue';
@@ -73,19 +73,13 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     final currentUser = await UserServices().getCurrentUser();
     if (currentUser == null || widget.session.id == null) return;
 
-    final chatService = ChatService();
-    final convoId = await chatService.getOrCreateConversation(
-      participants: [...widget.session.participantsIds, currentUser.id],
-      name: widget.session.sujet,
-    );
-
     if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ConversationPage(
           conversation: Conversation(
-            id: convoId,
+            id: _conversationId!,
             participants: widget.session.participantsIds,
             messages: const [],
             lastMessage: '',
@@ -117,6 +111,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
       String? registrationDocId;
       var isRegistered = false;
       final participants = <_SessionParticipant>[];
+      final conversationId = session.conversationId;
 
       // APRÈS
       if (session.id != null) {
@@ -146,8 +141,9 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
         for (final registration in registrations.docs) {
           final etudiantId = registration.data()['EtudiantId'] ?? '';
-          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId))
-            continue;
+          if (etudiantId.isEmpty || idsDejaAjoutes.contains(etudiantId)) continue;
+          
+            
 
           if (currentUser != null && etudiantId == currentUser.id) {
             isRegistered = true;
@@ -172,6 +168,7 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         _isRegistered = isRegistered;
         _registrationDocId = registrationDocId;
         _isLoading = false;
+        _conversationId = conversationId;
       });
     } catch (e) {
       if (!mounted) return;
@@ -183,47 +180,47 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
     }
   }
 
-  Future<String?> _getChatId() async {
-    final sessionId = widget.session.id;
-    if (sessionId == null) return null;
+  // Future<String?> _getChatId() async {
+  //   final sessionId = widget.session.id;
+  //   if (sessionId == null) return null;
 
-    final snap = await FirebaseFirestore.instance
-        .collection('Chats')
-        .where('sessionId', isEqualTo: sessionId)
-        .limit(1)
-        .get();
+  //   final snap = await FirebaseFirestore.instance
+  //       .collection('Chats')
+  //       .where('sessionId', isEqualTo: sessionId)
+  //       .limit(1)
+  //       .get();
 
-    if (snap.docs.isEmpty) return null;
-    return snap.docs.first.id;
-  }
+  //   if (snap.docs.isEmpty) return null;
+  //   return snap.docs.first.id;
+  // }
 
-  void _openChat() async {
-    final chatId = await _getChatId();
+  // void _openChat() async {
+  //   final chatId = await _getChatId();
 
-    if (chatId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Chat introuvable")),
-      );
-      return;
-    }
+  //   if (chatId == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Chat introuvable")),
+  //     );
+  //     return;
+  //   }
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text("Chat")),
-          body: const Center(child: Text("Chat pas encore créé")),
-        ),
-      ),
-    );
-  }
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (_) => Scaffold(
+  //         appBar: AppBar(title: const Text("Chat")),
+  //         body: const Center(child: Text("Chat pas encore créé")),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-  bool _canAccessChat() {
-    final currentUserId = _currentStudentId;
-    if (currentUserId == null) return false;
+  // bool _canAccessChat() {
+  //   final currentUserId = _currentStudentId;
+  //   if (currentUserId == null) return false;
 
-    return widget.session.participantsIds.contains(currentUserId);
-  }
+  //   return widget.session.participantsIds.contains(currentUserId);
+  // }
 
   Future<String> _getDocumentName(String collection, String id) async {
     final fallback =
@@ -270,6 +267,10 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
 
   Future<void> _toggleRegistration() async {
     final sessionId = widget.session.id;
+    final ChatService chatService = ChatService();
+
+    final currentUser = await UserServices().getCurrentUser();
+    if (currentUser == null || widget.session.id == null) return;
 
     if (_currentStudentId == null || sessionId == null) {
       setState(() {
@@ -289,8 +290,14 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
             .collection('RejoindreSession')
             .doc(_registrationDocId)
             .delete();
+        
 
         if (!mounted) return;
+
+        chatService.deleteUserFromConversation(
+          conversationId: _conversationId!,
+          userId: currentUser.id,
+        );
 
         setState(() {
           _isRegistered = false;
@@ -328,6 +335,11 @@ class _SessionsDetailsPageState extends State<SessionsDetailsPage> {
         });
 
         if (!mounted) return;
+
+        chatService.addUserIntoConversation(
+          conversationId: _conversationId!,
+          userId: currentUser.id,
+        );
 
         setState(() {
           _isRegistered = true;

@@ -46,7 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image(
-              image: AssetImage('assets/images/icon-192.png'),
+              image: AssetImage('assets/images/icon-192.webp'),
               width: 300,
               height: 300,
             ),
@@ -55,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(height: 32),
 
             Image(
-              image: AssetImage('assets/images/Logo-ENSISA.png'),
+              image: AssetImage('assets/images/Logo-ENSISA.webp'),
               width: 200,
               height: 200,
             ),
