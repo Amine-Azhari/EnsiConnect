@@ -39,7 +39,6 @@ class CreditPage extends StatelessWidget {
                   radius: 36,
                   backgroundColor: Colors.white,
                   child: Image(
-                    // image: const AssetImage('assets/images/icon-192.png'),
                     image: const AssetImage('assets/images/icon-192.webp'),
                     width: 100,
                     height: 100,
