@@ -104,10 +104,14 @@ class PostSessionService {
 
     // 5. Crée le salon de discussion associé
     final chatService = ChatService();
-    await chatService.createConversation(
+    final conversationId = await chatService.createConversation(
       participants: [user?.id ?? 'inconnu', ...participants],
       name: titre,
     );
+
+    await sessionRef.update({
+      'ConversationId': conversationId,
+    });
   }
 }
 
