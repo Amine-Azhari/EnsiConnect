@@ -11,6 +11,7 @@ class ProfileSkillsCard extends StatefulWidget {
     required this.selectedSkill,
     required this.onSkillChanged,
     required this.onAddSkill,
+    required this.onRemoveSkill,
   });
 
   final List<String> skills;
@@ -20,6 +21,7 @@ class ProfileSkillsCard extends StatefulWidget {
   final String? selectedSkill;
   final ValueChanged<String?> onSkillChanged;
   final VoidCallback onAddSkill;
+  final ValueChanged<String> onRemoveSkill;
 
   @override
   State<ProfileSkillsCard> createState() => _ProfileSkillsCardState();
@@ -142,6 +144,11 @@ class _ProfileSkillsCardState extends State<ProfileSkillsCard> {
                             ? const Color(0xFF2B2512)
                             : const Color(0xFFFFF4C7),
                         side: const BorderSide(color: Color(0xFFFFD35A)),
+                        onDeleted: widget.isEditing && widget.isOwnProfile
+                            ? () => widget.onRemoveSkill(skill)
+                            : null,
+                        deleteIconColor:
+                            isDark ? const Color(0xFFFFE9A8) : Colors.black54,
                       ))
                   .toList(),
             ),
