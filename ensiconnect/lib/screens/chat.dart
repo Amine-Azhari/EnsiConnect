@@ -117,7 +117,7 @@ class _ChatPageState extends State<ChatPage> {
                     final filteredDocs = docs.where((doc) {
                       final data = doc.data() as Map<String, dynamic>;
 
-                      if (selectedFilter == 'Solo') {
+                      if (selectedFilter == 'Privé') {
                         return data['Name'] == null;
                       }
 
