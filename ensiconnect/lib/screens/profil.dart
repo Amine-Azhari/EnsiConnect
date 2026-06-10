@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/profile_skills_card.dart';
+import '../widgets/profile_info_card.dart';
+import '../widgets/profile_about_card.dart';
+import '../widgets/profile_stat_card.dart';
+import '../widgets/icon_tile.dart';
+import '../widgets/profile_hero.dart';
 import 'package:flutter/material.dart';
 import '../service/chat_service.dart';
-import '../models/conversation.dart';
-import '../screens/chat_messages.dart';
 import '../service/user_service.dart';
 import '../widgets/custom_drawer.dart';
 import '../widgets/custom_header.dart';
-import '../widgets/person_avatar.dart';
 import 'profile_comments_page.dart';
 
 class ProfilPage extends StatefulWidget {
@@ -182,203 +185,26 @@ class _ProfilPageState extends State<ProfilPage> {
     super.dispose();
   }
 
-  Widget _statCard({
-    required String title,
-    required String value,
-    required IconData icon,
-    required Color accentColor,
-    VoidCallback? onTap,
-    String? subtitle,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final card = Container(
-      constraints: const BoxConstraints(minHeight: 128),
-      padding: const EdgeInsets.all(16),
-      decoration: _cardDecoration(),
-      child: Row(
-        children: [
-          _IconTile(icon: icon, color: accentColor),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: isDark ? const Color(0xFFACB1BC) : Colors.black87,
-                    fontSize: 13,
-                    height: 1.2,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: isDark ? const Color(0xFFACB1BC) : Colors.black87,
-                      fontSize: 12,
-                      height: 1.2,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (onTap != null) ...[
-            const SizedBox(width: 10),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              size: 16,
-              color: isDark ? const Color(0xFFACB1BC) : Colors.black45,
-            ),
-          ],
-        ],
-      ),
-    );
-
-    if (onTap == null) {
-      return card;
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: card,
-      ),
-    );
-  }
-
-  Widget _profileBadge({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
-      decoration: BoxDecoration(
-        color: isDark
-            ? color.withValues(alpha: 0.22)
-            : color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: isDark ? 0.35 : 0.20),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: isDark ? 0.10 : 0.08),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Flexible(
-            child: Text(
-              label.isEmpty ? '-' : label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _infoGridTile({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = _quickActionColorForIcon(icon);
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _IconTile(icon: icon, color: iconColor),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value.isEmpty ? '-' : value,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isDark ? const Color(0xFFACB1BC) : Colors.black87,
-                  fontSize: 14,
-                  height: 1.25,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  BoxDecoration _cardDecoration() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return BoxDecoration(
-      color: Theme.of(context).cardColor,
-      borderRadius: BorderRadius.circular(20),
-      border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
-      boxShadow: isDark
-          ? []
-          : [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-    );
-  }
-
   Widget _profileCard({required Widget child}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: _cardDecoration(),
+      // decoration: ProfileStatCard.cardDecoration(isDark, context),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: isDark ? Border.all(color: Colors.grey.shade800, width: 1) : null,
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+      ),
       child: child,
     );
   }
@@ -422,7 +248,7 @@ class _ProfilPageState extends State<ProfilPage> {
       children: [
         Row(
           children: [
-            _IconTile(icon: icon, color: iconColor),
+            IconTile(icon: icon, color: iconColor),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -484,366 +310,6 @@ class _ProfilPageState extends State<ProfilPage> {
     return const Color(0xFF42A5F5);
   }
 
-  Widget _profileActionButton() {
-    if (isOwnProfile) {
-      return OutlinedButton.icon(
-        onPressed: _toggleEdit,
-        icon: Icon(
-          isEditing ? Icons.save_outlined : Icons.edit_outlined,
-          color: Colors.white,
-        ),
-        label: Text(isEditing ? "Sauvegarder" : "Modifier le profil"),
-        style: _outlinedActionStyle(),
-      );
-    }
-
-    return OutlinedButton.icon(
-      onPressed: () async {
-        final convoId = await chatService.getOrCreateConversation(
-          participants: [
-            currentUserId,
-            widget.userId!,
-          ],
-        );
-
-        if (!mounted) return;
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ConversationPage(
-              conversation: Conversation(
-                id: convoId,
-                participants: [
-                  currentUserId,
-                  widget.userId!,
-                ],
-                messages: const [],
-                lastMessage: '',
-                lastMessageAt: null,
-                createdAt: null,
-                name: null,
-              ),
-              currentUserId: currentUserId,
-            ),
-          ),
-        );
-      },
-      icon: const Icon(Icons.chat_bubble_outline_rounded),
-      label: const Text("Envoyer un message"),
-      style: _outlinedActionStyle(),
-    );
-  }
-
-  Widget _profileHero() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isDark ? const Color(0xFF101A28) : Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF248BFF).withValues(alpha: 0.20),
-                      blurRadius: 22,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: PersonAvatar(
-                  name: fullName.isEmpty ? 'Profil' : fullName,
-                  imageUrl: profilePictureUrl,
-                  radius: 58,
-                  fontSize: 40,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 22),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    fullName.isEmpty ? 'Profil' : fullName,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 25,
-                      height: 1.05,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Flexible(
-                        child: _profileBadge(
-                          icon: Icons.computer_rounded,
-                          label: filiere,
-                          color: const Color(0xFF42A5F5),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _profileBadge(
-                        icon: Icons.school_rounded,
-                        label: promotion,
-                        color: const Color(0xFF66BB6A),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  _profileActionButton(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  ButtonStyle _outlinedActionStyle() {
-    return OutlinedButton.styleFrom(
-      foregroundColor: isOwnProfile ? Colors.white : const Color(0xFF0B77E3),
-      backgroundColor:
-          isOwnProfile ? const Color(0xFF0B77E3) : Colors.transparent,
-      side: const BorderSide(color: Color(0xFF0B77E3)),
-      minimumSize: const Size(0, 46),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      textStyle: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-      ),
-    );
-  }
-
-  Widget _aboutCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return _profileCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _IconTile(icon: Icons.person_outline_rounded),
-              const SizedBox(width: 14),
-              Expanded(child: _sectionTitle("À propos")),
-            ],
-          ),
-          const SizedBox(height: 14),
-          TextField(
-            controller: _descriptionController,
-            enabled: isEditing && isOwnProfile,
-            maxLines: 3,
-            minLines: 1,
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontSize: 16,
-            ),
-            decoration: InputDecoration(
-              hintText: "Décris-toi en quelques mots...",
-              hintStyle: TextStyle(
-                color: isDark ? const Color(0xFFACB1BC) : Colors.black45,
-                fontSize: 16,
-              ),
-              border: InputBorder.none,
-              isCollapsed: true,
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _personalInfoCard() {
-    return _profileCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(child: _sectionTitle("Informations personnelles")),
-            ],
-          ),
-          const SizedBox(height: 22),
-          _infoGridTile(
-            icon: Icons.badge_outlined,
-            label: "Nom",
-            value: fullName,
-          ),
-          const SizedBox(height: 18),
-          _infoGridTile(
-            icon: Icons.mail_outline_rounded,
-            label: "Email",
-            value: email,
-          ),
-          const SizedBox(height: 18),
-          _infoGridTile(
-            icon: Icons.school_outlined,
-            label: "Filière",
-            value: filiere,
-          ),
-          const SizedBox(height: 18),
-          _infoGridTile(
-            icon: Icons.menu_book_outlined,
-            label: "Promotion",
-            value: promotion,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _skillsCard() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return _profileCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _IconTile(
-                icon: Icons.lightbulb_outline_rounded,
-                color: const Color(0xFFE0A400),
-              ),
-              const SizedBox(width: 14),
-              Expanded(child: _sectionTitle("Compétences")),
-            ],
-          ),
-          if (isEditing && isOwnProfile) ...[
-            const SizedBox(height: 18),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: const Color(0xFFE0A400).withValues(alpha: 0.45),
-                ),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: (selectedSkill != null &&
-                          skillsOptions.contains(selectedSkill))
-                      ? selectedSkill
-                      : null,
-                  hint: Text(
-                    skills.isEmpty
-                        ? "Aucune compétence"
-                        : "Choisir une compétence",
-                    style: const TextStyle(
-                      color: Color(0xFFE0A400),
-                      fontSize: 16,
-                    ),
-                  ),
-                  dropdownColor:
-                      isDark ? const Color(0xFF07101C) : Colors.white,
-                  icon: const Icon(
-                    Icons.add_circle_rounded,
-                    color: Color(0xFFE0A400),
-                  ),
-                  isExpanded: true,
-                  items: skillsOptions
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e,
-                          child: Text(
-                            e,
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (v) => setState(() => selectedSkill = v),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: _addSkill,
-                style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFE0A400),
-                ),
-                child: const Text("Ajouter"),
-              ),
-            ),
-          ],
-          if (skills.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: skills
-                  .map(
-                    (skill) => Chip(
-                      label: Text(skill),
-                      labelStyle: TextStyle(
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                      backgroundColor: isDark
-                          ? const Color(0xFF2B2512)
-                          : const Color(0xFFFFF4C7),
-                      side: const BorderSide(color: Color(0xFFFFD35A)),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ] else if (!isEditing) ...[
-            const SizedBox(height: 14),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color:
-                    isDark ? const Color(0xFF2B2512) : const Color(0xFFFFF4C7),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.school_outlined,
-                    color: Color(0xFFE0A400),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    "Aucune compétence",
-                    style: TextStyle(
-                      color: isDark ? const Color(0xFFFFE9A8) : Colors.black54,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -877,12 +343,23 @@ class _ProfilPageState extends State<ProfilPage> {
                           },
                         ),
                       const SizedBox(height: 18),
-                      _profileHero(),
+                      ProfileHero(
+                        fullName: fullName,
+                        filiere: filiere,
+                        promotion: promotion,
+                        profilePictureUrl: profilePictureUrl,
+                        isOwnProfile: isOwnProfile,
+                        isEditing: isEditing,
+                        onActionPressed: _toggleEdit,
+                        currentUserId: currentUserId,
+                        profileUserId: profileUserId,
+                        chatService: chatService,
+                      ),
                       const SizedBox(height: 18),
                       Row(
                         children: [
                           Expanded(
-                            child: _statCard(
+                            child: ProfileStatCard(
                               title: "Sessions\nréalisées",
                               value: "$sessions",
                               icon: Icons.calendar_month_rounded,
@@ -891,7 +368,7 @@ class _ProfilPageState extends State<ProfilPage> {
                           ),
                           const SizedBox(width: 14),
                           Expanded(
-                            child: _statCard(
+                            child: ProfileStatCard(
                               title: "Avis",
                               value: averageNote.toStringAsFixed(1),
                               icon: Icons.star_border_rounded,
@@ -914,11 +391,28 @@ class _ProfilPageState extends State<ProfilPage> {
                         ],
                       ),
                       const SizedBox(height: 18),
-                      _aboutCard(),
+                      ProfileAboutCard(
+                        isEditing: isEditing,
+                        isOwnProfile: isOwnProfile,
+                        descriptionController: _descriptionController,
+                      ),
                       const SizedBox(height: 18),
-                      _personalInfoCard(),
+                      ProfileInfoCard(
+                        fullName: fullName,
+                        email: email,
+                        filiere: filiere,
+                        promotion: promotion,
+                      ),
                       const SizedBox(height: 18),
-                      _skillsCard(),
+                      ProfileSkillsCard(
+                        skills: skills,
+                        skillsOptions: skillsOptions,
+                        isEditing: isEditing,
+                        isOwnProfile: isOwnProfile,
+                        selectedSkill: selectedSkill,
+                        onSkillChanged: (v) => setState(() => selectedSkill = v),
+                        onAddSkill: _addSkill,
+                      ),
                       if (_showLegacyProfileCards) ...[
                         const SizedBox(height: 18),
                         _profileCard(
@@ -1128,42 +622,6 @@ class _ProfilPageState extends State<ProfilPage> {
                 ),
               ),
             ),
-    );
-  }
-}
-
-class _IconTile extends StatelessWidget {
-  const _IconTile({
-    required this.icon,
-    this.color = const Color(0xFF0B77E3),
-  });
-
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      width: 58,
-      height: 58,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(14),
-        border:
-            isDark ? Border.all(color: Colors.grey.shade700, width: 1) : null,
-        boxShadow: isDark
-            ? []
-            : [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.18),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-      ),
-      child: Icon(icon, color: Colors.white, size: 30),
     );
   }
 }
