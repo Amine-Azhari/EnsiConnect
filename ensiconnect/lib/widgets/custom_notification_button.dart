@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../screens/notification_screen.dart';
 import '../service/notification_evaluation_service.dart';
 import '../service/user_service.dart';

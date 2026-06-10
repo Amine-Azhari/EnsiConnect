@@ -23,6 +23,7 @@ class CustomHeader extends StatelessWidget {
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
+
         const CustomNotificationButton(),
       ],
     );
