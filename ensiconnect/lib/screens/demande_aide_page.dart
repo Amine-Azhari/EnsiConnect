@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import "../widgets/ensiconnect_app.dart";
+import '../models/conversation.dart';
 import '../models/help_request.dart';
+import '../models/user.dart';
+import '../screens/chat_messages.dart';
+import '../service/chat_service.dart';
 import '../service/user_service.dart';
 import '../service/help_request_service.dart';
 import '../widgets/person_avatar.dart';
@@ -17,7 +21,8 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
   final TextEditingController _messageController = TextEditingController();
   final UserServices _userServices = UserServices();
   final HelpRequestService _helpRequestService = HelpRequestService();
-  late final Future<dynamic> _currentUserFuture;
+  final ChatService _chatService = ChatService();
+  late final Future<User?> _currentUserFuture;
 
   @override
   void initState() {
@@ -66,6 +71,41 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
     _subjectController.clear();
     _messageController.clear();
     Navigator.pop(context);
+  }
+
+  Future<void> _openConversationForRequest(
+    HelpRequest request,
+    User currentUser,
+  ) async {
+    if (request.authorId.isEmpty || request.authorId == currentUser.id) {
+      return;
+    }
+
+    final convoId = await _chatService.getOrCreateConversation(
+      participants: [currentUser.id, request.authorId],
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConversationPage(
+          conversation: Conversation(
+            id: convoId,
+            participants: [currentUser.id, request.authorId],
+            messages: const [],
+            lastMessage: '',
+            lastMessageAt: null,
+            createdAt: null,
+            name: null,
+          ),
+          currentUserId: currentUser.id,
+        ),
+      ),
+    );
   }
 
   void _showCreateRequestModal() {
@@ -319,15 +359,14 @@ class _DemandeAidePageState extends State<DemandeAidePage> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: ElevatedButton.icon(
-                                onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        "Ouverture du chat avec ${req.authorName}...",
-                                      ),
-                                    ),
-                                  );
-                                },
+                                onPressed: currentUser == null
+                                    ? null
+                                    : () {
+                                        _openConversationForRequest(
+                                          req,
+                                          currentUser,
+                                        );
+                                      },
                                 icon: const Icon(
                                   Icons.chat_bubble_outline_rounded,
                                   size: 20,
