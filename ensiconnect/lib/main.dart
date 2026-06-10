@@ -16,8 +16,8 @@ void main() async {
   );
   
   // On crée une instance du service et on lance l'insertion
-  final service = FirebaseDataService();
-  await service.initialiserDonneesDeTest();
+  // final service = FirebaseDataService();
+  // await service.initialiserDonneesDeTest();
   await UserServices().normalizeAverageNoteTypes();
   await UserServices().rebuildAverageNotesFromEvaluations();
 
